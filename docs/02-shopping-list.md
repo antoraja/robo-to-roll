@@ -13,7 +13,7 @@ you wait**. Search terms are given so you can find the item anywhere.
 | 3 | Jumper wires, all three kinds | `dupont jumper wire 40pcs male-male male-female female-female` | 1 set | $2–4 |
 | 4 | Breadboard | `breadboard 400 points` or `830 points` | 1 | $1–3 |
 | 5 | Braided fishing line (the tendon) | `PE braided fishing line 0.3mm 20lb` (any 0.2–0.4 mm braided line; **not** nylon mono, which stretches) | 1 spool | $2–4 |
-| 6 | Elastic cord (the return spring) | `elastic beading cord 1mm` | 1 roll | $1–2 |
+| 6 | Elastic cord (the return spring) | `round elastic cord 2mm` (stretchy rubber-core cord; the simulation showed 1 mm is too weak) | 1 roll | $1–3 |
 | 7 | USB data cable matching your ESP32 | micro-USB or USB-C (you probably have one; check it's a **data** cable) | 1 | $0–2 |
 
 **Phase 1 total: about $15–25**, plus filament you already have.

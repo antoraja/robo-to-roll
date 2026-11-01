@@ -36,15 +36,20 @@ PIN_HOLE_PRONG = 1.9   # snug hole in the prongs for 1.75 mm filament pin
 PIN_HOLE_TONGUE = 2.3  # free-turning hole in the tongue
 
 FLEX_Z = -5.8          # flexor (closing) tendon channel, palm side, centred
-EXT_Z = 4.5            # extensor / elastic channels, back side
-EXT_Y = 5.5            # ... at y = +/-5.5 (two channels, the elastic loops through both)
-CHANNEL_D = 2.0        # tendon channel diameter
+EXT_Z = 5.8            # elastic channel, back side, centred: cord runs 4.8 mm behind the pin
+KNUCKLE_GROOVE_R = 3.8 # rounded groove in each tongue the elastic wraps over (cord centre at 4.8 mm)
+CHANNEL_D = 2.0        # flexor (string) channel diameter
+EXT_D = 2.6            # elastic channel diameter (2 mm round elastic cord)
+LOCK_D = 1.9           # lock-pin hole (1.75 mm filament) that pinches the elastic in each bone
+LOCK_DZ = -1.6         # lock hole sits this far below the elastic channel so the pin pinches the cord
+RELIEF_W = 2.4         # groove at each joint face so the string isn't pinched when the joint closes
+RELIEF_LEN = 3.5
 
 L_PROX, L_MID, L_DIST = 45.0, 30.0, 25.0   # joint-to-joint lengths (distal: joint-to-tip)
 
 # Spool for the servo horn
-SPOOL_R = 10.0         # tendon winding radius -> ~31 mm of pull over 180 deg
-SPOOL_FLANGE_R = 13.0
+SPOOL_R = 13.0         # string winding radius -> ~41 mm of pull over 180 deg (sim needs ~38 mm)
+SPOOL_FLANGE_R = 16.0
 SPOOL_CORE_W = 5.0
 SPOOL_FLANGE_T = 1.5
 
@@ -134,7 +139,7 @@ def joint_proximal_end(x_pin=0.0):
     t = slab(tongue_profile(), -TONGUE_HALF, TONGUE_HALF)
     e = slab(ear_profile(), -W / 2, W / 2)
     hole = rod_y(PIN_HOLE_TONGUE, 0, ZP)
-    return (t + e - hole).translate((x_pin, 0, 0))
+    return (t + e - hole - knuckle_groove()).translate((x_pin, 0, 0))
 
 
 def joint_distal_end(x_pin):
@@ -146,9 +151,29 @@ def joint_distal_end(x_pin):
 
 def channels(x0, x1):
     c = rod_x(CHANNEL_D, 0, FLEX_Z, x0, x1)
-    c += rod_x(CHANNEL_D, EXT_Y, EXT_Z, x0, x1)
-    c += rod_x(CHANNEL_D, -EXT_Y, EXT_Z, x0, x1)
+    c += rod_x(EXT_D, 0, EXT_Z, x0, x1)
     return c
+
+
+def knuckle_groove():
+    """Groove over the back of a tongue: the elastic wraps round it, so its leverage stays
+    constant at every joint angle (stops the joints snapping closed one by one)."""
+    keep = m.Manifold.cylinder(2 * W, KNUCKLE_GROOVE_R, KNUCKLE_GROOVE_R, SEG).rotate((-90.0, 0.0, 0.0)) \
+        .translate((0, -W, ZP))
+    region = box(-R - 2, C + 0.5, -EXT_D / 2, EXT_D / 2, ZP, H / 2 + 1)
+    return region - keep
+
+
+def lock_hole(x):
+    """Cross hole for a filament lock pin that pinches both elastic strands at this bone."""
+    return rod_y(LOCK_D, x, EXT_Z + LOCK_DZ, -W, W)
+
+
+def relief(x_face, direction):
+    """Open the palm side of the string channel near a joint face (direction +1: body is at +x)."""
+    xa = x_face - 0.2 * direction
+    xb = x_face + RELIEF_LEN * direction
+    return box(min(xa, xb), max(xa, xb), -RELIEF_W / 2, RELIEF_W / 2, -H / 2 - 1, FLEX_Z)
 
 
 def phalanx(length, distal=False):
@@ -159,14 +184,16 @@ def phalanx(length, distal=False):
         tip_cut = slab(poly([(length - 4, H / 2 + 1), (length + 1, H / 2 - 5), (length + 1, H / 2 + 1)]), -W, W)
         part -= tip_cut
         part -= channels(-10, length + 5)
-        # groove on the tip face so the elastic can U-turn between the two back channels
-        part -= box(length - 1.2, length + 1, -EXT_Y, EXT_Y, EXT_Z - 1.0, EXT_Z + 1.0)
+        part -= lock_hole(length / 2)
+        part -= relief(C, +1)
         # small recess for the flexor knot
         part -= box(length - 2.0, length + 1, -2.0, 2.0, FLEX_Z - 1.5, FLEX_Z + 1.5)
         return part
     prof = body_profile(C, length - C)
     part = slab(prof, -W / 2, W / 2) + joint_proximal_end(0) + joint_distal_end(length)
     part -= channels(-10, length + 10)
+    part -= lock_hole(length / 2)
+    part -= relief(C, +1) + relief(length - C, -1)
     return part
 
 
@@ -201,6 +228,8 @@ def base():
     col = slab(body_profile(-C - col_len, -C, chamfer_start=False), -W / 2, W / 2)
     col += joint_distal_end(0.0)
     col -= channels(-C - col_len - 5, 1.0)
+    col -= lock_hole(-15.0)                 # elastic lock pin in the base, 15 mm below the knuckle pin
+    col -= relief(-C, -1)
     col_w = local_to_world(col)
 
     z_ceiling = -C - col_len            # bottom face of the column (world Z)
@@ -235,8 +264,8 @@ def base():
     for hx in (s_cx - SERVO_TAB_HOLE_SPACING / 2, s_cx + SERVO_TAB_HOLE_SPACING / 2):
         b -= rod_y(1.8, hx, spool_cz, wall_face - wall_t - 1, wall_face + 1)
     # channels continue through the roof, and a bigger clearance hole for the flexor
-    for (cx, cy) in ((flex_x, 0.0), (-EXT_Z, EXT_Y), (-EXT_Z, -EXT_Y)):
-        b -= m.Manifold.cylinder(30, CHANNEL_D / 2, CHANNEL_D / 2, SEG).translate((cx, cy, z_ceiling - 20))
+    for (cx, cy, dd) in ((flex_x, 0.0, CHANNEL_D), (-EXT_Z, 0.0, EXT_D)):
+        b -= m.Manifold.cylinder(30, dd / 2, dd / 2, SEG).translate((cx, cy, z_ceiling - 20))
     # 4 mounting holes in the plate (screw or zip-tie it to a board)
     px0, px1 = wall_x0 - 2, wall_x1 + 2
     py0, py1 = wall_face - 22, W / 2 + 4

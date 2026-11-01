@@ -33,6 +33,7 @@ robot-hand/
   cad/generate_parts.py      Parametric generator for every printed part (Python)
   cad/render_preview.py      Renders the preview picture + checks parts don't collide
   cad/stl/                   Ready-to-print STL files (already oriented for printing)
+  sim/finger_sim.py          Physics simulation (MuJoCo): motion, servo load, grip, strength
   firmware/finger_control/   ESP32 Arduino sketch: WiFi + phone slider + serial commands
 ```
 
@@ -43,5 +44,10 @@ robot-hand/
   and the finger, spool and servo don't collide with the base. **They have not been
   test-printed yet**, so expect small fit tweaks after your first print. Print tolerances
   are all at the top of `generate_parts.py`.
+- **Simulation:** the finger was checked in the MuJoCo physics engine (see
+  [`sim/README.md`](sim/README.md)). That found 4 flaws in the first design: joints snapping,
+  the finger falling closed palm-down, not enough string travel, and a pinched string. All 4
+  are fixed in the current parts. Result: smooth curl, fully closed at ~165° servo turn,
+  ~35 % of the servo's stall force, pins ~4× stronger than needed.
 - **Firmware:** written for the ESP32 Arduino core with the ESP32Servo library. **It has
   not been compiled or run on real hardware yet.** Step 3 is where we check it together.
