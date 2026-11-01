@@ -1,0 +1,499 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>RoboHand electronics guide</title>
+<style>
+  html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; background: #e9edf0; font-family: "DejaVu Sans", Arial, sans-serif; }
+  canvas { position: absolute; inset: 0; }
+  .ov { position: absolute; }
+  #part { left: 36px; top: 24px; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: #c25a17; font-weight: bold; }
+  #cap { left: 50%; bottom: 34px; transform: translateX(-50%); width: 1120px; box-sizing: border-box; background: rgba(23,32,38,.88); color: #fff;
+         font-size: 22px; line-height: 1.38; padding: 13px 24px; border-radius: 10px; text-align: center; }
+  #bar { left: 0; bottom: 0; height: 6px; background: #e8742a; }
+  #labels { inset: 0; pointer-events: none; }
+  .lab { position: absolute; transform: translate(-50%, -100%); background: #172026; color: #fff; font-size: 16px; font-weight: bold;
+         padding: 4px 9px; border-radius: 6px; white-space: nowrap; }
+  .lab::after { content: ""; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: #172026; transform: translateX(-50%); }
+  .lab.red { background: #c9182f; } .lab.red::after { background: #c9182f; }
+  .lab.blue { background: #1f5fbf; } .lab.blue::after { background: #1f5fbf; }
+  .lab.org { background: #d4620f; } .lab.org::after { background: #d4620f; }
+  .lab.brn { background: #6b4a2b; } .lab.brn::after { background: #6b4a2b; }
+  .lab.grn { background: #2f7d4f; } .lab.grn::after { background: #2f7d4f; }
+  #mock { left: 50%; top: 66px; transform: translateX(-50%); width: 980px; }
+  #dim { inset: 0; background: rgba(233,237,240,.92); }
+  .win { background: #fff; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,.22); overflow: hidden; border: 1px solid #c9d1d7; }
+  .win .tb { background: #2f3a40; color: #fff; font-size: 15px; padding: 8px 14px; display: flex; gap: 14px; align-items: center; }
+  .win .tb .dots { color: #9aa7b0; letter-spacing: 3px; }
+  .menu { background: #eef1f3; border-bottom: 1px solid #d6dce0; font-size: 15px; padding: 6px 12px; display: flex; gap: 18px; color: #333; }
+  .menu b { background: #e8742a; color: #fff; padding: 1px 8px; border-radius: 4px; font-weight: normal; }
+  .body { padding: 18px 22px; font-size: 17px; color: #172026; line-height: 1.5; }
+  .crumb { font-size: 21px; margin-bottom: 14px; } .crumb span { background: #fff1e6; border: 2px solid #e8742a; border-radius: 6px; padding: 2px 8px; margin: 0 2px; }
+  .field { border: 2px solid #e8742a; border-radius: 6px; padding: 8px 10px; font-family: "DejaVu Sans Mono", monospace; font-size: 15px; background: #fffaf5; word-break: break-all; }
+  .btn { display: inline-block; background: #00878f; color: #fff; border-radius: 6px; padding: 6px 16px; font-size: 16px; margin-top: 12px; }
+  .row { display: flex; gap: 12px; align-items: center; border: 1px solid #d6dce0; border-radius: 8px; padding: 10px 12px; margin-top: 10px; }
+  .code { font-family: "DejaVu Sans Mono", monospace; font-size: 15px; background: #1e2428; color: #d9e2e8; padding: 14px 16px; line-height: 1.55; white-space: pre; }
+  .code .k { color: #f0a35e; } .code .c { color: #7f8c95; } .code .hl { background: #4a3a1f; outline: 2px solid #e8742a; }
+  .serial { font-family: "DejaVu Sans Mono", monospace; font-size: 16px; background: #fff; color: #172026; padding: 12px 16px; line-height: 1.6; white-space: pre; border-top: 1px solid #d6dce0; }
+  .card { left: 50%; top: 50%; transform: translate(-50%, -58%); width: 900px; background: #fff; border-radius: 14px; padding: 28px 36px;
+          box-shadow: 0 10px 40px rgba(0,0,0,.2); color: #172026; font-size: 22px; line-height: 1.5; }
+  .card h2 { margin: 0 0 12px; font-size: 32px; } .card li { margin: 8px 0; }
+  .warn { border-left: 8px solid #c9182f; }
+  .phone { right: 70px; top: 40px; width: 270px; border: 12px solid #172026; border-radius: 34px; background: #111; color: #eee; padding: 16px 14px; font-size: 15px; }
+  .phone .sl { height: 10px; border-radius: 5px; background: #333; position: relative; margin: 4px 0 10px; }
+  .phone .sl i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 5px; background: #e8742a; }
+  .phone .knob { position: absolute; top: -6px; width: 22px; height: 22px; border-radius: 11px; background: #fff; transform: translateX(-50%); }
+  .phone .wifi { background: #1f2a30; border-radius: 10px; padding: 10px; margin-bottom: 10px; }
+  #title { inset: 0; display: flex; flex-direction: column; justify-content: center; padding-left: 80px;
+           background: linear-gradient(90deg, rgba(233,237,240,.97) 0%, rgba(233,237,240,.9) 48%, rgba(233,237,240,0) 74%); color: #172026; }
+  #title h1 { font-size: 58px; margin: 0 0 10px; } #title p { font-size: 24px; margin: 6px 0; max-width: 640px; color: #33424c; }
+  #title .tag { font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c25a17; font-weight: bold; margin-bottom: 14px; }
+</style></head>
+<body>
+<canvas id="c" width="1280" height="720"></canvas>
+<div id="labels" class="ov"></div>
+<div id="dim" class="ov"></div>
+<div id="mock" class="ov"></div>
+<div id="cardwrap" class="ov" style="inset:0"></div>
+<div id="title" class="ov"></div>
+<div id="part" class="ov"></div>
+<div id="cap" class="ov"></div>
+<div id="bar" class="ov"></div>
+
+<script src="../node_modules/three/build/three.min.js"></script>
+<script src="timeline.js"></script>
+<script>
+(function () {
+const TL = window.TIMELINE; const FPS = 15;
+window.FPS = FPS; window.DURATION = TL.total;
+const SC = {}; TL.scenes.forEach((s, i) => { s.i = i; SC[s.id] = s; });
+const T0 = id => SC[id].t0, T1 = id => SC[id].t0 + SC[id].dur;
+const ease = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+const ramp = (t, a, b) => ease((t - a) / (b - a));
+const sceneAt = t => { let s = TL.scenes[0]; for (const x of TL.scenes) if (t >= x.t0) s = x; return s; };
+// time inside a scene, as fraction of its spoken part (so animations follow the voice)
+const vt = (id, t, a, b) => { const s = SC[id]; const v0 = s.voice[0], v1 = s.voice[1]; return ramp(t, v0 + (v1 - v0) * a, v0 + (v1 - v0) * b); };
+
+// ------------------------------------------------------------------ three
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(1280, 720, false);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#e9edf0');
+const camera = new THREE.PerspectiveCamera(30, 16 / 9, 1, 5000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x606a74, 0.8));
+const key = new THREE.DirectionalLight(0xffffff, 0.7); key.position.set(200, 500, 300); scene.add(key);
+const fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-300, 200, -200); scene.add(fill);
+const root = new THREE.Group(); root.rotation.x = -Math.PI / 2; scene.add(root);   // Z-up world, mm
+const mat = (c, o) => new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: .55, metalness: .05 }, o || {}));
+const M = { table: mat('#d9d3c8', { roughness: .95 }), black: mat('#22272b'), servo: mat('#1d3f73'), white: mat('#f4f4f0'),
+  metal: mat('#c8ccd0', { metalness: .7, roughness: .3 }), gold: mat('#d4b25a', { metalness: .7, roughness: .3 }), pcb: mat('#1b1d22'),
+  red: mat('#d01f2f'), brown: mat('#6b4a2b'), orange: mat('#f07c18'), blue: mat('#2a62c9'), green: mat('#2f8a52'), cap: mat('#24324f'), spool: mat('#2a9d8f'),
+  led: new THREE.MeshBasicMaterial({ color: '#330000' }) };
+const table = new THREE.Mesh(new THREE.BoxGeometry(1400, 900, 8), M.table); table.position.set(40, 40, -4); root.add(table);
+const box = (w, d, h, m) => new THREE.Mesh(new THREE.BoxGeometry(w, d, h), m);
+const cyl = (r, h, m, seg) => { const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg || 24), m); c.rotation.x = Math.PI / 2; return c; };  // along z
+
+// ------------------------------------------------------------------ breadboard (400 holes)
+const PITCH = 2.54, BB_TOP = 8.5;
+const colX = c => (c - 15.5) * PITCH;
+const ROWY = { a: 13.97, b: 11.43, c: 8.89, d: 6.35, e: 3.81, f: -3.81, g: -6.35, h: -8.89, i: -11.43, j: -13.97, P: 19.7, N: 22.24 };
+const hole = (row, c) => new THREE.Vector3(colX(c), ROWY[row], BB_TOP);
+function bbTexture() {
+  const S = 12, W = 83, H = 55, cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S; const g = cv.getContext('2d');
+  g.fillStyle = '#f5f5f0'; g.fillRect(0, 0, cv.width, cv.height);
+  const px = x => (x + W / 2) * S, py = y => (H / 2 - y) * S;
+  g.fillStyle = '#e4e4dc'; g.fillRect(0, py(1.2), cv.width, 2.4 * S);
+  g.lineWidth = 4; g.strokeStyle = '#d01f2f'; g.beginPath(); g.moveTo(px(-39), py(18.2)); g.lineTo(px(39), py(18.2)); g.stroke();
+  g.strokeStyle = '#2a62c9'; g.beginPath(); g.moveTo(px(-39), py(23.8)); g.lineTo(px(39), py(23.8)); g.stroke();
+  g.strokeStyle = '#d01f2f'; g.beginPath(); g.moveTo(px(-39), py(-23.8)); g.lineTo(px(39), py(-23.8)); g.stroke();
+  g.strokeStyle = '#2a62c9'; g.beginPath(); g.moveTo(px(-39), py(-18.2)); g.lineTo(px(39), py(-18.2)); g.stroke();
+  g.fillStyle = '#d01f2f'; g.font = `bold ${3.2 * S}px DejaVu Sans`; g.fillText('+', px(-41.2), py(18.6)); g.fillStyle = '#2a62c9'; g.fillText('−', px(-41.2), py(21.5));
+  g.fillStyle = '#3a3a3a';
+  const sq = (x, y) => g.fillRect(px(x) - 0.55 * S, py(y) - 0.55 * S, 1.1 * S, 1.1 * S);
+  for (let c = 1; c <= 30; c++) { for (const r of 'abcdefghij') sq(colX(c), ROWY[r]);
+    for (const y of [19.7, 22.24, -19.7, -22.24]) sq(colX(c), y); }
+  g.fillStyle = '#777'; g.font = `${1.9 * S}px DejaVu Sans`;
+  for (let c = 1; c <= 30; c += (c === 1 ? 4 : 5)) g.fillText(String(c), px(colX(c)) - 0.8 * S, py(15.9));
+  'abcde'.split('').forEach(r => g.fillText(r, px(-40.6), py(ROWY[r]) + 0.7 * S));
+  'fghij'.split('').forEach(r => g.fillText(r, px(-40.6), py(ROWY[r]) + 0.7 * S));
+  const t = new THREE.CanvasTexture(cv); t.anisotropy = 8; return t;
+}
+const bb = new THREE.Group(); root.add(bb);
+{ const top = new THREE.MeshStandardMaterial({ map: bbTexture(), roughness: .8 });
+  const b = new THREE.Mesh(new THREE.BoxGeometry(83, 55, BB_TOP), [M.white, M.white, M.white, M.white, top, M.white]); b.position.z = BB_TOP / 2; bb.add(b); }
+// highlight strips
+function strip(x0, x1, y, w, color) { const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, w, 0.4), new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0 }));
+  m.position.set((x0 + x1) / 2, y, BB_TOP + 0.25); bb.add(m); return m; }
+const HL = { railP: strip(-38, 38, ROWY.P, 1.8, '#ff2a3a'), railN: strip(-38, 38, ROWY.N, 1.8, '#2a6bff'),
+  col10: strip(colX(10) - .9, colX(10) + .9, 8.89, 12.5, '#21c065'), col20: strip(colX(20) - .9, colX(20) + .9, -8.89, 12.5, '#21c065') };
+HL.col10.geometry = new THREE.BoxGeometry(1.8, 12.3, .4); HL.col10.position.set(colX(10), 8.89, BB_TOP + .25);
+HL.col20.geometry = new THREE.BoxGeometry(1.8, 12.3, .4); HL.col20.position.set(colX(20), -8.89, BB_TOP + .25);
+
+// ------------------------------------------------------------------ ESP32 DevKit (30 pins)
+// header in row b, USB end at column 1:  col1 VIN, 2 GND, 3 D13, 4 D12, 5 D14, 6 D27, 7 D26, 8 D25, 9 D33, 10 D32, 11 D35, 12 D34, 13 VN, 14 VP, 15 EN
+const PIN_B = ['VIN', 'GND', 'D13', 'D12', 'D14', 'D27', 'D26', 'D25', 'D33', 'D32', 'D35', 'D34', 'VN', 'VP', 'EN'];
+const PIN_I = ['3V3', 'GND', 'D15', 'D2', 'D4', 'RX2', 'TX2', 'D5', 'D18', 'D19', 'D21', 'RX0', 'TX0', 'D22', 'D23'];
+const colOf = name => PIN_B.indexOf(name) + 1;
+function espTexture() {
+  const S = 14, W = 51.5, H = 28.3, cv = document.createElement('canvas'); cv.width = W * S; cv.height = H * S; const g = cv.getContext('2d');
+  g.fillStyle = '#1b1d22'; g.fillRect(0, 0, cv.width, cv.height);
+  const x0 = colX(1) - colX(8) + W / 2; // pin1 position on the board (board centre = column 8)
+  g.font = `bold ${1.55 * S}px DejaVu Sans`; g.textAlign = 'center';
+  for (let k = 0; k < 15; k++) { const x = (x0 + k * PITCH) * S;
+    const use = ['GND', 'D13', 'D14', 'D27', 'D26', 'D25', 'VIN'].includes(PIN_B[k]);
+    g.save(); g.translate(x + .5 * S, (H / 2 - 11.43 + 1.6) * S); g.rotate(-Math.PI / 2); g.textAlign = 'right';
+    g.font = `bold ${1.45 * S}px DejaVu Sans`; g.fillStyle = use ? '#ffd27a' : '#cfd6db'; g.fillText(PIN_B[k], 0, 0); g.restore();
+    g.save(); g.translate(x + .5 * S, (H / 2 + 11.43 - 1.6) * S); g.rotate(-Math.PI / 2); g.textAlign = 'left';
+    g.font = `${1.3 * S}px DejaVu Sans`; g.fillStyle = '#9aa7b0'; g.fillText(PIN_I[k], 0, 0); g.restore();
+    g.fillStyle = '#c9a64a'; g.beginPath(); g.arc(x, (H / 2 - 11.43) * S, .75 * S, 0, 7); g.fill(); g.beginPath(); g.arc(x, (H / 2 + 11.43) * S, .75 * S, 0, 7); g.fill(); }
+  g.fillStyle = '#fff'; g.font = `${1.5 * S}px DejaVu Sans`; g.textAlign = 'left'; g.fillText('EN', 1.2 * S, (H / 2 - 4.2) * S); g.fillText('BOOT', 1.2 * S, (H / 2 + 6.4) * S);
+  const t = new THREE.CanvasTexture(cv); t.anisotropy = 8; return t;
+}
+const esp = new THREE.Group(); root.add(esp);
+const ESP_PCB_Z = 11.5;     // PCB bottom above the breadboard surface when fully inserted (pins in the holes)
+{ const tex = espTexture(); const top = new THREE.MeshStandardMaterial({ map: tex, roughness: .6 });
+  const pcb = new THREE.Mesh(new THREE.BoxGeometry(51.5, 28.3, 1.6), [M.pcb, M.pcb, M.pcb, M.pcb, top, M.pcb]); pcb.position.set(0, 0, ESP_PCB_Z + .8); esp.add(pcb);
+  const can = box(18, 25.5, 3.2, M.metal); can.position.set(12.5, 0, ESP_PCB_Z + 3.2); esp.add(can);
+  const ant = box(6, 18, .8, M.black); ant.position.set(23.5, 0, ESP_PCB_Z + 2); esp.add(ant);
+  const usb = box(7.5, 9, 3.3, M.metal); usb.position.set(-23.5, 0, ESP_PCB_Z + 3.2); esp.add(usb);
+  const bEN = box(3.5, 3, 1.6, M.white); bEN.position.set(-20, 8, ESP_PCB_Z + 2.4); esp.add(bEN); esp.userData.en = bEN;
+  const bBOOT = box(3.5, 3, 1.6, M.white); bBOOT.position.set(-20, -8, ESP_PCB_Z + 2.4); esp.add(bBOOT); esp.userData.boot = bBOOT;
+  const led = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1, .8), M.led); led.position.set(-14, 9.5, ESP_PCB_Z + 2); esp.add(led);
+  for (const y of [11.43, -11.43]) { const hdr = box(15 * PITCH, 2.5, 2.5, M.black); hdr.position.set(colX(8) - colX(8), y, ESP_PCB_Z - 1.25); esp.add(hdr);
+    for (let k = 0; k < 15; k++) { const p = box(.64, .64, 9, M.gold); p.position.set(colX(k + 1) - colX(8), y, ESP_PCB_Z - 4.5); esp.add(p); } } }
+const ESP_IN = new THREE.Vector3(colX(8), 0, -0.0);              // inserted: pins down in rows b / i, columns 1-15
+const ESP_TABLE = new THREE.Vector3(-30, -78, -(ESP_PCB_Z - 9.0)); // lying on the table on its pins (before step 1)
+const espLocalPin = name => new THREE.Vector3(colX(colOf(name)) - colX(8), 11.43, ESP_PCB_Z);
+
+// ------------------------------------------------------------------ jumper wires
+const WIRE = { red: '#d01f2f', black: '#22272b', brown: '#6b4a2b', orange: '#f07c18', yellow: '#e5b800' };
+function maleEnd() { const g = new THREE.Group(); const h = box(2.5, 2.5, 13, M.black); h.position.z = 6.5; g.add(h); const p = box(.64, .64, 6, M.gold); p.position.z = -3; g.add(p); return g; }
+function femaleEnd() { const g = new THREE.Group(); const h = box(2.6, 2.6, 13, M.black); h.position.z = 6.5; g.add(h); return g; }
+const wires = [];
+// a = {pos: fn(t)->Vector3 tip point, dir: Vector3 pointing INTO the hole}, appear: [t0, t1] travel from above
+function jumper(color, A, B, t0, t1, opts) {
+  opts = opts || {};
+  const ea = (opts.fa ? femaleEnd() : maleEnd()), eb = (opts.fb ? femaleEnd() : maleEnd());
+  root.add(ea); root.add(eb);
+  const tube = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshStandardMaterial({ color: WIRE[color] || color, roughness: .5 }));
+  root.add(tube);
+  const w = { ea, eb, tube, A, B, t0, t1, lift: opts.lift || 30, sag: opts.sag || 0 };
+  wires.push(w); return w;
+}
+const UP = new THREE.Vector3(0, 0, 1);
+function placeEnd(end, tip, dir) {   // end's local -z axis = dir (into the hole), local origin at the housing bottom = tip
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, -1), dir.clone().normalize());
+  end.position.copy(tip); end.quaternion.copy(q);
+}
+function updateWires(t) {
+  wires.forEach(w => {
+    const vis = t >= w.t0; w.ea.visible = w.eb.visible = w.tube.visible = vis; if (!vis) return;
+    const s = ramp(t, w.t0, w.t1);
+    const a = w.A.pos(t), b = w.B.pos(t), da = w.A.dir, db = w.B.dir;
+    const ta = a.clone().addScaledVector(da, -(1 - s) * 25), tb = b.clone().addScaledVector(db, -(1 - s) * 25);
+    placeEnd(w.ea, ta, da); placeEnd(w.eb, tb, db);
+    const pa = ta.clone().addScaledVector(da, -13), pb = tb.clone().addScaledVector(db, -13);
+    const qa = pa.clone().addScaledVector(da, -8), qb = pb.clone().addScaledVector(db, -8);
+    const mid = pa.clone().lerp(pb, .5); mid.z = Math.max(pa.z, pb.z) + w.lift; mid.y -= w.sag;
+    const curve = new THREE.CatmullRomCurve3([pa, qa, mid, qb, pb]);
+    w.tube.geometry.dispose(); w.tube.geometry = new THREE.TubeGeometry(curve, 40, .85, 8, false);
+  });
+}
+const DOWN = new THREE.Vector3(0, 0, -1);
+const inHole = (row, c) => ({ pos: () => hole(row, c), dir: DOWN });
+
+// ------------------------------------------------------------------ servos (MG90S, JR plug, 20 cm lead)
+function makeServo() {
+  const g = new THREE.Group();
+  const body = box(22.8, 12.2, 22.7, M.servo); body.position.set(0, 0, 11.35); g.add(body);
+  const tabs = box(32.3, 12.2, 2.5, M.servo); tabs.position.set(0, 0, 15.9 + 1.25); g.add(tabs);
+  const boss = cyl(5.9, 4, M.servo); boss.position.set(-5.5, 0, 24.7); g.add(boss);
+  const shaft = cyl(2.4, 3, M.white); shaft.position.set(-5.5, 0, 28); g.add(shaft);
+  const horn = new THREE.Group(); horn.position.set(-5.5, 0, 29.8); g.add(horn);
+  const arm = box(28, 5.5, 1.8, M.white); arm.position.x = 7; horn.add(arm); const hub = cyl(3.6, 2.6, M.white); horn.add(hub);
+  g.userData.horn = horn;
+  const spool = new THREE.Group(); const f1 = cyl(16, 1.5, M.spool, 48); f1.position.z = .75; spool.add(f1); const core = cyl(13, 5, M.spool, 48); core.position.z = 4; spool.add(core);
+  const f2 = cyl(16, 1.5, M.spool, 48); f2.position.z = 7.25; spool.add(f2); spool.visible = false; horn.add(spool); spool.position.z = 1; g.userData.spool = spool;
+  return g;
+}
+function makePlug() { const g = new THREE.Group(); const p = box(7.6, 2.6, 14, M.black); p.position.z = 7; g.add(p); return g; }
+const servos = [];
+// finger, pin, servo position on the table, plug position (tip of the plug, holes facing +y towards the breadboard)
+const SERVO_DEF = [
+  { name: 'Index', pin: 'D13', pos: [-20, 92], rail: [12, 13] },
+  { name: 'Thumb', pin: 'D25', pos: [-80, 112], rail: [16, 17] },
+  { name: 'Middle', pin: 'D14', pos: [40, 112], rail: [20, 21] },
+  { name: 'Ring', pin: 'D27', pos: [100, 92], rail: [24, 25] },
+  { name: 'Little', pin: 'D26', pos: [-140, 92], rail: [28, 29] },
+];
+SERVO_DEF.forEach((d, k) => {
+  const s = makeServo(); s.position.set(d.pos[0], d.pos[1], 0); s.rotation.z = Math.PI / 2; root.add(s);
+  const plug = makePlug(); const pp = new THREE.Vector3(d.pos[0] * 0.55 + colX(colOf(d.pin)) * 0.45, 52, 1.3); plug.position.copy(pp);
+  plug.rotation.x = -Math.PI / 2; root.add(plug);   // plug axis along +y: holes at y = 52 + 14
+  // cable from the servo to the plug: three thin wires side by side
+  const cab = new THREE.Group(); root.add(cab);
+  ['brown', 'red', 'orange'].forEach((c, j) => {
+    const off = (j - 1) * 0.9;
+    const pts = [new THREE.Vector3(d.pos[0] + off, d.pos[1] - 7, 4), new THREE.Vector3(d.pos[0] + off, d.pos[1] - 20, 2),
+                 new THREE.Vector3((d.pos[0] + pp.x) / 2 + off, (d.pos[1] + pp.y) / 2, 1.6), new THREE.Vector3(pp.x + off * 2.5, pp.y - 6, 1.3), new THREE.Vector3(pp.x + off * 2.5, pp.y, 1.3)];
+    cab.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 40, .45, 6, false), mat(WIRE[c])));
+  });
+  const holes = [-2.54, 0, 2.54].map(dx => new THREE.Vector3(pp.x + dx, pp.y + 14, 1.3));
+  servos.push({ d, s, plug, cab, holes, show: k === 0 ? T0('intro') : T0('all') + 0.6 * (k - 1) });
+});
+const sv = servos[0];
+
+// wires for every servo: brown -> − rail, red -> + rail, orange -> row a next to its pin
+const intoPlug = (S, j) => ({ pos: () => S.holes[j].clone().add(new THREE.Vector3(0, 13, 0)), dir: new THREE.Vector3(0, -1, 0) });
+servos.forEach((S, k) => {
+  const first = k === 0;
+  const tA = first ? SC.w_servo.voice[0] + 1.5 : T0('all') + 1.2 + 1.5 * (k - 1);
+  const tB = first ? SC.w_servo2.voice[0] : tA + 0.5;
+  const tC = first ? SC.w_signal.voice[0] + 0.5 : tA + 1.0;
+  jumper('brown', intoPlug(S, 0), inHole('N', S.d.rail[0]), first ? tA : tA, first ? tB + 2 : tA + 1.4, { lift: 22 });
+  jumper('red', intoPlug(S, 1), inHole('P', S.d.rail[1]), first ? tA + .4 : tA + .3, first ? tB + 3 : tA + 1.6, { lift: 26 });
+  jumper('orange', intoPlug(S, 2), inHole('a', colOf(S.d.pin)), first ? tA + .8 : tA + .6, first ? tC + 2.5 : tA + 1.9, { lift: 34 });
+});
+
+// ------------------------------------------------------------------ power: supply, DC socket adapter, capacitor
+const adapter = new THREE.Group(); adapter.position.set(150, 30, 0); root.add(adapter);
+{ const body = box(14, 22, 11, M.black); body.position.set(0, 0, 5.5); adapter.add(body);
+  const sock = cyl(4.2, 8, M.black); sock.rotation.set(0, Math.PI / 2, 0); sock.position.set(10, 0, 5.5); adapter.add(sock);
+  const term = box(9, 14, 9, M.green); term.position.set(-10, 0, 4.5); adapter.add(term);
+  [-3.5, 3.5].forEach((y, k) => { const sc = cyl(2, 1.4, M.metal); sc.position.set(-10, y, 9.4); adapter.add(sc); adapter.userData['screw' + k] = sc; }); }
+const termHole = k => ({ pos: () => new THREE.Vector3(150 - 14.5, 30 + (k ? 3.5 : -3.5), 4), dir: new THREE.Vector3(1, 0, 0) });  // k=0: +, k=1: −
+const psu = new THREE.Group(); psu.position.set(250, 75, 0); root.add(psu);
+{ const b = box(55, 40, 30, M.black); b.position.set(0, 0, 15); psu.add(b);
+  const pr = box(14, 3, 14, M.metal); pr.position.set(-6, 0, 37); psu.add(pr); const pr2 = box(14, 3, 14, M.metal); pr2.position.set(6, 0, 37); }
+const psuPlug = new THREE.Group(); root.add(psuPlug);
+{ const h = cyl(4.5, 16, M.black); h.rotation.set(0, Math.PI / 2, 0); h.position.x = 8; psuPlug.add(h); }
+const psuCable = new THREE.Mesh(new THREE.BufferGeometry(), M.black); root.add(psuCable);
+const PLUG_IN = new THREE.Vector3(150 + 14 + 8, 30, 5.5), PLUG_OUT = new THREE.Vector3(150 + 60, 30, 5.5);
+jumper('red', termHole(0), inHole('P', 30), SC.w_adapter.voice[0] + 1.5, SC.w_rails.voice[0] + 2.5, { lift: 18 });
+jumper('black', termHole(1), inHole('N', 29), SC.w_adapter.voice[0] + 3.5, SC.w_rails.voice[0] + 4.0, { lift: 14 });
+// capacitor: long leg in + rail (col 27), short leg in − rail (col 26)
+const capG = new THREE.Group(); capG.rotation.order = 'ZYX'; root.add(capG);
+{ const body = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 12, 32), M.cap); body.position.set(0, 0, 0); capG.add(body);
+  const stripe = new THREE.Mesh(new THREE.CylinderGeometry(5.05, 5.05, 12, 32, 1, true, -0.5, 1.0), mat('#c8d0de')); capG.add(stripe);
+  const minus = box(.6, .6, 4, mat('#24324f')); minus.position.set(0, 5.2, 0); capG.add(minus);
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(4.6, 4.6, .4, 32), M.metal); top.position.y = 6.1; capG.add(top);
+  const legL = box(.6, 16, .6, M.metal); legL.position.set(1.27, -14, 0); capG.add(legL);      // long (+)
+  const legS = box(.6, 11, .6, M.metal); legS.position.set(-1.27, -11.5, 0); capG.add(legS);   // short (−), stripe side
+  capG.userData.legs = [legL, legS]; }
+
+// ------------------------------------------------------------------ USB cable to the ESP32
+const usbPlug = box(12, 8, 4.5, M.black); root.add(usbPlug);
+const usbCable = new THREE.Mesh(new THREE.BufferGeometry(), M.black); root.add(usbCable);
+
+// GND jumper: row a next to GND (column 2) -> − rail column 2
+jumper('black', inHole('a', colOf('GND')), inHole('N', 2), SC.w_gnd.voice[0] + 1.5, SC.w_gnd.voice[1], { lift: 10 });
+
+// sample jumpers for the "jumpers" scene
+const sample = new THREE.Group(); root.add(sample);
+function sampleWire(y, fa, fb, color) {
+  const g = new THREE.Group(); const a = fa ? femaleEnd() : maleEnd(), b = fb ? femaleEnd() : maleEnd();
+  a.rotation.y = Math.PI / 2; a.position.set(-40, y, 6); b.rotation.y = -Math.PI / 2; b.position.set(40, y, 6);
+  const t = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(-27, y, 6), new THREE.Vector3(0, y + 4, 6), new THREE.Vector3(27, y, 6)]), 20, .85, 8), mat(color));
+  g.add(a, b, t); sample.add(g);
+}
+sampleWire(0, false, false, '#e5b800'); sampleWire(-18, false, true, '#2fa4d8'); sampleWire(-36, true, true, '#9b59b6');
+sample.position.set(40, -150, 0);
+
+// ------------------------------------------------------------------ labels (HTML, projected)
+const labelsEl = document.getElementById('labels');
+function project(v) { const p = v.clone().applyMatrix4(root.matrixWorld).project(camera); return [(p.x + 1) / 2 * 1280, (1 - p.y) / 2 * 720, p.z]; }
+const local = (obj, x, y, z) => obj.localToWorld(new THREE.Vector3(x, y, z));   // object local -> three world
+function rootPt(x, y, z) { return new THREE.Vector3(x, y, z); }
+const LABELS = {
+  servo: [['Brown = GND (−)', () => sv.holes[0].clone().add(new THREE.Vector3(-14, 2, 2)), 'brn'], ['Red = +5 V', () => sv.holes[1].clone().add(new THREE.Vector3(0, 2, 12)), 'red'],
+          ['Orange = signal', () => sv.holes[2].clone().add(new THREE.Vector3(14, 2, 2)), 'org'], ['MG90S servo', () => rootPt(-20, 100, 34), '']],
+  esp32: [['USB-C', () => espPt(-26, 0, 6), ''], ['D13', () => espPinPt('D13', 14), 'org'], ['D14', () => espPinPt('D14', 4), 'org'], ['D25', () => espPinPt('D25', 4), 'org'],
+          ['D26', () => espPinPt('D26', 14), 'org'], ['D27', () => espPinPt('D27', 24), 'org'], ['GND', () => espPinPt('GND', 4), 'blue']],
+  esp32_buttons: [['EN = restart', () => espPt(-20, 8, 4), 'grn'], ['BOOT', () => espPt(-20, -8, 4), 'grn']],
+  breadboard: [['+ rail (red line)', () => rootPt(10, ROWY.P, 10), 'red'], ['− rail (blue line)', () => rootPt(-20, ROWY.N, 10), 'blue']],
+  breadboard_rows: [['5 holes connected', () => rootPt(colX(10), 14, 10), 'grn'], ['5 holes connected', () => rootPt(colX(20), -3, 10), 'grn'], ['middle groove', () => rootPt(colX(27), 0, 9), '']],
+  jumpers: [['male – male  ✔ we use these', () => rootPt(40, -150, 12), 'grn'], ['male – female', () => rootPt(40, -168, 12), ''], ['female – female', () => rootPt(40, -186, 12), '']],
+  power: [['+', () => rootPt(140, 26.5, 12), 'red'], ['−', () => rootPt(140, 33.5, 12), 'blue'], ['5 V 3 A supply', () => rootPt(250, 75, 40), ''], ['socket adapter', () => rootPt(160, 30, 14), '']],
+  capacitor: [['stripe = −', () => rootPt(-1.27 + capPos().x - 3, capPos().y, capPos().z + 10), 'blue'], ['long leg = +', () => rootPt(capPos().x + 5, capPos().y, capPos().z - 4), 'red']],
+  w_esp32: [['USB end at the edge', () => espPt(-26, 0, 6), ''], ['pins in row b', () => rootPt(colX(12), ROWY.b, 22), ''], ['pins in row i', () => rootPt(colX(12), ROWY.i, 22), '']],
+  w_adapter: [['+', () => rootPt(140, 26.5, 12), 'red'], ['−', () => rootPt(140, 33.5, 12), 'blue']],
+  w_rails: [['+ rail', () => hole('P', 30).add(new THREE.Vector3(0, 0, 6)), 'red'], ['− rail', () => hole('N', 29).add(new THREE.Vector3(-3, 0, 6)), 'blue']],
+  w_cap: [['long leg → +', () => hole('P', 27).add(new THREE.Vector3(3, 0, 18)), 'red'], ['stripe → −', () => hole('N', 26).add(new THREE.Vector3(-4, 0, 22)), 'blue']],
+  w_gnd: [['GND', () => espPinPt('GND'), 'blue'], ['− rail', () => hole('N', 2).add(new THREE.Vector3(0, 0, 6)), 'blue']],
+  w_servo: [['brown', () => sv.holes[0].clone().add(new THREE.Vector3(-3, 16, 6)), 'brn'], ['red', () => sv.holes[1].clone().add(new THREE.Vector3(0, 16, 10)), 'red'], ['orange', () => sv.holes[2].clone().add(new THREE.Vector3(3, 16, 6)), 'org']],
+  w_servo2: [['brown → −', () => hole('N', 12).add(new THREE.Vector3(0, 0, 8)), 'brn'], ['red → +', () => hole('P', 13).add(new THREE.Vector3(3, -2, 8)), 'red']],
+  w_signal: [['D13', () => espPinPt('D13'), 'org'], ['orange → row a, next to D13', () => hole('a', colOf('D13')).add(new THREE.Vector3(0, 2, 16)), 'org']],
+  w_check: [['VIN: leave empty!', () => hole('a', 1).add(new THREE.Vector3(-4, 2, 10)), 'red'], ['GND', () => espPinPt('GND'), 'blue'], ['D13', () => espPinPt('D13'), 'org']],
+  all: [['Thumb → D25', () => hole('a', colOf('D25')).add(new THREE.Vector3(0, 2, 14)), 'org'], ['Middle → D14', () => hole('a', colOf('D14')).add(new THREE.Vector3(0, 2, 22)), 'org'],
+        ['Ring → D27', () => hole('a', colOf('D27')).add(new THREE.Vector3(0, 2, 30)), 'org'], ['Little → D26', () => hole('a', colOf('D26')).add(new THREE.Vector3(0, 2, 38)), 'org'],
+        ['Index → D13', () => hole('a', colOf('D13')).add(new THREE.Vector3(0, 2, 46)), 'org']],
+};
+function espPt(x, y, z) { return esp.position.clone().add(new THREE.Vector3(x, y, z + ESP_PCB_Z)); }
+function espPinPt(name, dz) { return esp.position.clone().add(espLocalPin(name)).add(new THREE.Vector3(0, 0, 4 + (dz || 0))); }
+function capPos() { return capG.position; }
+
+// ------------------------------------------------------------------ cameras (CAD world, z up)
+const CAMS = {
+  intro: [[260, -330, 300], [60, 0, 0]], servo: [[60, -60, 140], [-20, 70, 10]], esp32: [[-30, -150, 120], [-30, -78, 8]], esp32_buttons: [[-90, -120, 80], [-40, -78, 8]],
+  breadboard: [[0, -90, 120], [0, 5, 5]], breadboard_rows: [[0, -80, 110], [0, 0, 5]], jumpers: [[40, -230, 90], [40, -165, 4]],
+  power: [[200, -110, 130], [195, 45, 12]], capacitor: [[60, -40, 80], [40, 40, 30]],
+  safety: [[260, -330, 300], [60, 0, 0]], w_esp32: [[-20, -110, 110], [-15, 0, 8]], w_adapter: [[120, -40, 70], [140, 30, 6]], w_rails: [[80, -70, 110], [80, 20, 6]],
+  w_cap: [[40, -50, 80], [colX(26), 20, 8]], w_gnd: [[-30, -70, 90], [-35, 15, 8]], w_servo: [[10, 20, 70], [-14, 66, 3]], w_servo2: [[0, -50, 120], [0, 40, 6]],
+  w_signal: [[-20, -60, 110], [-25, 25, 6]], w_check: [[60, -170, 190], [20, 30, 6]], power_on: [[120, -150, 170], [60, 30, 10]],
+  phone: [[-150, 10, 120], [-40, 80, 18]], phone2: [[-150, 10, 120], [-40, 80, 18]], all: [[0, -190, 260], [-10, 50, 10]], spools: [[-215, 175, 90], [-140, 92, 24]],
+  outro: [[260, -330, 300], [0, 30, 0]], trouble: [[260, -330, 300], [60, 0, 0]],
+};
+let lastCam = CAMS.intro;
+function camFor(t) {
+  const s = sceneAt(t); const c = CAMS[s.id]; const prevIdx = Math.max(0, s.i - 1);
+  let prev = null; for (let i = prevIdx; i >= 0; i--) { if (CAMS[TL.scenes[i].id]) { prev = CAMS[TL.scenes[i].id]; break; } }
+  const target = c || prev || lastCam; const from = (s.i > 0 && prev) ? prev : target;
+  const k = ease((t - s.t0) / 1.6);
+  const lerp = (a, b) => a.map((v, j) => v + (b[j] - v) * k);
+  const pos = lerp(from[0], target[0]), tgt = lerp(from[1], target[1]);
+  const drift = Math.sin(t * 0.25) * 6;
+  camera.position.set(pos[0] + drift, pos[2], -(pos[1])); camera.lookAt(new THREE.Vector3(tgt[0], tgt[2], -tgt[1])); camera.updateMatrixWorld();
+}
+
+// ------------------------------------------------------------------ mock windows
+const URL_ESP = 'https://espressif.github.io/arduino-esp32/package_esp32_index.json';
+const ide = (crumb, body, title) => `<div class="win"><div class="tb"><span class="dots">● ● ●</span>${title || 'Arduino IDE 2'}</div>
+  <div class="menu">${['File', 'Edit', 'Sketch', 'Tools', 'Help'].map(m => crumb && crumb.startsWith(m) ? `<b>${m}</b>` : m).join('')}</div>
+  <div class="body">${crumb ? `<div class="crumb">${crumb.split(' > ').map(x => `<span>${x}</span>`).join(' › ')}</div>` : ''}${body}</div></div>`;
+const CODE = `<span class="c">// firmware/finger_control/finger_control.ino</span>
+<span class="k">FingerConfig</span> FINGERS[] = {
+  {"Thumb",  25, 10, 115},
+  {"Index",  13, 10, 175},
+  {"Middle", 14, 10, 175},
+  {"Ring",   27, 10, 175},
+  {"Little", 26, 10, 175},
+};`;
+const MOCKS = {
+  sw_ide: () => `<div class="win"><div class="tb"><span class="dots">● ● ●</span>Web browser</div><div class="body">
+      <div class="field" style="font-size:22px">arduino.cc/en/software</div>
+      <div class="row" style="margin-top:18px"><div style="font-size:28px">⬇</div><div><b>Arduino IDE 2</b><br>Choose Windows, macOS or Linux and install it like any other program.</div></div></div></div>`,
+  sw_driver: () => `<div class="win"><div class="tb"><span class="dots">● ● ●</span>Web browser</div><div class="body">
+      <div class="field" style="font-size:20px">search: CH340 driver &nbsp;→ &nbsp;wch-ic.com</div>
+      <div class="row"><b>Windows:</b>&nbsp;CH341SER.EXE → Install</div><div class="row"><b>Mac:</b>&nbsp;CH34x macOS driver → install, then allow it in System Settings</div>
+      <div class="row"><b>Linux:</b>&nbsp;nothing to install</div></div></div>`,
+  sw_url: () => ide('File > Preferences', `<div style="margin-bottom:6px">Additional boards manager URLs</div><div class="field">${URL_ESP}</div><div class="btn">OK</div>`),
+  sw_core: () => ide('Tools > Board > Boards Manager', `<div class="field" style="width:300px">esp32</div><div class="row"><div style="flex:1"><b>esp32</b> by Espressif Systems</div><div class="btn" style="margin:0">INSTALL</div></div>`),
+  sw_lib: () => ide('Tools > Manage Libraries', `<div class="field" style="width:300px">ESP32Servo</div><div class="row"><div style="flex:1"><b>ESP32Servo</b> by Kevin Harrington, John K. Bennett</div><div class="btn" style="margin:0">INSTALL</div></div>`),
+  sw_open: () => ide('File > Open', `<div class="row" style="margin-top:0">github.com/antoraja/robo-to-roll → <b>&nbsp;Code&nbsp;</b> → <b>&nbsp;Download ZIP</b></div>
+      <div class="row">robo-to-roll-main / firmware / finger_control / <b>&nbsp;finger_control.ino</b></div><div class="code" style="margin-top:10px">${CODE}</div>`),
+  sw_board: () => ide('Tools > Board > esp32 > ESP32 Dev Module', `<div class="row" style="margin-top:0"><b>Board:</b>&nbsp;ESP32 Dev Module</div>
+      <div class="row"><b>Port:</b>&nbsp;COM5 (Windows) &nbsp;·&nbsp; /dev/cu.wchusbserial… (Mac) &nbsp;·&nbsp; /dev/ttyUSB0 (Linux)</div>
+      <div style="margin-top:10px;color:#5b6873">No new port? Install the CH340 driver, or try another USB-C cable (some only charge).</div>`),
+  sw_upload: () => ide('Sketch > Upload', `<div class="row" style="margin-top:0"><div style="font-size:30px;color:#00878f">➜</div><b>Upload</b></div>
+      <div class="serial">Connecting.....  (stuck here? hold BOOT on the board)\nWriting at 0x00010000... (100 %)\n<b>Done uploading.</b></div>`),
+  sw_serial: () => ide('Tools > Serial Monitor', `<div class="row" style="margin-top:0"><b>115200 baud</b></div><div class="serial">RoboHand starting
+WiFi network: RoboHand   open http://192.168.4.1
+Commands:
+  f &lt;finger&gt; &lt;0-100&gt;   set finger % closed
+  a &lt;finger&gt; &lt;0-180&gt;   raw servo angle (calibration)</div>`),
+  calib: () => ide('Tools > Serial Monitor', `<div class="serial">&gt; a 1 90
+OK -> a 1 90
+&gt; a 1 20
+OK -> a 1 20
+&gt; a 1 165
+OK -> a 1 165</div>`),
+  calib_numbers: () => `<div class="card" style="position:relative;left:auto;top:auto;transform:none;margin:60px auto;width:620px"><h2>Finger numbers</h2>
+      <div style="font-size:30px;line-height:1.7"><b>0</b> thumb &nbsp; <b>1</b> index &nbsp; <b>2</b> middle<br><b>3</b> ring &nbsp; <b>4</b> little</div>
+      <div style="margin-top:12px;font-size:20px;color:#5b6873">a &lt;finger&gt; &lt;angle&gt; &nbsp;→&nbsp; e.g. <b>a 0 60</b> moves the thumb servo to 60°</div></div>`,
+  calib2: () => ide('', `<div class="code">${CODE.replace('{"Index",  13, 10, 175}', '<span class="hl">{"Index",  13, 20, 160}</span>')}</div>
+      <div style="margin-top:10px"><b>20</b> = finger just straight &nbsp;·&nbsp; <b>160</b> = fully bent, a few degrees before it presses hard &nbsp;→ Upload again</div>`),
+};
+const CARDS = {
+  safety: `<div class="card warn"><h2>⚠ Before wiring</h2><ul><li>Unplug the <b>power supply</b> and the <b>USB cable</b> before changing any wire.</li>
+     <li>Servos get power <b>only</b> from the 5 V 3 A supply, never from the ESP32's pins (VIN, 3V3).</li><li>Capacitor: stripe (−) to the blue rail.</li></ul></div>`,
+  trouble: `<div class="card"><h2>If something's off</h2><ul><li><b>ESP32 restarts when servos move</b> → power supply plugged in? capacitor in? ESP32 GND to − rail?</li>
+     <li><b>A servo doesn't move</b> → orange wire in row a next to the right pin? brown/red in the rails?</li><li><b>Phone can't find RoboHand</b> → press EN, move closer, USB cable plugged in?</li>
+     <li><b>Upload fails</b> → hold BOOT; check Tools › Port; try another cable</li></ul></div>`,
+};
+
+// ------------------------------------------------------------------ per-frame state
+const curLabels = [];
+function setLabels(list) {
+  labelsEl.innerHTML = ''; (list || []).forEach(([txt, fn, cls]) => { const d = document.createElement('div'); d.className = 'lab ' + (cls || ''); d.textContent = txt; labelsEl.appendChild(d);
+    const [x, y, z] = project(fn()); d.style.left = x + 'px'; d.style.top = (y - 6) + 'px'; d.style.display = z < 1 ? 'block' : 'none'; });
+}
+const el = id => document.getElementById(id);
+window.renderAt = function (t) {
+  const s = sceneAt(t);
+  // ESP32: on the table until step 1, then pushed into the breadboard
+  const e = vt('w_esp32', t, 0.15, 0.7);
+  const lifted = ESP_TABLE.clone().lerp(new THREE.Vector3(ESP_IN.x, ESP_IN.y, 22), Math.min(1, e * 1.6));
+  esp.position.copy(e < 0.62 ? lifted : new THREE.Vector3(ESP_IN.x, ESP_IN.y, 22 * (1 - ramp(e, 0.62, 1))));
+  // highlight pulses
+  const pulse = 0.35 + 0.35 * Math.sin(t * 5);
+  HL.railP.material.opacity = (s.id === 'breadboard' || s.id === 'w_rails') ? pulse : 0;
+  HL.railN.material.opacity = (s.id === 'breadboard' || s.id === 'w_rails' || s.id === 'w_gnd') ? pulse : 0;
+  HL.col10.material.opacity = HL.col20.material.opacity = s.id === 'breadboard_rows' ? pulse : 0;
+  // buttons
+  esp.userData.boot.material = (s.id === 'esp32_buttons' || s.id === 'sw_upload') && Math.sin(t * 5) > 0 ? M.orange : M.white;
+  esp.userData.en.material = (s.id === 'esp32_buttons' || s.id === 'trouble') && Math.sin(t * 5) > 0 ? M.green : M.white;
+  // servos appear
+  servos.forEach(S => { const v = t >= S.show; S.s.visible = S.plug.visible = S.cab.visible = v; });
+  // capacitor: shown in the air during "capacitor", inserted during step 4
+  const capIn = vt('w_cap', t, 0.2, 0.75);
+  const capAir = new THREE.Vector3(40, 40, 40);
+  const capDst = new THREE.Vector3(colX(27), (ROWY.P + ROWY.N) / 2, BB_TOP + 15.5);
+  capG.visible = t >= T0('capacitor');
+  capG.position.copy(capAir.clone().lerp(capDst.clone().add(new THREE.Vector3(0, 0, 20 * (1 - capIn))), t >= T0('w_cap') ? capIn > 0 ? 1 : 0 : 0));
+  if (t >= T0('w_cap')) capG.position.copy(capDst.clone().add(new THREE.Vector3(0, 0, 25 * (1 - capIn))));
+  capG.rotation.set(Math.PI / 2, 0, t >= T0('w_cap') ? Math.PI / 2 : t * 0.6);
+  if (t >= T0('w_cap')) capG.rotation.set(Math.PI / 2, 0, -Math.PI / 2);
+  // adapter screws turn while tightening
+  const sc = vt('w_adapter', t, 0.3, 0.9); adapter.userData.screw0.rotation.y = sc * 12; adapter.userData.screw1.rotation.y = sc * 12;
+  // power supply plug + USB cable at power-on
+  const pOn = vt('power_on', t, 0.05, 0.5), uOn = vt('power_on', t, 0.45, 0.8);
+  const pp = PLUG_OUT.clone().lerp(PLUG_IN, t >= T0('power_on') ? pOn : 0); psuPlug.position.copy(pp);
+  psuCable.geometry.dispose(); psuCable.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([pp.clone().add(new THREE.Vector3(16, 0, 0)), pp.clone().add(new THREE.Vector3(60, 10, 8)), new THREE.Vector3(232, 60, 10), new THREE.Vector3(250, 75, 20)]), 30, 1.6, 8);
+  const espUSB = esp.position.clone().add(new THREE.Vector3(-23.5 - 10, 0, ESP_PCB_Z + 3.2));
+  const usbP = espUSB.clone().add(new THREE.Vector3(-60 * (1 - (t >= T0('power_on') ? uOn : 0)), -20 * (1 - (t >= T0('power_on') ? uOn : 0)), 0));
+  usbPlug.position.copy(usbP); usbPlug.visible = usbCable.visible = t >= T0('power_on') || (t >= T0('sw_board') && t < T1('sw_serial'));
+  usbCable.geometry.dispose(); usbCable.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3([usbP.clone().add(new THREE.Vector3(-6, 0, 0)), usbP.clone().add(new THREE.Vector3(-50, -10, -2)), new THREE.Vector3(-200, -140, 2)]), 30, 1.6, 8);
+  const powered = t >= SC.power_on.voice[0] + (SC.power_on.voice[1] - SC.power_on.voice[0]) * 0.8;
+  M.led.color.set(powered ? '#ff2a2a' : '#330000');
+  // servo horns: start position at power-on, follow the phone slider, sweep in the outro
+  servos.forEach((S, k) => {
+    let a = 0;
+    if (powered) a = 0.25;
+    if (s.id === 'phone2') a = 0.25 + 1.6 * (0.5 - 0.5 * Math.cos((t - s.t0) * 1.6));
+    if (s.id === 'outro' || s.id === 'calib' || s.id === 'calib2') a = 0.25 + 1.2 * (0.5 - 0.5 * Math.cos((t - s.t0) * 1.4 + k * 0.7));
+    S.s.userData.horn.rotation.z = a;
+    S.s.userData.spool.visible = t >= T0('calib');
+  });
+  const demo = servos[4].s.userData.spool;          // spool demo on the outermost (little-finger) servo
+  if (s.id === 'spools') { demo.visible = t >= SC.spools.voice[0] + 1; demo.position.z = 1 + 30 * (1 - vt('spools', t, 0.45, 0.85)); }
+  else demo.position.z = 1;
+  sample.visible = s.id === 'jumpers';
+  updateWires(t);
+  camFor(t);
+  root.updateMatrixWorld(true);
+  renderer.render(scene, camera);
+  // ---- overlays
+  const mock = MOCKS[s.id];
+  el('mock').innerHTML = mock ? mock() : ''; el('dim').style.opacity = mock || CARDS[s.id] ? 1 : 0;
+  el('cardwrap').innerHTML = CARDS[s.id] || '';
+  setLabels(mock || CARDS[s.id] ? [] : LABELS[s.id]);
+  // phone
+  if (s.id === 'phone' || s.id === 'phone2') {
+    const v = s.id === 'phone2' ? Math.round(100 * (0.5 - 0.5 * Math.cos((t - s.t0) * 1.6))) : 0;
+    el('cardwrap').innerHTML = `<div class="ov phone"><div class="wifi">WiFi: <b>RoboHand</b> ✓<br><span style="color:#9aa7b0">password robohand123</span></div>
+      <div style="color:#9aa7b0;font-size:13px">192.168.4.1</div><div style="font-size:18px;font-weight:bold;margin:6px 0 10px">RoboHand</div>
+      ${['Thumb', 'Index', 'Middle', 'Ring', 'Little'].map(n => { const val = n === 'Index' ? v : 0; return `<div>${n} ${val}%</div><div class="sl"><i style="width:${val}%"></i><div class="knob" style="left:${val}%"></div></div>`; }).join('')}</div>`;
+  }
+  // title
+  const ti = el('title');
+  if (s.id === 'intro') { ti.style.opacity = 1 - ramp(t, T1('intro') - 1, T1('intro'));
+    ti.innerHTML = '<div class="tag">RoboHand · part 2</div><h1>Wiring &amp; programming</h1><p>For your exact parts: MG90S servos, ESP32 (USB-C, CH340), 400-hole breadboard, 5 V 3 A supply.</p><p>No electronics experience needed.</p>'; }
+  else if (s.id === 'outro') { ti.style.opacity = ramp(t, s.t0 + 0.5, s.t0 + 1.5); ti.innerHTML = '<div class="tag">Done</div><h1>Your RoboHand is alive</h1><p>Files and guides: github.com/antoraja/robo-to-roll</p><p>docs/04 · docs/05 · VALIDATION.md</p>'; }
+  else ti.style.opacity = 0;
+  let part = ''; for (const x of TL.scenes) { if (x.t0 <= t && x.part) part = x.part; }
+  el('part').textContent = s.id === 'intro' ? '' : part;
+  el('cap').textContent = s.text; el('cap').style.opacity = 1;
+  el('bar').style.width = (1280 * t / TL.total) + 'px';
+  return true;
+};
+window.renderAt(0);
+window.READY = true;
+})();
+</script>
+</body></html>

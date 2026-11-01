@@ -20,39 +20,33 @@ know it's the electronics and not the mechanics.
      - It says **CH340** → install the "CH340 driver" from WCH.
      - Still nothing → try another cable (it's probably charge-only).
 
-## B. Wire one servo (power OFF, meaning USB unplugged)
+## B. Wire it up (power OFF: USB and power supply unplugged)
 
-For the **first test with one servo, no finger load**, the servo can take power from the
-ESP32's VIN/5V pin:
-
-```
-      ESP32 DevKit                         MG90S servo plug
-   +--------------+
-   |          VIN |----- red jumper ------- RED    (middle wire)
-   |          GND |----- black jumper ----- BROWN
-   |       GPIO13 |----- yellow jumper ---- ORANGE
-   +-----[USB]----+
-           |
-        laptop
-```
-
-- Use **female–male** jumpers: the female socket goes on the ESP32 pin, the male pin goes into the servo plug.
-- The pin labels are printed on the board. **VIN** may be labelled `5V` or `VIN`. GPIO13 is
-  labelled `D13` or `13` or `G13`.
-- Double-check: **never** use the `3V3` pin for the servo.
-
-### Better wiring (when the finger is attached, and always for 2+ servos)
+Your ESP32 (30 pins) plugs **straight into the 400-hole breadboard**, so every connection is a
+plain **male-male** jumper. The wiring video (`video/electronics/robohand_wiring_programming.mp4`)
+shows each step in 3D.
 
 ```
-  phone charger -> [USB-C screw breakout]  + ----> breadboard + rail ----> servo RED
-                                           - ----> breadboard - rail ----> servo BROWN
-                                                        |
-                                    ESP32 GND ----------+          (shared ground!)
-                                    ESP32 GPIO13 -----------------> servo ORANGE
-  (optional) 1000 uF capacitor across the + and - rails: long leg (+) to +, striped side (-) to -
+ breadboard, top edge:     ── − rail (blue line) ──────────────────────────────
+                           ── + rail (red line)  ──────────────────────────────
+ row a (free holes):        VIN  GND  D13  D12  D14  D27  D26  D25 ...
+ row b (ESP32 pins):       [ESP32 pushed in across the middle groove, USB end at column 1]
+ row i (ESP32 pins):       [other pin row]
 ```
 
-The ESP32 itself stays powered by the laptop's USB (or a second USB charger).
+1. **ESP32:** push it into the breadboard across the middle groove, USB socket at the edge
+   (column 1). Its two pin rows sit in rows **b** and **i**, so row **a** has one free hole next
+   to each pin.
+2. **Power adapter:** red jumper in the adapter's **+** screw terminal, black jumper in **−**.
+   Tighten the screws. Red jumper into the **+ rail (red line)**, black into the **− rail (blue line)**.
+3. **Capacitor 1000 µF:** long leg into the + rail, striped side (short leg) into the − rail.
+4. **Shared ground:** black jumper from the free hole next to **GND** (row a) into the − rail.
+5. **Servo (index):** push 3 male-male jumpers into its plug (brown, red, orange) and tape the joint.
+   Brown into the − rail, red into the + rail, **orange into the free hole next to D13** (row a).
+6. **Leave the hole next to VIN empty.** Servos get power only from the 5 V 3 A supply.
+
+The pin labels are printed on the board (`D13`, `GND`, ...). Always read them: some boards use a
+different order.
 
 ## C. Upload the code
 
@@ -106,7 +100,7 @@ Now 0 % on the slider means fully open and 100 % means fully closed.
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Servo doesn't move at all | Signal on the wrong pin / no common ground | Check orange is on GPIO13, and GND is shared |
+| Servo doesn't move at all | Signal in the wrong hole / no common ground | Orange must be in row a, next to D13. GND jumper to the − rail |
 | Servo jitters / twitches | Weak power or loose jumper | Use the separate 5 V supply + capacitor, re-seat the jumpers |
 | ESP32 reboots when the servo moves (Serial Monitor shows "RoboHand starting" again) | Servo drawing too much from USB | Switch to the separate 5 V supply |
 | Phone can't find "RoboHand" | Code not running / out of range | Check the Serial Monitor output, move closer, press EN (reset) |

@@ -38,7 +38,7 @@ It checks, in order: the printable finger parts and joint range → the full han
 
 | Problem | Fix |
 |---|---|
-| **Servo leads are short.** The ordered MG90S have 20 cm leads, and the top (middle-finger) servo needs ~20.5 cm to reach the breadboard; the ESP32 sits ~11 cm from the breadboard | Use **20 cm** male-male jumpers between each servo plug and the breadboard (tape the joints), and 20 cm male-female jumpers from the ESP32. 10 cm jumpers are too short |
+| **Servo leads are short.** The ordered MG90S have 20 cm leads, and the top (middle-finger) servo needs ~20.5 cm to reach the breadboard; jumpers must bridge the gap | Use **20 cm** male-male jumpers between each servo plug and the breadboard (tape the joints). The ESP32 plugs straight into the breadboard, so no male-female jumpers are needed |
 | **Thumb over-pulled.** The thumb has 2 joints, so it needs only ~110° of servo. The old default would have pushed it against its stop | Firmware default for the thumb is now 10° → 115° |
 | **Power spike at switch-on.** All 5 servos jumping at once can pull > 3 A and reset the ESP32 | Firmware now starts the servos one by one (250 ms apart) |
 | **Servos straining at the end stop** if calibrated too far | Calibration note: set `closedAngle` a few degrees **before** the finger stops |
@@ -63,7 +63,7 @@ prove. They're also why the fit test comes first.
 - [ ] Servo cables labelled (thumb / index / middle / ring / little).
 - [ ] Servo plugs joined to male-male jumpers and taped (middle and index leads are the tightest).
 - [ ] 1000 µF capacitor across the breadboard rails, **long leg to +**.
-- [ ] ESP32 GND connected to the breadboard − rail (shared ground).
+- [ ] ESP32 GND connected to the breadboard − rail (shared ground). Hole next to VIN left empty.
 - [ ] Servos powered from the 5 V 3 A supply, **never** from the ESP32's VIN pin.
 - [ ] Each finger calibrated (`a <finger> <angle>`); `closedAngle` a few degrees before the end stop.
 - [ ] Stand weighed down (coins) or clamped before testing fast gestures.

@@ -103,12 +103,15 @@ Label each servo cable with tape as you mount it.
 
 ## Wiring five servos
 
+Same method as guide 04 (ESP32 pushed into the breadboard, male-male jumpers only):
+
 ```
-5V 3A supply (+) ── breadboard + rail ── all 5 servo RED wires
-5V 3A supply (−) ── breadboard − rail ── all 5 servo BROWN wires ── ESP32 GND   (shared ground!)
-ESP32 pins 25, 13, 14, 27, 26 ─────────── servo ORANGE wires (thumb, index, middle, ring, little)
-1000 µF capacitor across the + and − rails
-ESP32 powered from your laptop USB (or a second USB charger)
+5V 3A supply (+) ── + rail (red line)  ── all 5 servo RED wires
+5V 3A supply (−) ── − rail (blue line) ── all 5 servo BROWN wires ── jumper from the hole next to ESP32 GND
+servo ORANGE wires ── row a, in the free hole next to:  D25 thumb · D13 index · D14 middle · D27 ring · D26 little
+1000 µF capacitor across the + and − rails (stripe on −)
+hole next to VIN: leave EMPTY
+ESP32 powered from your laptop USB (or a USB charger)
 ```
 
 **Never** power 5 servos from the ESP32's VIN pin.

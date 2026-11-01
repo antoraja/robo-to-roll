@@ -7,3 +7,7 @@ video/scene.json
 video/scene.js
 video/*.log
 video/still_*.png
+video/electronics/frames/
+video/electronics/_tts/
+video/electronics/*.log
+video/electronics/still_*.png
