@@ -61,6 +61,17 @@ SERVO_SHAFT_FROM_END = 5.9         # output shaft centre measured from the near 
 SERVO_CLEAR = 0.4                  # clearance added to the body cut-out
 
 SEG = 64  # circle resolution
+
+# Finger "skin": every bone is trimmed to a smooth, tapered oval shape (like printed
+# prosthetic / InMoov-style fingers) instead of a box. The back keeps a flat strip so the
+# bones still print flat on their back with no supports.
+SKIN_AX = 10.0                 # length of the rounded knuckle around each pin
+SKIN_AY = W / 2 + 0.6          # oval half-width  (corners get rounded off)
+SKIN_AZ = H / 2 + 1.6          # oval half-height (back stays flat where the oval exceeds H/2)
+TAPER = [1.00, 0.97, 0.94, 0.91]   # oval scale at: knuckle, joint 1, joint 2, fingertip
+TIP_LEN = 6.0                  # fingertip dome length
+TIP_AY, TIP_AZ, TIP_Z = 6.4, 7.5, 0.5  # fingertip dome half-width / half-height / centre (top = flat back)
+SKIN_SEG = 48
 # ----------------------------------------------------------------------------
 
 CS = m.CrossSection
@@ -176,7 +187,26 @@ def relief(x_face, direction):
     return box(min(xa, xb), max(xa, xb), -RELIEF_W / 2, RELIEF_W / 2, -H / 2 - 1, FLEX_Z)
 
 
-def phalanx(length, distal=False):
+def _oval(x, scale, ay=SKIN_AY, az=SKIN_AZ, ax=SKIN_AX, z=0.0):
+    return m.Manifold.sphere(1.0, SKIN_SEG).scale((ax, ay * scale, az * scale)).translate((x, 0.0, z))
+
+
+def skin(x0, x1, s0, s1, tip=False):
+    """Smooth tapered envelope from the pin at x0 to the pin (or fingertip) at x1."""
+    a = _oval(x0, s0)
+    if tip:
+        b = _oval(x1 - TIP_LEN, 1.0, ay=TIP_AY, az=TIP_AZ, ax=TIP_LEN, z=TIP_Z)
+    else:
+        b = _oval(x1, s1)
+    return m.Manifold.batch_hull([a, b])
+
+
+BONE_TAPER = {"prox": (TAPER[0], TAPER[1]), "mid": (TAPER[1], TAPER[2]), "dist": (TAPER[2], TAPER[3])}
+
+
+def phalanx(length, distal=False, which=None):
+    which = which or ("dist" if distal else "prox")
+    s0, s1 = BONE_TAPER[which]
     if distal:
         prof = body_profile(C, length, chamfer_end=False)
         part = slab(prof, -W / 2, W / 2) + joint_proximal_end(0)
@@ -186,6 +216,7 @@ def phalanx(length, distal=False):
         part -= channels(-10, length + 5)
         part -= lock_hole(length / 2)
         part -= relief(C, +1)
+        part ^= skin(0.0, length, s0, s1, tip=True)
         # small recess for the flexor knot
         part -= box(length - 2.0, length + 1, -2.0, 2.0, FLEX_Z - 1.5, FLEX_Z + 1.5)
         return part
@@ -194,7 +225,7 @@ def phalanx(length, distal=False):
     part -= channels(-10, length + 10)
     part -= lock_hole(length / 2)
     part -= relief(C, +1) + relief(length - C, -1)
-    return part
+    return part ^ skin(0.0, length, s0, s1)
 
 
 def spool():
@@ -230,6 +261,7 @@ def base():
     col -= channels(-C - col_len - 5, 1.0)
     col -= lock_hole(-15.0)                 # elastic lock pin in the base, 15 mm below the knuckle pin
     col -= relief(-C, -1)
+    col ^= skin(-C - col_len - 8, 0.0, 1.03, TAPER[0]) + box(-C - col_len - 1, -C - col_len + 3, -W, W, -H, H)
     col_w = local_to_world(col)
 
     z_ceiling = -C - col_len            # bottom face of the column (world Z)
@@ -299,6 +331,18 @@ def joint_range():
     return flex, hyper
 
 
+def joint_check_3d():
+    """Rotate each real (skinned) bone about its pin and measure any overlap with the previous one."""
+    pairs = [(phalanx(L_PROX), phalanx(L_MID, which="mid"), L_PROX),
+             (phalanx(L_MID, which="mid"), phalanx(L_DIST, distal=True), L_MID)]
+    worst = 0.0
+    for a, b, la in pairs:
+        for deg in (-3, 0, 20, 40, 60, 80, 85):
+            rb = b.translate((0, 0, -ZP)).rotate((0.0, float(deg), 0.0)).translate((la, 0, ZP))
+            worst = max(worst, (a ^ rb).volume())
+    return f"max overlap {worst:.2f} mm3 over -3..85 deg"
+
+
 def save(part, name, flip_top_down=False):
     if flip_top_down:
         part = part.rotate((180.0, 0.0, 0.0))
@@ -320,8 +364,9 @@ def main():
     print("Writing STLs:")
     # phalanges print lying on their BACK (top face on the bed) - no supports needed
     save(phalanx(L_PROX), "finger_proximal.stl", flip_top_down=True)
-    save(phalanx(L_MID), "finger_middle.stl", flip_top_down=True)
+    save(phalanx(L_MID, which="mid"), "finger_middle.stl", flip_top_down=True)
     save(phalanx(L_DIST, distal=True), "finger_distal.stl", flip_top_down=True)
+    print("3-D joint check (real parts, rotated):", joint_check_3d())
     save(spool(), "servo_spool.stl")
     b, info = base()
     save(b, "finger_base.stl")

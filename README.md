@@ -39,7 +39,10 @@ robot-hand/
 
 ## Status
 
-- **Printable parts:** generated and checked in software. Every part is a closed,
+- **Shape:** finger-like oval, tapered bones with a domed fingertip, following the style of
+  open-source printed hands. They still print flat-backed with no supports.
+- **Printable parts:** generated and checked in software. A 3-D test rotates each real
+  bone through its whole range to confirm nothing collides. Every part is a closed,
   printable solid, each joint curls about 85° with a 3° stop against bending backwards,
   and the finger, spool and servo don't collide with the base. **They have not been
   test-printed yet**, so expect small fit tweaks after your first print. Print tolerances

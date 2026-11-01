@@ -52,7 +52,7 @@ BASE_LOCK = 0.015                      # lock pin in the base column, 15 mm belo
 EXIT = C + 0.8 * mm                    # string leaves each bone on the 45-degree chamfer, ~0.8 mm past the face
 
 PLA_DENSITY = 1240 * 0.6
-VOLUMES_CM3 = [9.9, 6.2, 5.4]
+VOLUMES_CM3 = [8.8, 5.3, 3.4]           # printed volumes from generate_parts.py (finger-shaped bones)
 
 SERVO_STALL_NM = 0.216                 # MG90S, 4.8 V
 SPOOL_R = gp.SPOOL_R * mm

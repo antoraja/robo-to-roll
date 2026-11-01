@@ -23,7 +23,30 @@ there are no overhangs, and the pin holes come out round.
 | Walls / perimeters | **4** | Strength around the pin holes |
 | Infill | 30 % | |
 | Supports | **Off** for the finger bones and spool. Base: off; turn on *"supports touching build plate only"* only if the 37 mm roof bridge sags on your printer | |
-| Brim | Optional for the base | |
+| Brim | **Yes for `finger_distal`** (it stands on a small flat strip), optional for the base | |
+
+## How the finger is shaped (and why)
+
+The bones follow the usual approach of open-source printed hands such as InMoov,
+Flexy-Hand and e-NABLE:
+
+- **Oval, tapered segments.** Each bone is a smooth oval that gets slightly thinner toward the tip,
+  instead of a box. The fingertip is a rounded dome.
+- **A flat strip along the back.** That's the side that lies on the print bed. Printed hands keep
+  one flat face so they print **without supports**, which saves filament and cleanup time.
+- **Mechanics hidden inside.** The pin joints, string and elastic channels are exactly the ones
+  checked in the simulation. Only the outer shape changed.
+- **Cost:** no extra parts. The rounded bones use **~13 % less plastic** than the box version.
+
+### Cheap ways to make it look and grip more like a hand (optional, later)
+
+| Trick | Cost | Effect |
+|---|---|---|
+| A blob of **hot glue** on the fingertip pad, pressed flat | ~$0 | Rubbery grip pad |
+| A strip of old **bicycle inner tube** glued on the palm side | ~$0 | Grip + skin look |
+| Sand with 240-grit, then spray paint (skin tone or matte grey) | $3–5 | Hides layer lines |
+| Pull the finger of a **nitrile glove** over it (InMoov-style "skin") | ~$0.10 | Looks like a real hand, grips well. Check the servo still closes it fully |
+| Print a fingertip cap in **TPU** (flexible filament) | only if you own TPU | Best grip |
 
 ## Before assembly: test the fit
 
