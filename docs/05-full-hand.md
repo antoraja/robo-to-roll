@@ -41,7 +41,7 @@ The full hand stands upright on its own printed stand, so you can test it on a t
 Use the same settings as guide 03 (4 walls, 0.2 mm layers). Total is about **330 g of PLA**.
 The fit-test index bones **are** the hand's index finger, so you can reuse them.
 
-## Extra parts to buy (beyond the one-finger kit)
+## Parts to buy (all in guide 02)
 
 | Item | ≈ Price |
 |---|---|
