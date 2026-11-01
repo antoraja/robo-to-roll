@@ -35,11 +35,35 @@ struct FingerConfig {
   int closedAngle;  // servo angle when the finger is fully bent (calibrate!)
 };
 
-// Add more fingers here later. Good pins: 13, 14, 27, 26, 25, 33, 32.
-// (Avoid 0, 2, 12, 15 - they affect booting. 34-39 are input-only.)
+// Good pins: 13, 14, 27, 26, 25, 33, 32. (Avoid 0, 2, 12, 15 - they affect booting. 34-39 are input-only.)
+// The finger servo needs ~165 deg to close fully (13 mm spool) - see sim/README.md.
+//
+// STEP 1 - one finger test rig:
 FingerConfig FINGERS[] = {
-  {"Index", 13, 20, 160},
+  {"Index", 13, 10, 175},
 };
+// STEP 5 - full hand on the stand: delete the block above and use this one instead.
+// Keep this ORDER (thumb, index, middle, ring, little) so the gesture buttons work.
+// FingerConfig FINGERS[] = {
+//   {"Thumb",  25, 10, 150},   // thumb has 2 joints: needs less travel, stop before it hits the palm
+//   {"Index",  13, 10, 175},
+//   {"Middle", 14, 10, 175},
+//   {"Ring",   27, 10, 175},
+//   {"Little", 26, 10, 175},
+// };
+
+// Gestures: % closed for thumb, index, middle, ring, little (shown when 5 fingers are configured)
+struct Gesture { const char* name; int pct[5]; };
+const Gesture GESTURES[] = {
+  {"Open",      {0, 0, 0, 0, 0}},
+  {"Fist",      {75, 100, 100, 100, 100}},
+  {"Point",     {70, 0, 100, 100, 100}},
+  {"Peace",     {70, 0, 0, 100, 100}},
+  {"Thumbs up", {0, 100, 100, 100, 100}},
+  {"Pinch",     {55, 55, 0, 0, 0}},
+  {"Rock on",   {60, 0, 100, 100, 0}},
+};
+const int NUM_GESTURES = sizeof(GESTURES) / sizeof(GESTURES[0]);
 
 const float SPEED_DEG_PER_STEP = 2.0;  // smaller = smoother/slower movement
 const unsigned long STEP_MS = 15;      // how often the servo position is updated
@@ -97,6 +121,13 @@ String buildPage() {
     "</style></head><body><h1>RoboHand</h1>"
     "<div><button onclick=\"all(0)\">Open all</button>"
     "<button onclick=\"all(100)\">Close all</button></div>");
+  if (NUM_FINGERS == 5) {
+    html += "<div>";
+    for (int g = 0; g < NUM_GESTURES; g++) {
+      html += "<button onclick=\"ges(" + String(g) + ")\">" + String(GESTURES[g].name) + "</button>";
+    }
+    html += "</div>";
+  }
   for (int i = 0; i < NUM_FINGERS; i++) {
     html += "<div class='f'><b>" + String(FINGERS[i].name) + "</b> <span id='v" + i + "'>" +
             targetPercent[i] + "</span>%<br><input type='range' min='0' max='100' value='" +
@@ -109,6 +140,8 @@ String buildPage() {
     "clearTimeout(t[i]);t[i]=setTimeout(()=>fetch('/set?f='+i+'&v='+v),30);}"
     "function all(v){fetch('/all?v='+v);document.querySelectorAll('input').forEach((s,i)=>{"
     "s.value=v;document.getElementById('v'+i).textContent=v;});}"
+    "function ges(g){fetch('/g?n='+g).then(r=>r.text()).then(t=>{t.split(',').forEach((v,i)=>{"
+    "const s=document.getElementById('s'+i);if(s){s.value=v;document.getElementById('v'+i).textContent=v;}});});}"
     "</script></body></html>");
   return html;
 }
@@ -119,6 +152,17 @@ void handleSet() {
   if (!server.hasArg("f") || !server.hasArg("v")) { server.send(400, "text/plain", "need f and v"); return; }
   setFingerPercent(server.arg("f").toInt(), server.arg("v").toInt());
   server.send(200, "text/plain", "ok");
+}
+
+void handleGesture() {
+  int g = server.hasArg("n") ? server.arg("n").toInt() : 0;
+  if (NUM_FINGERS != 5 || g < 0 || g >= NUM_GESTURES) { server.send(400, "text/plain", "needs 5 fingers"); return; }
+  String reply;
+  for (int i = 0; i < 5; i++) {
+    setFingerPercent(i, GESTURES[g].pct[i]);
+    reply += String(GESTURES[g].pct[i]) + (i < 4 ? "," : "");
+  }
+  server.send(200, "text/plain", reply);
 }
 
 void handleAll() {
@@ -178,6 +222,7 @@ void setup() {
   server.on("/", handleRoot);
   server.on("/set", handleSet);
   server.on("/all", handleAll);
+  server.on("/g", handleGesture);
   server.begin();
   printHelp();
 }
