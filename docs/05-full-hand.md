@@ -81,25 +81,32 @@ Label each servo cable with tape as you mount it.
 
 ## Assembly order
 
-1. **Stand:** press 4 coins into the corner pockets (a drop of glue holds them). Put 4 dots
-   of hot glue on the underside as non-slip feet.
-2. **Servos onto the spine:** push each servo through its window. Tabs go on the side where
-   its spool will be, and the **shaft goes at the top** of the window. Fix with the servo's screws.
-   Set each servo to its *open* angle (run the firmware once), then fit the horn and **glue the spool**.
-3. **Spine into the stand:** slide it into the slot and push 2 filament pins through the
-   socket and spine.
-4. **Fingers onto the palm:** pin each finger to its knuckle fork (as in guide 03). The
-   thumb goes on the angled boss.
-5. **Elastic:** for each finger, thread the 2 mm elastic **down** from the tip through the
-   back channel. It comes out on the **back of the palm**. Lock the tip bone, stretch 50 % as in
-   guide 03, push the lock pins into the bones, then **tie a fat knot** where it leaves the palm.
-6. **Strings:** for each finger, thread the braided line from the fingertip down the palm-side
-   channel. It comes out of the **underside of the wrist**.
-7. **Palm onto the spine:** feed all 5 strings down past the spine, push the palm onto the
-   spine's top tab, and pin it with 2 filament pins.
-8. Run each string straight down to **its** spool (table above). It leaves the spool on the
-   **outer** side. Wrap it once and tie it through the anchor hole with the finger straight and
-   the line just tight.
+The narrated video `video/assembly/robohand_full_assembly.mp4` shows every step below.
+
+**Pins:** cut 1.75 mm filament into **17 mm** pieces, about 35 in total: 14 finger joints,
+14 elastic locks, 2 spine → stand, 2 palm → spine, plus spares.
+
+1. **Fingers** (guide 03): joint pins with melted ends, string knotted in the tip and glued,
+   elastic locked in the tip, stretched 50 % (marks 50 → 75 mm), then locked in the other bones.
+2. **Stand:** 4 coins into the corner pockets (drop of glue), 4 hot-glue dots underneath as feet.
+3. **Spine:** the small round **dot** below the top marks the **FRONT** (palm side).
+   Push each servo through its window from the spool side: tabs on the spine, **shaft at the
+   top** of the window, 2 screws each. Front: 1st (middle), 3rd (thumb), 5th (little).
+   Back: 2nd (index), 4th (ring). Label each servo cable.
+4. **Spine into the stand**, front dot facing away from the breadboard tray, 2 pins.
+5. **Electronics** (guide 04): breadboard in the tray, ESP32 into the breadboard, all 5 servos.
+   Upload the firmware and switch on: every servo goes to its open angle.
+6. **Spools:** with the power on, press a single-arm horn onto each shaft (centre screw) and
+   glue a spool flat onto it. Let it cure 5 minutes. **Unplug the power.**
+7. **Fingers onto the palm:** pin each finger to its knuckle fork. The thumb goes on the angled boss.
+8. **Elastic knots:** each elastic comes out on the back of the palm. Pull until the finger is
+   straight and firm, then tie a fat knot against the palm.
+9. **Palm onto the spine:** bundle the 5 strings (they come out under the wrist) with tape,
+   feed them down beside the spine, push the palm onto the spine's top tab, 2 pins.
+10. **Strings to the spools:** each string runs straight down to its own spool (table above).
+    **Power on.** Move that finger's slider to 30 % and back, and watch which way the spool
+    turns. **Wrap the string once around the spool in that direction**, pull it just tight with
+    the finger straight, and tie it through the anchor hole.
 
 ## Wiring five servos
 
