@@ -21,7 +21,7 @@ It is designed for someone with a 3D printer and little electronics experience:
 | 2 | Print the finger + base + spool while the parts ship | [03-print-and-assemble.md](docs/03-print-and-assemble.md) |
 | 3 | Set up the Arduino IDE, wire one servo, make it move from your phone | [04-wiring-and-first-test.md](docs/04-wiring-and-first-test.md) |
 | 4 | Mount the servo, thread the tendon, **calibrate**, control the finger wirelessly | [03](docs/03-print-and-assemble.md) + [04](docs/04-wiring-and-first-test.md) |
-| 5 | Five fingers + palm (more servos, external 5 V supply) | *next* |
+| 5 | Five fingers + palm (more servos, external 5 V supply). Layout concept: `cad/hand_concept.py` | *concept ready, palm/forearm print split next* |
 | 6 | Wrist and forearm (bigger servos) | *later* |
 | 7 | Hand copies your hand through a webcam (MediaPipe → WiFi → ESP32) | *later* |
 
@@ -33,6 +33,7 @@ robot-hand/
   cad/generate_parts.py      Parametric generator for every printed part (Python)
   cad/render_preview.py      Renders the preview picture + checks parts don't collide
   cad/stl/                   Ready-to-print STL files (already oriented for printing)
+  cad/hand_concept.py        Five-finger hand layout: palm, thumb, forearm with 5 servos + checks
   sim/finger_sim.py          Physics simulation (MuJoCo): motion, servo load, grip, strength
   firmware/finger_control/   ESP32 Arduino sketch: WiFi + phone slider + serial commands
 ```
