@@ -1,0 +1,59 @@
+[
+ {
+  "plate": 1,
+  "title": "fit_test",
+  "file": "plate_1_fit_test.3mf",
+  "parts": [
+   "spool_1",
+   "spool_2",
+   "spool_3",
+   "spool_4",
+   "spool_5",
+   "index_proximal",
+   "index_middle",
+   "index_distal"
+  ]
+ },
+ {
+  "plate": 2,
+  "title": "fingers",
+  "file": "plate_2_fingers.3mf",
+  "parts": [
+   "thumb_proximal",
+   "middle_proximal",
+   "middle_middle",
+   "ring_proximal",
+   "ring_middle",
+   "little_proximal",
+   "little_middle",
+   "thumb_distal",
+   "middle_distal",
+   "ring_distal",
+   "little_distal"
+  ]
+ },
+ {
+  "plate": 3,
+  "title": "palm",
+  "file": "plate_3_palm.3mf",
+  "parts": [
+   "palm"
+  ]
+ },
+ {
+  "plate": 4,
+  "title": "spine",
+  "file": "plate_4_spine.3mf",
+  "parts": [
+   "spine"
+  ]
+ },
+ {
+  "plate": 5,
+  "title": "stand",
+  "file": "plate_5_stand.3mf",
+  "parts": [
+   "stand"
+  ]
+ }
+]

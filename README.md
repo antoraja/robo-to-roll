@@ -12,6 +12,16 @@ It is designed for someone with a 3D printer and little electronics experience:
   fit, and one servo wiggled from your phone.
 - **End goal:** operate a rolling machine to roll a cigarette (see the roadmap).
 
+## Start here
+
+| What | Where |
+|---|---|
+| **Build-guide video** (print plates → finished hand, 13 steps, ~3 min) | [`video/robohand_build_guide.mp4`](video/robohand_build_guide.mp4) |
+| **Whole arm in 3D** (assembled, coloured; opens in Windows 3D Viewer, Blender or any GLB viewer) | [`cad/assembly/robohand_assembly.glb`](cad/assembly/robohand_assembly.glb) (+ `.stl`) |
+| **Print plates**, laid out for a 220 × 220 mm bed (open in PrusaSlicer / Bambu / Orca / Cura) | [`cad/plates/`](cad/plates/): `plate_1_fit_test.3mf` … `plate_5_stand.3mf` |
+| **Shopping list with amazon.de links** | [`docs/02b-amazon-de.md`](docs/02b-amazon-de.md) |
+| Step-by-step build guide (text) | [`docs/05-full-hand.md`](docs/05-full-hand.md) |
+
 ## The roadmap
 
 | Step | What you do | Guide |
@@ -35,7 +45,11 @@ robot-hand/
   cad/render_preview.py      Renders the preview picture + checks parts don't collide
   cad/stl/                   Ready-to-print STL files (already oriented for printing)
   cad/hand.py                Five-finger hand + table stand: printable parts and checks
-  cad/stl/hand/              Ready-to-print STLs for the full hand
+  cad/stl/hand/              Ready-to-print STLs for the full hand (one file per part)
+  cad/plates/                The same parts laid out on 5 print plates (3MF + STL)
+  cad/assembly/              Whole arm assembled (GLB coloured, STL)
+  cad/export_assembly.py     Regenerates assembly/ and plates/
+  video/                     Build-guide video + the script that renders it
   sim/finger_sim.py          Physics simulation (MuJoCo): motion, servo load, grip, strength
   firmware/finger_control/   ESP32 Arduino sketch: WiFi + phone slider + serial commands
 ```

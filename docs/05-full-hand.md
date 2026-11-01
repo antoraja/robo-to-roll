@@ -28,7 +28,20 @@ The full hand stands upright on its own printed stand, so you can test it on a t
 | Physics, longest (middle) and shortest (little) fingers | both close fully. Servo needs ≤ 44 % of stall including palm friction |
 | Stability | ~380 g, centre of mass 17 cm up. It only tips past **22°**. A push of ~60 g at the fingertips tips it sideways, so add coins or clamp it for rough testing |
 
-## Parts to print (`cad/stl/hand/`)
+## Parts to print
+
+**Easiest:** open the 5 ready-made plates in `cad/plates/` in your slicer. Every part is
+already oriented and laid out for a 220 × 220 mm bed:
+
+| Plate | Contents | Notes |
+|---|---|---|
+| `plate_1_fit_test.3mf` | index finger (3 bones) + 5 spools | print first = fit test |
+| `plate_2_fingers.3mf` | thumb, middle, ring, little (11 bones) | brim on |
+| `plate_3_palm.3mf` | palm | 15 % infill, supports touching build plate |
+| `plate_4_spine.3mf` | servo spine (diagonal) | |
+| `plate_5_stand.3mf` | stand | 15 % infill |
+
+Single parts are also in `cad/stl/hand/`:
 
 | File | Qty | Size (mm) | How to print |
 |---|---|---|---|

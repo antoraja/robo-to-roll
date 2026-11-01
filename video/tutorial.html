@@ -1,0 +1,405 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>RoboHand build guide</title>
+<style>
+  html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; background: #e9edf0; font-family: "DejaVu Sans", Arial, sans-serif; }
+  canvas { position: absolute; inset: 0; }
+  .ov { position: absolute; transition: none; }
+  #step { left: 36px; top: 28px; color: #172026; }
+  #step .n { font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: #c25a17; font-weight: bold; }
+  #step .t { font-size: 34px; font-weight: bold; margin-top: 4px; text-shadow: 0 1px 0 rgba(255,255,255,.6); }
+  #cap { left: 50%; bottom: 46px; transform: translateX(-50%); max-width: 1080px; background: rgba(23,32,38,.86); color: #fff;
+         font-size: 23px; line-height: 1.38; padding: 14px 24px; border-radius: 10px; text-align: center; }
+  #bar { left: 0; bottom: 0; height: 6px; background: #e8742a; }
+  #barbg { left: 0; bottom: 0; height: 6px; width: 1280px; background: rgba(23,32,38,.15); }
+  #card { inset: 0; display: flex; flex-direction: column; justify-content: center; padding-left: 80px;
+          background: linear-gradient(90deg, rgba(233,237,240,.97) 0%, rgba(233,237,240,.9) 46%, rgba(233,237,240,0) 72%); color: #172026; }
+  #card h1 { font-size: 64px; margin: 0 0 10px; letter-spacing: .01em; }
+  #card p { font-size: 25px; margin: 6px 0; max-width: 620px; color: #33424c; line-height: 1.4; }
+  #card .tag { font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c25a17; font-weight: bold; margin-bottom: 14px; }
+  .panel { right: 36px; top: 100px; width: 420px; background: rgba(255,255,255,.95); border-radius: 12px; padding: 18px 22px;
+           box-shadow: 0 6px 24px rgba(0,0,0,.15); color: #172026; font-size: 18px; line-height: 1.45; }
+  .panel h3 { margin: 0 0 10px; font-size: 16px; letter-spacing: .12em; text-transform: uppercase; color: #5b6873; }
+  .panel ol { margin: 0; padding-left: 22px; }
+  .panel li { margin: 4px 0; }
+  #gest { right: 40px; top: 34px; font-size: 40px; font-weight: bold; color: #172026; }
+  .phone { width: 230px; margin: 6px auto 0; border: 9px solid #172026; border-radius: 26px; padding: 10px 12px; background: #111; color: #eee; font-size: 14px; }
+  .phone .row { margin: 5px 0 2px; }
+  .phone .sl { height: 8px; border-radius: 4px; background: #333; position: relative; }
+  .phone .sl i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #e8742a; }
+  .phone button { font-size: 12px; margin: 3px 2px; padding: 5px 7px; border-radius: 7px; border: 0; background: #2a3338; color: #eee; }
+  svg text { font-family: "DejaVu Sans", Arial, sans-serif; }
+</style></head>
+<body>
+<canvas id="c" width="1280" height="720"></canvas>
+<div id="step" class="ov"><div class="n" id="stepn"></div><div class="t" id="stept"></div></div>
+<div id="gest" class="ov"></div>
+<div id="cap" class="ov"></div>
+<div id="barbg" class="ov"></div><div id="bar" class="ov"></div>
+<div id="card" class="ov"></div>
+
+<div id="p-plates" class="ov panel" style="top:110px;left:36px;right:auto;width:360px;font-size:16px">
+  <h3>Print settings</h3>
+  <ol id="platelist"></ol>
+  <p style="margin:12px 0 0;font-size:16px;color:#33424c">PLA · 0.2 mm layers · 4 walls · 30 % infill (palm &amp; stand 15 %).<br>
+  Bones and spools: no supports, brim on the fingertips. Palm: supports touching the build plate only.<br>
+  The spine lies diagonally on a 220 mm bed.</p>
+</div>
+
+<div id="p-wiring" class="ov panel" style="width:470px">
+  <h3>Wiring</h3>
+  <svg width="470" height="300" viewBox="0 0 470 300">
+    <rect x="10" y="20" width="110" height="50" rx="8" fill="#ffe1c9" stroke="#c25a17"/><text x="65" y="42" text-anchor="middle" font-size="15">5 V · 3 A</text><text x="65" y="60" text-anchor="middle" font-size="13">supply</text>
+    <rect x="160" y="10" width="300" height="18" rx="4" fill="#ffd6d6" stroke="#d7263d"/><text x="310" y="24" text-anchor="middle" font-size="13">+ rail (5 V)</text>
+    <rect x="160" y="62" width="300" height="18" rx="4" fill="#d9dde0" stroke="#33424c"/><text x="310" y="76" text-anchor="middle" font-size="13">− rail (GND)</text>
+    <path d="M120 35 H160" stroke="#d7263d" stroke-width="3"/><path d="M120 55 C140 55 140 71 160 71" stroke="#33424c" stroke-width="3" fill="none"/>
+    <g font-size="12">
+      <g transform="translate(170,120)"><rect width="52" height="40" rx="5" fill="#34414b"/><text x="26" y="25" fill="#fff" text-anchor="middle">Thumb</text></g>
+      <g transform="translate(228,120)"><rect width="52" height="40" rx="5" fill="#34414b"/><text x="26" y="25" fill="#fff" text-anchor="middle">Index</text></g>
+      <g transform="translate(286,120)"><rect width="52" height="40" rx="5" fill="#34414b"/><text x="26" y="25" fill="#fff" text-anchor="middle">Middle</text></g>
+      <g transform="translate(344,120)"><rect width="52" height="40" rx="5" fill="#34414b"/><text x="26" y="25" fill="#fff" text-anchor="middle">Ring</text></g>
+      <g transform="translate(402,120)"><rect width="52" height="40" rx="5" fill="#34414b"/><text x="26" y="25" fill="#fff" text-anchor="middle">Little</text></g>
+    </g>
+    <g stroke-width="2"><path d="M190 120 V28 M248 120 V28 M306 120 V28 M364 120 V28 M422 120 V28" stroke="#d7263d"/>
+      <path d="M202 120 V80 M260 120 V80 M318 120 V80 M376 120 V80 M434 120 V80" stroke="#6b4a2b"/></g>
+    <rect x="160" y="220" width="300" height="60" rx="8" fill="#1f5f86"/><text x="310" y="244" fill="#fff" text-anchor="middle" font-size="15">ESP32</text>
+    <text x="310" y="266" fill="#fff" text-anchor="middle" font-size="12">pins 25 · 13 · 14 · 27 · 26 · GND</text>
+    <g stroke="#e8742a" stroke-width="2.5"><path d="M196 160 V220 M254 160 V220 M312 160 V220 M370 160 V220 M428 160 V220"/></g>
+    <path d="M160 250 C120 250 120 71 160 71" stroke="#33424c" stroke-width="2.5" fill="none" stroke-dasharray="5 4"/>
+    <text x="70" y="160" font-size="12" fill="#33424c">shared</text><text x="70" y="175" font-size="12" fill="#33424c">ground</text>
+    <text x="10" y="110" font-size="12" fill="#33424c">1000 µF</text><text x="10" y="124" font-size="12" fill="#33424c">across rails</text>
+  </svg>
+</div>
+
+<div id="p-phone" class="ov panel" style="width:300px;top:24px;padding:12px 18px">
+  <h3>On your phone</h3>
+  <div style="font-size:15px;color:#33424c">WiFi <b>RoboHand</b> · password <b>robohand123</b><br>open <b>http://192.168.4.1</b></div>
+  <div class="phone">
+    <div style="font-size:17px;font-weight:bold;margin-bottom:6px">RoboHand</div>
+    <button>Open all</button><button>Close all</button><br>
+    <button>Fist</button><button>Point</button><button>Peace</button><button>Thumbs up</button><button>Pinch</button><button>Rock on</button>
+    <div class="row">Thumb 20%</div><div class="sl"><i style="width:20%"></i></div>
+    <div class="row">Index 0%</div><div class="sl"><i style="width:0%"></i></div>
+    <div class="row">Middle 100%</div><div class="sl"><i style="width:100%"></i></div>
+    <div class="row">Ring 100%</div><div class="sl"><i style="width:100%"></i></div>
+    <div class="row">Little 100%</div><div class="sl"><i style="width:100%"></i></div>
+  </div>
+</div>
+
+<script src="node_modules/three/build/three.min.js"></script>
+<script src="scene.js"></script>
+<script>
+(function () {
+const S = window.SCENE, P = S.params;
+const FPS = 20, DURATION = 186;
+window.FPS = FPS; window.DURATION = DURATION;
+const ORDER = ['thumb', 'index', 'middle', 'ring', 'little'];
+const ease = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+const ramp = (t, a, b) => ease((t - a) / (b - a));
+
+// ------------------------------------------------------------------ three setup
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(1280, 720, false);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#e9edf0');
+const camera = new THREE.PerspectiveCamera(32, 16 / 9, 5, 9000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x556070, 0.78));
+const key = new THREE.DirectionalLight(0xffffff, 0.72); key.position.set(500, 900, 400); scene.add(key);
+const rim = new THREE.DirectionalLight(0xffffff, 0.35); rim.position.set(-600, 300, -500); scene.add(rim);
+const root = new THREE.Group(); root.rotation.x = -Math.PI / 2; scene.add(root); root.updateMatrixWorld(true);
+const G = new THREE.Group();          // hidden graph used only to compute finger joint matrices (Z-up world)
+
+const b2a = s => { const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
+function geom(e) { const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(b2a(e.v)), 3));
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(e.i)), 1)); g.computeVertexNormals(); return g; }
+const mat = c => new THREE.MeshStandardMaterial({ color: c, flatShading: true, roughness: 0.62, metalness: 0.04 });
+const M = { finger: mat('#e8742a'), palm: mat('#e1e4e8'), spine: mat('#7a8c9a'), stand: mat('#46545f'), spool: mat('#2a9d8f'),
+  servo: mat('#2a3238'), pin: mat('#f4f1e8'), bed: mat('#2b2f33'), coin: new THREE.MeshStandardMaterial({ color: '#c9a64a', metalness: .6, roughness: .35 }),
+  board: mat('#1f5f86'), bread: mat('#f7f7f2'), chip: mat('#b8c0c6'), table: new THREE.MeshStandardMaterial({ color: '#d5d0c6', roughness: .9 }) };
+const tubeMat = { red: new THREE.MeshBasicMaterial({ color: '#d7263d' }), yellow: new THREE.MeshBasicMaterial({ color: '#e0a800' }),
+  cable: new THREE.MeshBasicMaterial({ color: '#5a3f2a' }), orange: new THREE.MeshBasicMaterial({ color: '#e8742a' }) };
+
+const T = (x, y, z) => new THREE.Matrix4().makeTranslation(x, y, z);
+const Rz = a => new THREE.Matrix4().makeRotationZ(a);
+const Rx = a => new THREE.Matrix4().makeRotationX(a);
+const mul = (...ms) => ms.reduce((a, b) => a.clone().multiply(b));
+const fromArr = a => new THREE.Matrix4().fromArray(a);
+function blend(A, B, s) {
+  const pa = new THREE.Vector3(), qa = new THREE.Quaternion(), sa = new THREE.Vector3();
+  const pb = new THREE.Vector3(), qb = new THREE.Quaternion(), sb = new THREE.Vector3();
+  A.decompose(pa, qa, sa); B.decompose(pb, qb, sb);
+  return new THREE.Matrix4().compose(pa.lerp(pb, s), qa.slerp(qb, s), sa.lerp(sb, s));
+}
+function keyed(keys) {
+  return t => {
+    if (t <= keys[0][0]) return keys[0][1](t);
+    for (let i = 0; i < keys.length - 1; i++) {
+      const [ta, fa] = keys[i], [tb, fb] = keys[i + 1];
+      if (t < tb) { if (fa === fb) return fa(t); return blend(fa(t), fb(t), ease((t - ta) / (tb - ta))); }
+    }
+    return keys[keys.length - 1][1](t);
+  };
+}
+
+// ------------------------------------------------------------------ world layout
+const tableZ = P.PLATE_Z - P.PLATE_T;
+const table = new THREE.Mesh(new THREE.BoxGeometry(2600, 1800, 10), M.table); table.position.set(-60, 60, tableZ - 5); root.add(table);
+const plateOrigin = k => [-560 + 250 * k - 110, 380 - 110, tableZ + 3];
+S.plates.forEach((p, k) => { const o = plateOrigin(k); const bed = new THREE.Mesh(new THREE.BoxGeometry(230, 230, 3), M.bed);
+  bed.position.set(o[0] + 110, o[1] + 110, tableZ + 1.5); root.add(bed); });
+const plateM = name => { const pl = S.parts[name].plate; const o = plateOrigin(pl.k); return mul(T(o[0], o[1], o[2]), fromArr(pl.M)); };
+
+// timing (seconds) ---------------------------------------------------------
+const TITLE_END = 6;
+const handOff = t => 170 * (1 - ramp(t, 118, 122));
+const spineOff = t => 170 * (1 - ramp(t, 96, 100));
+
+// gestures (% closed: thumb, index, middle, ring, little)
+const GEST = [['Open', [0,0,0,0,0]], ['Fist', [75,100,100,100,100]], ['Point', [70,0,100,100,100]], ['Peace', [70,0,0,100,100]],
+  ['Thumbs up', [0,100,100,100,100]], ['Pinch', [55,55,0,0,0]], ['Rock on', [60,0,100,100,0]], ['Open', [0,0,0,0,0]]];
+function gesture(t, t0, dur) {
+  const k = Math.max(0, Math.floor((t - t0) / dur)); const i = Math.min(k, GEST.length - 1); const prev = GEST[Math.max(0, i - 1)][1];
+  const local = (t - t0) - i * dur;
+  return { name: GEST[i][0], pct: GEST[i][1].map((v, j) => { const lag = (j === 0 && v > prev[j]) ? 0.35 : 0;
+    return prev[j] + (v - prev[j]) * ease((local - lag) / (dur * 0.38)); }) };
+}
+const TEASER = [['Fist', [75,100,100,100,100]]];
+function pctAt(n, t) {
+  const j = ORDER.indexOf(n);
+  if (t < TITLE_END) { const s = ease((t - 1.0) / 1.6) * (1 - ease((t - 3.6) / 1.6)); return TEASER[0][1][j] * s; }
+  if (t >= 158) return gesture(t, 158.5, 3.0).pct[j];
+  if (n === 'index' && t > 38.5 && t < 43.5) return 55 * Math.sin(Math.PI * (t - 38.5) / 5);
+  return 0;
+}
+const curlDeg = (n, t) => 85 * pctAt(n, t) / 100;
+
+// ------------------------------------------------------------------ fingers (hidden graph)
+const BENCH_X = { thumb: 150, index: 185, middle: 220, ring: 255, little: 290 };
+const fz = P.FLEX_Z - P.ZP, ez = P.EXT_Z - P.ZP, C = P.C;
+const fing = {};
+ORDER.forEach(n => {
+  const f = S.fingers[n];
+  const rootO = new THREE.Object3D(); rootO.matrixAutoUpdate = false; G.add(rootO);
+  const joints = []; let parent = rootO;
+  f.L.forEach((L, i) => { const j = new THREE.Group(); if (i > 0) j.position.x = f.L[i - 1]; parent.add(j); joints.push(j); parent = j; });
+  // bench: lying on its palm, pointing +y
+  const bench = new THREE.Matrix4().set(0, -1, 0, BENCH_X[n],  1, 0, 0, -330,  0, 0, 1, tableZ + 9,  0, 0, 0, 1);
+  const B = f.B; const basis = new THREE.Matrix4().makeBasis(new THREE.Vector3(B[0], B[1], B[2]), new THREE.Vector3(B[3], B[4], B[5]), new THREE.Vector3(B[6], B[7], B[8]));
+  const finalBase = mul(T(...f.pin), basis, new THREE.Matrix4().makeRotationY(-Math.PI / 2));
+  const k = ORDER.indexOf(n);
+  const rootFn = keyed([[107 + 0.9 * k, () => bench], [110.5 + 0.9 * k, t => mul(T(0, 0, handOff(t)), finalBase)]]);
+  fing[n] = { f, rootO, joints, rootFn, bench };
+});
+const finalOnly = t => t < TITLE_END ? 999 : t;      // during the title everything is shown finished
+function updateGraph(t) {
+  const te = finalOnly(t);
+  ORDER.forEach(n => { const F = fing[n]; F.rootO.matrix.copy(F.rootFn(te)); F.joints.forEach(j => j.rotation.y = THREE.MathUtils.degToRad(curlDeg(n, t))); });
+  G.updateMatrixWorld(true);
+}
+const jointW = (n, i) => fing[n].joints[i].matrixWorld.clone();
+const rootW = n => fing[n].rootO.matrixWorld.clone();
+
+// ------------------------------------------------------------------ objects
+const objs = [];
+function add(geometry, material, fn, vis) { const m = new THREE.Mesh(geometry, material); m.matrixAutoUpdate = false; root.add(m); objs.push({ m, fn, vis: vis || (() => true) }); return m; }
+
+const GE = {}; Object.keys(S.geom).forEach(k => GE[k] = geom(S.geom[k]));
+// stand, spine, palm
+add(GE.stand, M.stand, keyed([[66, () => plateM('stand')], [69, () => new THREE.Matrix4()]]));
+add(GE.spine, M.spine, keyed([[74, () => plateM('spine')], [77.5, t => T(0, 0, spineOff(t))]]));
+add(GE.palm, M.palm, keyed([[104, () => plateM('palm')], [107.5, t => T(0, 0, handOff(t))]]));
+// bones
+ORDER.forEach(n => {
+  const F = fing[n]; const isIndex = n === 'index'; const t0 = isIndex ? 16 : 56;
+  F.f.bones.forEach((name, i) => {
+    const exploded = () => mul(rootW(n), T(26 * i, 0, 0), rootW(n).invert(), jointW(n, i));
+    const chain = () => jointW(n, i);
+    let keys = [[t0, () => plateM(name)], [t0 + 4, i === 0 ? chain : exploded]];
+    if (i > 0) { const tc = isIndex ? (i === 1 ? 27 : 32.5) : 60; keys.push([tc, exploded], [tc + 2.6, chain]); }
+    add(GE[name], M.finger, keyed(keys));
+  });
+});
+// spools (plate 1) -> servo shafts; spin with the finger
+ORDER.forEach((n, i) => {
+  const s = S.servos[n];
+  const fin = t => { const pull = (n === 'thumb' ? 25 : 37.5) * pctAt(n, t) / 100;
+    return mul(T(0, 0, spineOff(finalOnly(t))), fromArr(s.spoolM), Rz(-s.side * pull / P.spoolR)); };
+  const fnK = keyed([[89 + 0.7 * i, () => plateM('spool_' + i)], [92 + 0.7 * i, () => fin(curTime)]]);
+  add(GE.spool, M.spool, t => (t >= 92 + 0.7 * i || curTime < TITLE_END) ? fin(curTime) : fnK(t));
+});
+// servos (bought parts): slide in from the side
+ORDER.forEach((n, k) => {
+  const s = S.servos[n]; const order = ['middle', 'index', 'thumb', 'ring', 'little'].indexOf(n); const ts = 77.5 + 2.2 * order;
+  add(GE['servo_' + n], M.servo, keyed([[ts, t => T(s.side * 150, 0, spineOff(t))], [ts + 2, t => T(0, 0, spineOff(t))]]), t => t >= ts);
+});
+// pins: finger joints (0 = knuckle on the palm), lock pins for the elastic, spine and palm pins
+const pinG = L => new THREE.CylinderGeometry(0.9, 0.9, L, 12);
+ORDER.forEach(n => {
+  const F = fing[n]; const isIndex = n === 'index';
+  F.f.L.forEach((L, i) => {
+    const ts = i === 0 ? 112 + 0.5 * ORDER.indexOf(n) : (isIndex ? (i === 1 ? 30 : 35.5) : 62.6);
+    add(pinG(17), M.pin, keyed([[ts, () => mul(jointW(n, i), T(0, 55, 0))], [ts + 1.6, () => jointW(n, i)]]), t => t >= ts);
+    const tl = isIndex ? 53.5 + 0.4 * i : 64.5;
+    add(pinG(16), M.pin, keyed([[tl, () => mul(jointW(n, i), T(L / 2, 45, ez - 1.6))], [tl + 1.2, () => mul(jointW(n, i), T(L / 2, 0, ez - 1.6))]]), t => t >= tl);
+  });
+});
+[-20, 20].forEach((y, k) => { const ts = 100.5 + 0.8 * k;
+  add(pinG(30), M.pin, keyed([[ts, () => mul(T(-80, y, P.SPINE_BOT + 11), Rz(Math.PI / 2))], [ts + 1.5, () => mul(T(0, y, P.SPINE_BOT + 11), Rz(Math.PI / 2))]]), t => t >= ts); });
+[-5, 5].forEach((y, k) => { const ts = 122.5 + 0.8 * k;
+  add(pinG(46), M.pin, keyed([[ts, t => mul(T(-90, y, P.WRIST_Z + 7 + handOff(t)), Rz(Math.PI / 2))], [ts + 1.5, t => mul(T(0, y, P.WRIST_Z + 7 + handOff(t)), Rz(Math.PI / 2))]]), t => t >= ts); });
+// cleaning filament in step 2
+add(pinG(70), M.pin, keyed([[21.5, () => mul(jointW('index', 0), T(0, 75, 0))], [25, () => mul(jointW('index', 0), T(0, -75, 0))]]), t => t >= 21.5 && t < 25.2);
+// coins + feet
+[[-62, -50], [62, -50], [-62, 50], [62, 50]].forEach(([x, y], k) => { const ts = 69.5 + 0.5 * k; const g = new THREE.CylinderGeometry(12.9, 12.9, 2.2, 36);
+  add(g, M.coin, keyed([[ts, () => mul(T(x, y, P.PLATE_Z + 90), Rx(Math.PI / 2))], [ts + 1.2, () => mul(T(x, y, P.PLATE_Z - 3.5 + 1.1), Rx(Math.PI / 2))]]), t => t >= ts); });
+// electronics
+const elec = (g, m, x, y, z, ts) => add(g, m, keyed([[ts, () => T(x, y, z + 90)], [ts + 1.3, () => T(x, y, z)]]), t => t >= ts);
+elec(new THREE.BoxGeometry(56, 84, 9), M.bread, -50, 0, P.PLATE_Z - 1.5 + 4.5, 138.5);
+elec(new THREE.BoxGeometry(28.5, 51.5, 1.6), M.board, 48, 0, P.PLATE_Z + 4, 139.3);
+elec(new THREE.BoxGeometry(18, 25, 3.2), M.chip, 48, 8, P.PLATE_Z + 6.3, 139.3);
+elec(new THREE.BoxGeometry(16, 22, 10), mat('#2f7d4f'), -66, 30, P.PLATE_Z + 14, 140.1);
+
+// ------------------------------------------------------------------ strings, elastic, cables
+const tubes = [];
+function tube(material, ptsFn, visFn, revealFn, r) { const m = new THREE.Mesh(new THREE.BufferGeometry(), material); root.add(m); tubes.push({ m, ptsFn, visFn, revealFn, r: r || 0.7 }); }
+const P3 = (x, y, z) => new THREE.Vector3(x, y, z);
+const at = (M4, x, y, z) => P3(x, y, z).applyMatrix4(M4);
+function fingerFlexPts(n) {           // from the base of the finger to the tip
+  const L = fing[n].f.L; const out = [];
+  L.forEach((Li, i) => { const J = jointW(n, i); out.push(at(J, C, 0, fz), at(J, i === L.length - 1 ? Li : Li - C, 0, fz)); });
+  return out;
+}
+function fingerExtPts(n) {
+  const L = fing[n].f.L; const out = [];
+  L.forEach((Li, i) => { const J = jointW(n, i); out.push(at(J, 0, 0, ez), at(J, C, 0, ez), at(J, i === L.length - 1 ? Li / 2 : Li - C, 0, ez)); });
+  return out;
+}
+function trimPath(pts, frac) {        // keep the first `frac` of the path length
+  if (frac >= 1) return pts; const segs = []; let tot = 0;
+  for (let i = 1; i < pts.length; i++) { const d = pts[i].distanceTo(pts[i - 1]); segs.push(d); tot += d; }
+  let want = tot * Math.max(0.0001, frac); const out = [pts[0]];
+  for (let i = 1; i < pts.length; i++) { if (want <= segs[i - 1]) { out.push(pts[i - 1].clone().lerp(pts[i], want / segs[i - 1])); return out; } want -= segs[i - 1]; out.push(pts[i]); }
+  return out;
+}
+ORDER.forEach((n, k) => {
+  const isIndex = n === 'index'; const tb = isIndex ? 44.5 : 63.5; const te = isIndex ? 50.5 : 65.5;
+  // on the bench: string from the tip down and out of the base, elastic along the back
+  tube(tubeMat.red, () => { const p = fingerFlexPts(n).reverse(); p.push(at(jointW(n, 0), -70, 0, fz)); return p; },
+       t => t >= tb && t < 107 + 0.9 * k && t >= TITLE_END, t => ramp(t, tb, te));
+  tube(tubeMat.yellow, () => { const p = fingerExtPts(n).reverse(); p.push(at(jointW(n, 0), -60, 0, ez)); return p; },
+       t => t >= (isIndex ? 50.5 : 64) && t < 107 + 0.9 * k && t >= TITLE_END, t => ramp(t, isIndex ? 50.5 : 64, isIndex ? 54 : 66), 1.0);
+  // on the hand: tip -> palm -> wrist -> spool
+  const s = S.servos[n];
+  tube(tubeMat.red, t => {
+    const te2 = finalOnly(t); const R = rootW(n); const tip = fingerFlexPts(n).reverse();
+    const wrist = P3(...s.path[1]).add(P3(0, 0, handOff(te2))); const spool = P3(...s.path[0]).add(P3(0, 0, spineOff(te2)));
+    const pts = tip.concat([at(R, -C, 0, fz), at(R, -C - P.colLen, 0, fz), wrist]);
+    const f = t < TITLE_END ? 1 : ramp(t, 127 + 1.1 * k, 129.5 + 1.1 * k);
+    if (f <= 0.001) pts.push(wrist.clone().add(P3(0, 0, -35))); else pts.push(wrist.clone().lerp(spool, f));
+    return pts; }, t => t >= 110.5 + 0.9 * k || t < TITLE_END, () => 1);
+  tube(tubeMat.yellow, () => { const R = rootW(n); return fingerExtPts(n).reverse().concat([at(R, -C, 0, ez), at(R, -C - P.colLen + 1, 0, ez)]); },
+       t => t >= 110.5 + 0.9 * k || t < TITLE_END, () => 1, 1.0);
+  // servo cable to the breadboard
+  tube(tubeMat.cable, t => { const b = S.servos[n].bottom; const z0 = b[2] + spineOff(finalOnly(t));
+    return [P3(b[0], b[1], z0), P3(b[0] * 0.6, b[1], -298), P3(-30, b[1] * 0.4, P.PLATE_Z + 14), P3(-40 + 4 * k, -28 + 14 * k, P.PLATE_Z + 9)]; },
+    t => t >= 141 + 0.8 * k || t < TITLE_END, t => t < TITLE_END ? 1 : ramp(t, 141 + 0.8 * k, 142.6 + 0.8 * k), 1.1);
+});
+[[-10, '#e8742a'], [0, '#e8742a'], [10, '#33424c']].forEach(([dy], k) => tube(tubeMat.orange, () => [P3(38, dy, P.PLATE_Z + 5.5), P3(10, dy * 2, P.PLATE_Z + 30), P3(-24, dy * 2.5, P.PLATE_Z + 9.5)],
+  t => t >= 145.5 + 0.5 * k || t < TITLE_END, t => t < TITLE_END ? 1 : ramp(t, 145.5 + 0.5 * k, 147 + 0.5 * k), 0.9));
+
+function updateTubes(t) {
+  tubes.forEach(tb => {
+    const v = tb.visFn(t); tb.m.visible = v; if (!v) return;
+    let pts = tb.ptsFn(t); pts = trimPath(pts, tb.revealFn(t));
+    if (pts.length < 2 || pts[0].distanceTo(pts[pts.length - 1]) < 0.3) { tb.m.visible = false; return; }
+    const path = new THREE.CurvePath(); for (let i = 1; i < pts.length; i++) if (pts[i].distanceTo(pts[i - 1]) > 1e-3) path.add(new THREE.LineCurve3(pts[i - 1], pts[i]));
+    if (!path.curves.length) { tb.m.visible = false; return; }
+    tb.m.geometry.dispose(); tb.m.geometry = new THREE.TubeGeometry(path, Math.max(8, pts.length * 6), tb.r, 6, false);
+  });
+}
+
+// ------------------------------------------------------------------ camera
+const CAM = [ // [t, pos(x,y,z), target]  (CAD world, Z up)
+  [6, [-440, -1050, 1250], [-440, 250, -318]], [14.5, [-410, -1050, 1250], [-410, 250, -318]],
+  [17.5, [430, -720, -40], [220, -280, -318]], [25, [430, -720, -40], [220, -280, -318]],
+  [27, [330, -520, -180], [190, -270, -318]], [55, [330, -520, -180], [190, -270, -318]],
+  [57.5, [500, -720, -40], [220, -260, -318]], [65.5, [500, -720, -40], [220, -260, -318]],
+  [67.5, [330, -400, -150], [0, 0, -318]], [73.5, [330, -400, -150], [0, 0, -318]],
+  [75.5, [580, -440, 140], [0, 0, -50]], [95.5, [580, -440, 140], [0, 0, -50]],
+  [97.5, [580, -540, 40], [0, 0, -190]], [103.5, [580, -540, 40], [0, 0, -190]],
+  [105.5, [720, -640, 400], [80, -80, 110]], [117, [660, -540, 320], [0, 0, 150]],
+  [119.5, [680, -580, 130], [0, 0, -80]], [125.5, [680, -580, 130], [0, 0, -80]],
+  [127.5, [430, -330, -110], [0, 0, -190]], [137.5, [430, -330, -110], [0, 0, -190]],
+  [139.5, [380, -420, -150], [0, 0, -295]], [149.5, [380, -420, -150], [0, 0, -295]],
+  [151.5, [740, -300, 60], [0, 0, -95]], [157.5, [740, -300, 60], [0, 0, -95]],
+];
+const toThree = v => new THREE.Vector3(v[0], v[2], -v[1]);
+function setCamera(t) {
+  let pos, tgt;
+  const orbit = (a, r, h, tz) => { tgt = [0, 0, tz]; pos = [r * Math.cos(a), r * Math.sin(a), h]; };
+  if (t < TITLE_END) orbit(-0.9 + t * 0.07, 760, 90, -95);
+  else if (t >= 158) orbit(-0.55 + (t - 158) * 0.045, 760, 70, -95);
+  else {
+    let i = 0; while (i < CAM.length - 1 && t >= CAM[i + 1][0]) i++;
+    if (t <= CAM[0][0]) { pos = CAM[0][1]; tgt = CAM[0][2]; }
+    else if (i === CAM.length - 1) { pos = CAM[i][1]; tgt = CAM[i][2]; }
+    else { const s = ease((t - CAM[i][0]) / (CAM[i + 1][0] - CAM[i][0]));
+      pos = CAM[i][1].map((v, j) => v + (CAM[i + 1][1][j] - v) * s); tgt = CAM[i][2].map((v, j) => v + (CAM[i + 1][2][j] - v) * s); }
+  }
+  camera.position.copy(toThree(pos)); camera.lookAt(toThree(tgt)); camera.updateMatrixWorld();
+}
+
+// ------------------------------------------------------------------ captions
+const STEPS = [
+  [6, 16, 'Step 1 / 13', 'Print the five plates', [[6, 'Open the 3MF files from cad/plates/ in your slicer. Each plate is already laid out for a 220 × 220 mm bed.']]],
+  [16, 26, 'Step 2 / 13', 'Fit test: the index finger', [[16, 'Take the three index-finger bones off plate 1. This is also your fit test.'], [21, 'Push a piece of 1.75 mm filament through every pin hole and string channel to clean them.']]],
+  [26, 44, 'Step 3 / 13', 'Build the index finger', [[26, 'Slide the middle bone’s centre tab between the forks of the lower bone…'], [30, '…and push a 17 mm filament pin through. Melt both ends with a lighter so it can’t slide out.'], [33, 'Do the same for the fingertip.'], [38.5, 'Check: it bends forward freely and stops when straight.']]],
+  [44, 56, 'Step 4 / 13', 'String and elastic', [[44, 'Braided line: knot it at the fingertip and thread it down the palm-side channel.'], [50.5, '2 mm elastic down the back channel. Lock the tip bone with a filament pin, stretch the cord by 50 %, lock the other bones.']]],
+  [56, 66, 'Step 5 / 13', 'The other four fingers', [[56, 'Build the thumb, middle, ring and little finger from plate 2 exactly the same way.']]],
+  [66, 74, 'Step 6 / 13', 'Stand', [[66, 'Put four 2-euro coins into the corner pockets for extra weight. Four dots of hot glue underneath make non-slip feet.']]],
+  [74, 96, 'Step 7 / 13', 'Servos onto the spine', [[74, 'Push each servo through its window: tabs on the spool side, shaft at the top. Fix it with its 2 screws.'], [88.5, 'Run the firmware once so every servo sits at its open angle. Then fit the horn and glue a spool on.']]],
+  [96, 104, 'Step 8 / 13', 'Spine into the stand', [[96, 'Slide the spine into the stand’s slot and lock it with 2 filament pins.']]],
+  [104, 118, 'Step 9 / 13', 'Fingers onto the palm', [[104, 'Pin each finger to its knuckle fork. The thumb goes on the angled boss.'], [112.5, 'Tie a knot in each elastic where it leaves the back of the palm. The strings come out under the wrist.']]],
+  [118, 126, 'Step 10 / 13', 'Palm onto the spine', [[118, 'Feed the strings down past the spine, push the palm onto the spine’s top tab and lock it with 2 pins.']]],
+  [126, 138, 'Step 11 / 13', 'Strings to the spools', [[126, 'Each string runs straight down to its own spool: middle top-front, index 2nd-back, thumb 3rd-front, ring 4th-back, little bottom-front.'], [132.5, 'Finger straight, string just tight: wrap it once and tie it through the spool’s anchor hole.']]],
+  [138, 150, 'Step 12 / 13', 'Electronics', [[138, 'Breadboard in the tray behind the arm, ESP32 zip-tied in front.'], [141, 'Servo red and brown wires to the 5 V rails, orange signal wires to ESP32 pins 25 · 13 · 14 · 27 · 26. Connect ESP32 GND to the rail too.']]],
+  [150, 158, 'Step 13 / 13', 'Upload, connect, calibrate', [[150, 'Upload firmware/finger_control.ino. Join WiFi “RoboHand” and open 192.168.4.1. Calibrate each finger with  a <finger> <angle>.']]],
+  [158, 182, 'Done', 'Your RoboHand', [[158, 'Every finger is controlled wirelessly from your phone. Next: wrist, thumb base, then the rolling station.']]],
+];
+const el = id => document.getElementById(id);
+S.plates.forEach(p => { const li = document.createElement('li'); li.textContent = p.title.replace(/^Plate \d+ · /, ''); el('platelist').appendChild(li); });
+function overlays(t) {
+  const st = STEPS.find(s => t >= s[0] && t < s[1]);
+  el('step').style.opacity = st ? 1 : 0; el('cap').style.opacity = st ? 1 : 0;
+  if (st) { el('stepn').textContent = st[2]; el('stept').textContent = st[3];
+    let c = st[4][0][1]; st[4].forEach(([tc, txt]) => { if (t >= tc) c = txt; }); el('cap').textContent = c; }
+  const card = el('card');
+  if (t < TITLE_END) { card.style.opacity = 1 - ramp(t, 5.2, 6);
+    card.innerHTML = '<div class="tag">Build guide</div><h1>RoboHand</h1><p>A wireless, 3D-printed five-finger hand.</p><p>From the print plates to the finished hand in 13 steps.</p>'; }
+  else if (t >= 182) { card.style.opacity = ramp(t, 182, 183);
+    card.innerHTML = '<div class="tag">Files &amp; guides</div><h1>RoboHand</h1><p>github.com/antoraja/robo-to-roll</p><p>cad/plates · docs/05-full-hand.md · docs/02b-amazon-de.md</p>'; }
+  else card.style.opacity = 0;
+  el('p-plates').style.opacity = (t >= 7 && t < 15.5) ? ramp(t, 7, 7.6) : 0;
+  el('p-wiring').style.opacity = (t >= 141 && t < 150) ? ramp(t, 141, 141.6) : 0;
+  el('p-phone').style.opacity = (t >= 150.5 && t < 158) ? ramp(t, 150.5, 151.1) : 0;
+  el('gest').textContent = t >= 158 && t < 182 ? gesture(t, 158.5, 3.0).name : '';
+  el('bar').style.width = (1280 * Math.min(1, t / DURATION)) + 'px';
+}
+
+// ------------------------------------------------------------------ render
+let curTime = 0;
+window.renderAt = function (t) {
+  curTime = t;
+  updateGraph(t);
+  const te = finalOnly(t);
+  objs.forEach(o => { o.m.matrix.copy(o.fn(te)); o.m.visible = t < TITLE_END ? true : o.vis(t); });
+  updateTubes(t);
+  setCamera(t);
+  overlays(t);
+  renderer.render(scene, camera);
+  return true;
+};
+window.renderAt(0);
+window.READY = true;
+})();
+</script>
+</body></html>

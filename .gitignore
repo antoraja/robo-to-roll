@@ -1,3 +1,9 @@
 __pycache__/
 *.pyc
 .DS_Store
+video/node_modules/
+video/frames/
+video/scene.json
+video/scene.js
+video/*.log
+video/still_*.png
