@@ -39,9 +39,11 @@ struct FingerConfig {
 // The finger servo needs ~165 deg to close fully (13 mm spool) - see sim/README.md.
 //
 // Full hand. Keep this ORDER (thumb, index, middle, ring, little) so the gesture buttons work.
+// CALIBRATE closedAngle to a few degrees BEFORE the finger hits its end stop - a servo that
+// keeps pushing against a stop draws stall current and gets hot.
 // Servos that aren't plugged in yet are simply ignored (handy for the one-servo first test on pin 13).
 FingerConfig FINGERS[] = {
-  {"Thumb",  25, 10, 150},   // thumb has 2 joints: needs less travel, stop before it hits the palm
+  {"Thumb",  25, 10, 115},   // thumb has 2 joints: ~25 mm of string = ~110 deg of servo (sim/README.md)
   {"Index",  13, 10, 175},
   {"Middle", 14, 10, 175},
   {"Ring",   27, 10, 175},
@@ -206,6 +208,7 @@ void setup() {
     targetPercent[i] = 0;
     currentAngle[i] = targetAngle[i] = FINGERS[i].openAngle;
     servos[i].write(FINGERS[i].openAngle);
+    delay(250);   // start the servos one by one: 5 at once can pull > 3 A and reset the ESP32
   }
 
   WiFi.mode(WIFI_AP);

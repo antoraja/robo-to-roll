@@ -1,0 +1,69 @@
+# Design validation: before you build the prototype
+
+Re-run everything with one command (about 10 minutes):
+
+```bash
+./validate.sh
+```
+
+It checks, in order: the printable finger parts and joint range → the full hand
+(collisions, string routing, stability, assembly details) → physics for every finger
+(MuJoCo) → the firmware (compiled and behaviour-tested on the PC). The latest full run
+**passed every stage**.
+
+## Results
+
+| Area | Check | Result |
+|---|---|---|
+| **Joints** | Real 3-D bones rotated −3…85° | ✅ Only contact is the intended −3° stop |
+| **Collisions** | Fingers 0 / 45 / 85° vs palm and each other; servos, spools, strings vs spine, palm, stand | ✅ None |
+| | Thumb vs palm | ✅ Up to ~80° (1.9 mm³ touch at 85°: firmware default stops the thumb before that) |
+| **Palm channels** | String channels fully enclosed | ✅ Walls 96–99 % intact (thin spots only at the ends) |
+| | Channels crossing each other | ✅ Closest pair still has 8.9 mm of plastic between them |
+| | Pin holes / spine slot vs channels | ✅ 5.5 mm clear / no contact |
+| | Elastic channels come out on the back of the palm | ✅ 5 / 5 |
+| **Physics** | All 5 fingers close fully (85° every joint) | ✅ |
+| | Servo load incl. palm friction (μ = 0.25) | ✅ 27 % (thumb) to 44 % (little) of MG90S stall |
+| | Worse friction (μ = 0.35) | ⚠️ ~55–65 % of stall: works, servos run warmer |
+| | Fingers stay open against gravity in every orientation | ✅ Margin 3.9–8.5 mN·m |
+| | String travel vs servo range | ✅ Fingers 165° (of 180°), thumb 110° |
+| | Grip on a 24 mm bar | ✅ ~5–6 N squeeze per finger |
+| **Strength** | Filament pin at full servo stall | ✅ 4.3× safety |
+| | Printed tongue bearing | ✅ 12.6× safety |
+| **Stability** | Tip-over angle on the table | ✅ 22° (side) – 27° (back). ~60 g sideways push at the fingertips tips it: clamp or weigh it down for rough tests |
+| **Firmware** | Compiles with `-Wall -Wextra -Werror` (against stand-in ESP32 headers) | ✅ |
+| | 32 behaviour tests: sliders, gestures, bad input, clamping, serial commands | ✅ |
+
+## Problems this validation found, and fixed
+
+| Problem | Fix |
+|---|---|
+| **Top (middle-finger) servo lead too short.** It needs ~235 mm, MG90S leads are ~250 mm with no slack | Add **servo extension cables, 30 cm** (2 needed: middle + index; packs are cheap) |
+| **Thumb over-pulled.** The thumb has 2 joints, so it needs only ~110° of servo. The old default would have pushed it against its stop | Firmware default for the thumb is now 10° → 115° |
+| **Power spike at switch-on.** All 5 servos jumping at once can pull > 3 A and reset the ESP32 | Firmware now starts the servos one by one (250 ms apart) |
+| **Servos straining at the end stop** if calibrated too far | Calibration note: set `closedAngle` a few degrees **before** the finger stops |
+
+## What software cannot guarantee (check these on the real parts)
+
+No simulation makes a design 100 % certain. These are the things only the prototype can
+prove. They're also why the fit test comes first.
+
+1. **Hole sizes on your printer.** This is the most likely issue. Fit test = plate 1. Tell me tight/loose and I'll regenerate all parts.
+2. **String friction** in printed channels (assumed μ 0.15–0.35). Clean every channel with filament before threading.
+3. **Elastic stiffness.** It varies by brand. Set it by feel: firm spring-back, but the servo must not strain.
+4. **Servo quality.** Cheap MG90S clones vary in torque and travel (some only reach ~170°, which is fine since we need 165°).
+5. **Long-term wear** of filament pins and PLA creep under constant elastic tension. PETG lasts longer if you have it.
+6. **Real ESP32 build.** The firmware was compiled against stand-in headers, not the real ESP32 core. The first real upload (guide 04) confirms it.
+
+## Pre-build checklist
+
+- [ ] Plate 1 printed. Pins turn freely in the tongue, snug in the forks. Channels clean.
+- [ ] One servo moves from the phone (guide 04) **before** anything is glued.
+- [ ] Every servo set to its open angle **before** fitting the horn and gluing the spool.
+- [ ] Servo cables labelled (thumb / index / middle / ring / little).
+- [ ] 2 × 30 cm servo extensions on the middle and index servos.
+- [ ] 1000 µF capacitor across the breadboard rails, **long leg to +**.
+- [ ] ESP32 GND connected to the breadboard − rail (shared ground).
+- [ ] Servos powered from the 5 V 3 A supply, **never** from the ESP32's VIN pin.
+- [ ] Each finger calibrated (`a <finger> <angle>`); `closedAngle` a few degrees before the end stop.
+- [ ] Stand weighed down (coins) or clamped before testing fast gestures.

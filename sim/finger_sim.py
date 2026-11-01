@@ -106,11 +106,11 @@ def build(design, gravity=(0, 0, -G), obstacle=None):
     if design["mode"] == "loop":
         k = 2 * (2 * EA / 0.240)            # 240 mm loop, two strands acting
         tendons = (f'<spatial name="el" stiffness="{k}" springlength="SL0"><site site="eb0"/><site site="eb"/>'
-                   + "".join(f'<site site="e{i}a"/><site site="e{i}b"/>' for i in range(3)) + "</spatial>")
+                   + "".join(f'<site site="e{i}a"/><site site="e{i}b"/>' for i in range(len(L))) + "</spatial>")
         springs = [("el", k, 2 * design["pre"])]
     elif design["mode"] == "knuckle":
         tendons, springs = "", []
-        for j in range(3):
+        for j in range(len(L)):
             a = "lockb" if j == 0 else f"lock{j - 1}"
             seg_len = (BASE_LOCK + LOCK_X[0]) if j == 0 else (L[j - 1] - LOCK_X[j - 1] + LOCK_X[j])
             k = EA / seg_len                       # one strand
@@ -118,20 +118,22 @@ def build(design, gravity=(0, 0, -G), obstacle=None):
                         f'<geom geom="knuckle{j}" sidesite="kside{j}"/><site site="lock{j}"/></spatial>')
             springs.append((f"el{j}", k, design["pre"][j]))
     else:
-        segs = [("eb", "lock0", ["eb"], ["e0a"]),
-                ("lock0", "lock1", ["e0b"], ["e1a"]),
-                ("lock1", "lock2", ["e1b"], ["e2a"])]
+        segs = [None] * len(L)
         tendons, springs = "", []
-        for j, (a, b, _, _) in enumerate(segs):
-            pts = {0: ["lockb", "eb", "e0a", "lock0"],
-                   1: ["lock0", "e0b", "e1a", "lock1"],
-                   2: ["lock1", "e1b", "e2a", "lock2"]}[j]
+        for j, _ in enumerate(segs):
+            pts = ["lockb", "eb", "e0a", "lock0"] if j == 0 else [f"lock{j - 1}", f"e{j - 1}b", f"e{j}a", f"lock{j}"]
             seg_len = (BASE_LOCK + LOCK_X[0]) if j == 0 else (L[j - 1] - LOCK_X[j - 1] + LOCK_X[j])
             k = 2 * EA / seg_len               # two strands (both back channels)
             tendons += (f'<spatial name="el{j}" stiffness="{k}" springlength="SL{j}">'
                         + "".join(f'<site site="{p}"/>' for p in pts) + "</spatial>")
             springs.append((f"el{j}", k, 2 * design["pre"][j]))
 
+    nb = len(L)
+    chain = ""
+    for i in range(nb - 1, -1, -1):
+        pos = "" if i == 0 else f' pos="0 0 {L[i - 1]}"'
+        chain = f'<body name="b{i}"{pos}>{bone(i, i == nb - 1)}{chain}</body>'
+    flex_sites = "".join(f'<site site="f{i}a"/><site site="f{i}b"/>' for i in range(nb))
     xml = f"""
 <mujoco>
   <option timestep="0.0005" gravity="{gravity[0]} {gravity[1]} {gravity[2]}" integrator="implicitfast"/>
@@ -140,13 +142,11 @@ def build(design, gravity=(0, 0, -G), obstacle=None):
     <site name="eb0" pos="{ext_x} 0 -0.040"/><site name="lockb" pos="{ext_x} 0 {-BASE_LOCK}"/>
     <site name="eb" pos="{ext_x} 0 {-C}"/>
     {obstacle_xml}
-    <body name="b0">{bone(0)}
-      <body name="b1" pos="0 0 {L[0]}">{bone(1)}
-        <body name="b2" pos="0 0 {L[1]}">{bone(2, True)}</body></body></body>
+    {chain}
   </worldbody>
   <tendon>
     <spatial name="flexor"><site site="spool"/><site site="fbase"/>
-      <site site="f0a"/><site site="f0b"/><site site="f1a"/><site site="f1b"/><site site="f2a"/><site site="f2b"/></spatial>
+      {flex_sites}</spatial>
     {tendons}
   </tendon>
   <actuator>
@@ -180,7 +180,7 @@ def free_sweep(design, gravity=(0, 0, -G), n=37):
         d.ctrl[0] = L0 + 0.5 * mm - math.radians(deg) * SPOOL_R   # calibrated "open" = string just slack
         for _ in range(6000):
             mujoco.mj_step(m, d)
-        rows.append(dict(servo=deg, q=np.degrees(d.qpos[:3]).copy(), tension=-d.actuator_force[0],
+        rows.append(dict(servo=deg, q=np.degrees(d.qpos[:len(L)]).copy(), tension=-d.actuator_force[0],
                          tip=d.site("tip").xpos.copy() / mm))
     return rows
 
@@ -197,35 +197,35 @@ def static_requirement(design, gravity, mu=MU, curl_deg=None):
     fid = m.tendon("flexor").id
     out = []
     for th in (curl_deg if curl_deg is not None else np.linspace(0, 85, 18)):
-        d.qpos[:3] = math.radians(th)
+        d.qpos[:len(L)] = math.radians(th)
         d.qvel[:] = 0
         mujoco.mj_forward(m, d)
-        tau = d.qfrc_bias[:3] - d.qfrc_passive[:3]        # torque the string must provide at each joint
+        tau = d.qfrc_bias[:len(L)] - d.qfrc_passive[:len(L)]        # torque the string must provide at each joint
         arm = np.zeros(3)                                   # string lever arm = -dLength/dAngle
-        base_q = d.qpos[:3].copy()
-        for j in range(3):
+        base_q = d.qpos[:len(L)].copy()
+        for j in range(len(L)):
             for sgn in (1, -1):
-                d.qpos[:3] = base_q
+                d.qpos[:len(L)] = base_q
                 d.qpos[j] += sgn * 1e-4
                 mujoco.mj_kinematics(m, d)
                 mujoco.mj_tendon(m, d)
                 arm[j] -= sgn * d.ten_length[fid] / 2e-4
-        d.qpos[:3] = base_q
+        d.qpos[:len(L)] = base_q
         mujoco.mj_forward(m, d)
         need = []
         wrap = 0.0
-        for j in range(3):
+        for j in range(len(L)):
             wrap += math.radians(th)                      # string turns by the joint angle at each joint
             t_joint = max(tau[j], 0) / max(arm[j], 1e-6)  # tension needed AT that joint
             need.append(t_joint * math.exp(mu * wrap))    # ...so this much at the servo
         out.append(dict(curl=th, servo_tension=max(need), per_joint=need, arm_mm=arm / mm,
                         tau_mNm=tau * 1e3, pull_mm=None))
     # string travel for each pose (from geometry)
-    d.qpos[:3] = 0
+    d.qpos[:len(L)] = 0
     mujoco.mj_forward(m, d)
     l0 = d.ten_length[fid]
     for r in out:
-        d.qpos[:3] = math.radians(r["curl"])
+        d.qpos[:len(L)] = math.radians(r["curl"])
         mujoco.mj_forward(m, d)
         r["pull_mm"] = (l0 - d.ten_length[fid]) / mm
     return out
@@ -235,9 +235,9 @@ def holds_open(design, gravity):
     """With the servo relaxed, does the elastic keep the finger straight against gravity?"""
     m = build(design, gravity)
     d = mujoco.MjData(m)
-    d.qpos[:3] = 0
+    d.qpos[:len(L)] = 0
     mujoco.mj_forward(m, d)
-    margin = (d.qfrc_passive[:3] - d.qfrc_bias[:3])       # >0: elastic beats gravity at that joint
+    margin = (d.qfrc_passive[:len(L)] - d.qfrc_bias[:len(L)])       # >0: elastic beats gravity at that joint
     # joint torque sign: positive = flexion. The elastic pushes negative (opening); gravity in
     # "palm down" pushes positive. Margin = opening torque - closing torque.
     return -margin * 1e3                                    # mN*m per joint (positive = stays open)
@@ -260,9 +260,9 @@ def grip_test(design):
             if obj in (c.geom1, c.geom2):
                 mujoco.mj_contactForce(m, d, i, f6)
                 force += abs(f6[0])
-        wrap = math.radians(max(np.degrees(d.qpos[:3]).sum(), 0))
+        wrap = math.radians(max(np.degrees(d.qpos[:len(L)]).sum(), 0))
         res.append(dict(servo=deg, squeeze=force * math.exp(-MU * wrap), squeeze_frictionless=force,
-                        q=np.degrees(d.qpos[:3]).copy()))
+                        q=np.degrees(d.qpos[:len(L)]).copy()))
     return res
 
 
@@ -346,5 +346,32 @@ def report():
     return summary
 
 
+def other_fingers():
+    """Re-run the key checks for every finger length of the full hand (thumb = 2 joints)."""
+    global L, LOCK_X, VOLUMES_CM3
+    saved = (L, LOCK_X, VOLUMES_CM3)
+    print("\n=== every finger of the full hand (v3 design, palm friction x1.2 included) ===")
+    hand = {"thumb": [40, 30], "index": [45, 30, 25], "middle": [49, 33, 26], "ring": [46, 31, 25], "little": [37, 25, 22]}
+    base = [8.8, 5.3, 3.4]
+    worst = 0.0
+    for name, lens in hand.items():
+        L = [x * mm for x in lens]
+        LOCK_X = [l / 2 for l in L]
+        VOLUMES_CM3 = ([base[0] * lens[0] / 45, base[2] * lens[1] / 25] if len(lens) == 2
+                       else [v * l / b for v, l, b in zip(base, lens, [45, 30, 25])])
+        q = free_sweep(V3, n=13)[-1]["q"]
+        peak = max(max(r["servo_tension"] for r in static_requirement(V3, g)) for g in GRAVITY.values()) * 1.2
+        hold = min(holds_open(V3, g).min() for g in GRAVITY.values())
+        travel = static_requirement(V3, GRAVITY["finger up"])[-1]["pull_mm"]
+        worst = max(worst, peak / F_STALL)
+        ok = q.min() > 80 and hold > 0 and peak < F_COMFORT
+        print(f"   {name:<7} closes to {np.round(q).astype(int)} deg; string {travel:4.1f} mm = "
+              f"{math.degrees(travel * mm / SPOOL_R):3.0f} deg servo; servo load {peak / F_STALL * 100:3.0f} % of stall; "
+              f"holds open (margin {hold:4.1f} mN*m)  {'PASS' if ok else 'CHECK'}")
+    L, LOCK_X, VOLUMES_CM3 = saved
+    return worst
+
+
 if __name__ == "__main__":
     report()
+    other_fingers()

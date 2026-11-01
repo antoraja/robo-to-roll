@@ -20,6 +20,7 @@ It is designed for someone with a 3D printer and little electronics experience:
 | **Whole arm in 3D** (assembled, coloured; opens in Windows 3D Viewer, Blender or any GLB viewer) | [`cad/assembly/robohand_assembly.glb`](cad/assembly/robohand_assembly.glb) (+ `.stl`) |
 | **Print plates**, laid out for a 220 × 220 mm bed (open in PrusaSlicer / Bambu / Orca / Cura) | [`cad/plates/`](cad/plates/): `plate_1_fit_test.3mf` … `plate_5_stand.3mf` |
 | **Shopping list with amazon.de links** | [`docs/02b-amazon-de.md`](docs/02b-amazon-de.md) |
+| **Design validation** (all checks, what was fixed, pre-build checklist): run `./validate.sh` | [`VALIDATION.md`](VALIDATION.md) |
 | Step-by-step build guide (text) | [`docs/05-full-hand.md`](docs/05-full-hand.md) |
 
 ## The roadmap

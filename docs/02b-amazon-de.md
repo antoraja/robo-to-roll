@@ -21,6 +21,7 @@ offer with good reviews. Prices are typical amazon.de prices (Nov 2026) and chan
 | 8 | **Braided fishing line** 0.25–0.35 mm | 1 | [amazon.de: geflochtene Angelschnur 0,30 mm](https://www.amazon.de/s?k=geflochtene+Angelschnur+0%2C30mm) | **Geflochten** (braided PE), not monofil | 8–12 |
 | 9 | **Round elastic cord, 2 mm** | 1 | [amazon.de: Gummikordel rund 2 mm](https://www.amazon.de/s?k=Gummikordel+rund+2mm) | Round, rubber core, 2 mm (also sold as "Hutgummi 2mm") | 5–7 |
 | 10 | **USB data cable** for the ESP32 | 1 | [amazon.de: USB C Datenkabel](https://www.amazon.de/s?k=USB+C+Datenkabel+kurz) | Match your board (USB-C or Micro-USB). It must say **Daten** (data). You probably have one | 0–6 |
+| 11 | **Servo extension cable, 30 cm** (2 needed; the top servo's lead is too short) | 2 | [amazon.de: Servo Verlängerungskabel 30cm](https://www.amazon.de/s?k=Servo+Verl%C3%A4ngerungskabel+30cm) | JR/Futaba 3-pin, 30 cm, packs of 5–10 | 5–7 |
 
 **Already at home:** PLA (~330 g), 1.75 mm filament for the pins, super glue
 (Sekundenkleber), a lighter, a small Phillips screwdriver, scissors, and 4 coins (2-euro

@@ -346,6 +346,68 @@ def checks(P, SP, ST, bones):
     print(f"   sideways push at the fingertips needed to tip it: ~{push:.0f} g-force; with 4 coins in the pockets ~{push_c:.0f} g-force")
 
 
+def seg_dist(p1, q1, p2, q2):
+    """Shortest distance between two 3-D segments."""
+    d1, d2, r = q1 - p1, q2 - p2, p1 - p2
+    a, e, f = d1 @ d1, d2 @ d2, d2 @ r
+    c, b = d1 @ r, d1 @ d2
+    den = a * e - b * b
+    s = np.clip((b * f - c * e) / den, 0, 1) if den > 1e-9 else 0.0
+    t = np.clip((b * s + f) / e, 0, 1)
+    s = np.clip((b * t - c) / a, 0, 1)
+    return float(np.linalg.norm((p1 + d1 * s) - (p2 + d2 * t)))
+
+
+SERVO_LEAD = 250.0        # MG90S lead length (mm), typical 25 cm
+
+
+def extra_checks(P):
+    """Things a builder would trip over: channels crossing, elastic exits, pins, cable reach."""
+    print("5) Assembly details")
+    col_len = PALM_DROP + 2
+    strings, elastics = {}, {}
+    for n in ORDER:
+        _, w, k = string_path(n)
+        strings[n] = (w, k)
+        e0 = local_to_world_pt((-C - col_len + 1, 0.0, gp.EXT_Z - ZP), n)
+        back, down = -finger_basis(n)[:, 0], -finger_basis(n)[:, 2]
+        elastics[n] = (e0, e0 + (back * 0.8 + down * 0.6) * 40)
+    worst = (99.0, "")
+    names = list(ORDER)
+    for i, a in enumerate(names):
+        for b in names[i + 1:]:
+            d = seg_dist(*strings[a], *strings[b]) - STRING_D
+            worst = min(worst, (d, f"string {a} / string {b}"))
+        for b in names:
+            d = seg_dist(*strings[a], *elastics[b]) - (STRING_D + gp.EXT_D) / 2
+            worst = min(worst, (d, f"string {a} / elastic {b}"))
+            if a < b:
+                d2 = seg_dist(*elastics[a], *elastics[b]) - gp.EXT_D
+                worst = min(worst, (d2, f"elastic {a} / elastic {b}"))
+    print(f"   closest pair of channels in the palm: {worst[1]} with {worst[0]:.1f} mm of plastic between them")
+    pins = [(np.array([-40.0, y, WRIST_Z + 7]), np.array([40.0, y, WRIST_Z + 7])) for y in (-5.0, 5.0)]
+    near_pin = min(seg_dist(*p, *strings[n]) - (PIN_D + STRING_D) / 2 for p in pins for n in ORDER)
+    print(f"   palm pin holes vs string channels: {near_pin:.1f} mm apart")
+    exits = []
+    for n in ORDER:
+        e0, e1 = elastics[n]
+        probe = m.Manifold.sphere(1.5, 16).translate(tuple(e1))
+        exits.append((probe ^ P).volume() < 0.5)
+    print(f"   elastic channels reach the outside of the palm (to tie the knot): {sum(exits)}/5")
+    slot = box(-SPINE_T / 2 - 0.2, SPINE_T / 2 + 0.2, -15.2, 15.2, WRIST_Z - 1, SPINE_TOP + 0.3)
+    hit = sum((rod(*elastics[n], gp.EXT_D) ^ slot).volume() + (rod(*strings[n], STRING_D) ^ slot).volume() for n in ORDER)
+    print(f"   channels cutting into the spine slot: {hit:.1f} mm3")
+    print("   servo lead reach (MG90S lead ~25 cm) to the breadboard behind the arm:")
+    bb = np.array([-50.0, 0.0, PLATE_Z + 9])
+    for n in ORDER:
+        body, _, _, _ = servo_geom(n)
+        lo, hi = body.bounding_box()[:3], body.bounding_box()[3:]
+        exit_pt = np.array([(lo[0] + hi[0]) / 2, SERVOS[n]["y"], lo[2]])   # lead leaves the bottom end of the case
+        route = abs(exit_pt[2] - (PLATE_Z + 2)) + abs(exit_pt[0] - bb[0]) + abs(exit_pt[1] - bb[1]) + 30  # +30 slack
+        ok = "OK" if route <= SERVO_LEAD - 20 else "TOO SHORT - use a 30 cm servo extension"
+        print(f"      {n:<7} needs ~{route:3.0f} mm  {ok}")
+
+
 def centroid(part):
     mesh = part.to_mesh()
     v = np.asarray(mesh.vert_properties)[:, :3]; f = np.asarray(mesh.tri_verts)
@@ -405,6 +467,9 @@ if __name__ == "__main__":
     P, SP, ST = palm(), spine(), stand()
     bones = {n: finger_bones(n) for n in ORDER}
     checks(P, SP, ST, bones)
+    extra_checks(P)
+    if "--checks-only" in sys.argv:
+        sys.exit(0)
     write_stls(P, SP, ST, bones)
     if "--export" in sys.argv:
         export(sys.argv[sys.argv.index("--export") + 1], P, SP, ST, bones)

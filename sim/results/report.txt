@@ -73,3 +73,10 @@ Servo: MG90S 0.216 N*m on a 13 mm spool -> 16.6 N stall, 8.3 N comfortable (50%)
    joint load 33 N; 1.75 mm filament pin shear 6.9 MPa vs PLA ~30 (x4.3); tongue bearing 3.2 MPa vs ~40 (x12.6)
 
 Plot: sim/results/finger_sim.png
+
+=== every finger of the full hand (v3 design, palm friction x1.2 included) ===
+   thumb   closes to [85 85] deg; string 25.0 mm = 110 deg servo; servo load  27 % of stall; holds open (margin  8.5 mN*m)  PASS
+   index   closes to [85 86 85] deg; string 37.5 mm = 165 deg servo; servo load  42 % of stall; holds open (margin  5.0 mN*m)  PASS
+   middle  closes to [86 86 85] deg; string 37.5 mm = 165 deg servo; servo load  41 % of stall; holds open (margin  3.9 mN*m)  PASS
+   ring    closes to [85 85 85] deg; string 37.5 mm = 165 deg servo; servo load  42 % of stall; holds open (margin  4.7 mN*m)  PASS
+   little  closes to [85 85 86] deg; string 37.5 mm = 165 deg servo; servo load  44 % of stall; holds open (margin  6.9 mN*m)  PASS
