@@ -38,7 +38,7 @@ It checks, in order: the printable finger parts and joint range → the full han
 
 | Problem | Fix |
 |---|---|
-| **Top (middle-finger) servo lead too short.** It needs ~235 mm, MG90S leads are ~250 mm with no slack | Add **servo extension cables, 30 cm** (2 needed: middle + index; packs are cheap) |
+| **Top (middle-finger) servo lead is tight.** The route is ~205 mm (+30 mm slack), and MG90S leads are ~250 mm | No purchase needed: the **male-male jumpers** between each servo plug and the breadboard add 10–20 cm. Tape each plug-jumper joint. 30 cm servo extensions are an optional, neater alternative |
 | **Thumb over-pulled.** The thumb has 2 joints, so it needs only ~110° of servo. The old default would have pushed it against its stop | Firmware default for the thumb is now 10° → 115° |
 | **Power spike at switch-on.** All 5 servos jumping at once can pull > 3 A and reset the ESP32 | Firmware now starts the servos one by one (250 ms apart) |
 | **Servos straining at the end stop** if calibrated too far | Calibration note: set `closedAngle` a few degrees **before** the finger stops |
@@ -61,7 +61,7 @@ prove. They're also why the fit test comes first.
 - [ ] One servo moves from the phone (guide 04) **before** anything is glued.
 - [ ] Every servo set to its open angle **before** fitting the horn and gluing the spool.
 - [ ] Servo cables labelled (thumb / index / middle / ring / little).
-- [ ] 2 × 30 cm servo extensions on the middle and index servos.
+- [ ] Servo plugs joined to male-male jumpers and taped (middle and index leads are the tightest).
 - [ ] 1000 µF capacitor across the breadboard rails, **long leg to +**.
 - [ ] ESP32 GND connected to the breadboard − rail (shared ground).
 - [ ] Servos powered from the 5 V 3 A supply, **never** from the ESP32's VIN pin.

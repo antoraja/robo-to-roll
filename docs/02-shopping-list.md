@@ -16,7 +16,7 @@ you wait**. Search terms are given so you can find the item anywhere.
 | 6 | Elastic cord (the return spring) | `round elastic cord 2mm` (stretchy rubber-core cord; the simulation showed 1 mm is too weak) | 1 roll | $1–3 |
 | 7 | USB data cable matching your ESP32 | micro-USB or USB-C (you probably have one; check it's a **data** cable) | 1 | $0–2 |
 | 8 | 5 V **3 A** power supply for the servos | `5V 3A power adapter` + `DC barrel jack to screw terminal`, **or** a 3 A USB-C charger + `USB-C female to screw terminal breakout` | 1 | $5–8 |
-| 10 | Servo extension cables 30 cm | `servo extension cable 30cm` (the top servo's 25 cm lead doesn't reach the breadboard; see VALIDATION.md) | 2 | $3–6 (pack) |
+| — | *Optional:* servo extension cables 30 cm | `servo extension cable 30cm`. Not required: the male-male jumpers between servo plug and breadboard already add the length | 0–2 | $3–6 (pack) |
 | 9 | Capacitor | `electrolytic capacitor 1000uF 16V` (across the servo power rails, stops ESP32 resets) | 1 | $1 (pack) |
 
 **Total: about $30–45**, plus ~330 g of filament you already have. The 400-point

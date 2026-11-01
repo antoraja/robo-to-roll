@@ -404,7 +404,7 @@ def extra_checks(P):
         lo, hi = body.bounding_box()[:3], body.bounding_box()[3:]
         exit_pt = np.array([(lo[0] + hi[0]) / 2, SERVOS[n]["y"], lo[2]])   # lead leaves the bottom end of the case
         route = abs(exit_pt[2] - (PLATE_Z + 2)) + abs(exit_pt[0] - bb[0]) + abs(exit_pt[1] - bb[1]) + 30  # +30 slack
-        ok = "OK" if route <= SERVO_LEAD - 20 else "TOO SHORT - use a 30 cm servo extension"
+        ok = "OK" if route <= SERVO_LEAD - 20 else "tight - fine with the male-male jumpers to the breadboard (+10-20 cm)"
         print(f"      {n:<7} needs ~{route:3.0f} mm  {ok}")
 
 
