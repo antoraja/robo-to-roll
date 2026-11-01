@@ -1,7 +1,7 @@
 # 05 · The five-finger hand on a table stand
 
-Start this **after** the one-finger rig works (guides 03 and 04). Everything here reuses
-the same finger bones, string, elastic, spool and firmware.
+Start this after the **fit test** (guide 03: index finger bones) and the **electronics
+test** (guide 04: one servo moved from your phone). Assemble each finger as in guide 03.
 
 The full hand stands upright on its own printed stand, so you can test it on a table.
 **3D view:** run `cad/hand.py --export` and open the RoboHand Five-Finger Hand viewer
@@ -39,7 +39,7 @@ The full hand stands upright on its own printed stand, so you can test it on a t
 | `thumb_*`, `index_*`, `middle_*`, `ring_*`, `little_*` | 1 each (14 bones) | | flat on their backs, no supports, brim on the small tips |
 
 Use the same settings as guide 03 (4 walls, 0.2 mm layers). Total is about **330 g of PLA**.
-The index finger is identical to the one-finger rig, so you can **reuse it**.
+The fit-test index bones **are** the hand's index finger, so you can reuse them.
 
 ## Extra parts to buy (beyond the one-finger kit)
 
@@ -102,8 +102,8 @@ ESP32 powered from your laptop USB (or a second USB charger)
 
 ## Firmware
 
-In `firmware/finger_control/finger_control.ino`, delete the one-finger `FINGERS` block and
-uncomment the five-finger block. Keep the order. Upload, then:
+`firmware/finger_control/finger_control.ino` is already set up for all 5 fingers. Keep the
+order of the `FINGERS` list. Upload, then:
 
 - The phone page shows **5 sliders** plus **gesture buttons**: Fist, Point, Peace, Thumbs up, Pinch and Rock on.
 - **Calibrate each finger** with `a <n> <angle>` in the Serial Monitor (n = 0 thumb … 4 little),

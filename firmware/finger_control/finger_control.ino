@@ -1,18 +1,18 @@
 /*
   RoboHand - wireless finger control (ESP32)
   ------------------------------------------
-  Step 1 of the robot-hand project: drive ONE finger servo from your phone.
-  Built so that adding more fingers later is just one extra line in FINGERS[].
+  Drives the five-finger hand (thumb, index, middle, ring, little) from your phone.
+  The first electronics test uses just one servo on pin 13 (index).
 
   How it works
     * The ESP32 creates its own WiFi network (no router needed):
         name:     RoboHand
         password: robohand123
     * Join that network on your phone, open http://192.168.4.1
-      and move the slider (0% = finger open, 100% = finger closed).
+      and move the sliders or tap a gesture (0% = finger open, 100% = finger closed).
     * You can also type commands in the Arduino Serial Monitor (115200 baud):
-        f 0 50     -> finger 0 to 50% closed
-        a 0 90     -> finger 0 servo to raw angle 90 (used for calibration)
+        f 1 50     -> finger 1 (index) to 50% closed   (0 thumb, 1 index, 2 middle, 3 ring, 4 little)
+        a 1 90     -> index servo to raw angle 90 (used for calibration)
         open | close | help
 
   Libraries (Arduino IDE -> Tools -> Manage Libraries):
@@ -38,19 +38,15 @@ struct FingerConfig {
 // Good pins: 13, 14, 27, 26, 25, 33, 32. (Avoid 0, 2, 12, 15 - they affect booting. 34-39 are input-only.)
 // The finger servo needs ~165 deg to close fully (13 mm spool) - see sim/README.md.
 //
-// STEP 1 - one finger test rig:
+// Full hand. Keep this ORDER (thumb, index, middle, ring, little) so the gesture buttons work.
+// Servos that aren't plugged in yet are simply ignored (handy for the one-servo first test on pin 13).
 FingerConfig FINGERS[] = {
-  {"Index", 13, 10, 175},
+  {"Thumb",  25, 10, 150},   // thumb has 2 joints: needs less travel, stop before it hits the palm
+  {"Index",  13, 10, 175},
+  {"Middle", 14, 10, 175},
+  {"Ring",   27, 10, 175},
+  {"Little", 26, 10, 175},
 };
-// STEP 5 - full hand on the stand: delete the block above and use this one instead.
-// Keep this ORDER (thumb, index, middle, ring, little) so the gesture buttons work.
-// FingerConfig FINGERS[] = {
-//   {"Thumb",  25, 10, 150},   // thumb has 2 joints: needs less travel, stop before it hits the palm
-//   {"Index",  13, 10, 175},
-//   {"Middle", 14, 10, 175},
-//   {"Ring",   27, 10, 175},
-//   {"Little", 26, 10, 175},
-// };
 
 // Gestures: % closed for thumb, index, middle, ring, little (shown when 5 fingers are configured)
 struct Gesture { const char* name; int pct[5]; };

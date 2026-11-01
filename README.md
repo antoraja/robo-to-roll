@@ -7,23 +7,24 @@ do. **Strings ("tendons") pulled by small motors** do the bending, and you contr
 It is designed for someone with a 3D printer and little electronics experience:
 
 - **No soldering.** Every electrical connection is a plug or a screw terminal.
-- **Cheap.** The first finger costs about **$15–25** in parts (see the shopping list).
-- **One finger first.** When one finger works, the other four are copies of it.
-
-![One-finger test rig, straight and curled](docs/img/finger_preview.png)
+- **Cheap.** The whole five-finger hand on its stand costs about **$35–50** in parts.
+- **Straight to the full hand,** with two cheap checks first: one finger's bones for the print
+  fit, and one servo wiggled from your phone.
+- **End goal:** operate a rolling machine to roll a cigarette (see the roadmap).
 
 ## The roadmap
 
 | Step | What you do | Guide |
 |---|---|---|
 | 0 | Learn the 10 ideas you need (servo, tendon, ESP32, power, ground, connectors) | [01-basics.md](docs/01-basics.md) |
-| 1 | Buy the parts for one finger | [02-shopping-list.md](docs/02-shopping-list.md) |
-| 2 | Print the finger + base + spool while the parts ship | [03-print-and-assemble.md](docs/03-print-and-assemble.md) |
-| 3 | Set up the Arduino IDE, wire one servo, make it move from your phone | [04-wiring-and-first-test.md](docs/04-wiring-and-first-test.md) |
-| 4 | Mount the servo, thread the tendon, **calibrate**, control the finger wirelessly | [03](docs/03-print-and-assemble.md) + [04](docs/04-wiring-and-first-test.md) |
-| 5 | Five-finger hand on a table stand: palm, servo spine, stand (all printable, pinned, no screws) | [05-full-hand.md](docs/05-full-hand.md) |
-| 6 | Wrist and forearm (bigger servos) | *later* |
-| 7 | Hand copies your hand through a webcam (MediaPipe → WiFi → ESP32) | *later* |
+| 1 | Buy the parts for the full hand | [02-shopping-list.md](docs/02-shopping-list.md) |
+| 2 | **Fit test:** print the index finger's 3 bones and check the pin holes and channels | [03-print-and-assemble.md](docs/03-print-and-assemble.md) |
+| 3 | **Electronics test:** Arduino IDE, wire one servo, move it from your phone | [04-wiring-and-first-test.md](docs/04-wiring-and-first-test.md) |
+| 4 | Print and build the **five-finger hand on its table stand**, calibrate, run gestures | [05-full-hand.md](docs/05-full-hand.md) (+ finger assembly in [03](docs/03-print-and-assemble.md)) |
+| 5 | **Wrist** (tilt + rotate) and a **movable thumb base** for real pinching | *next design step* |
+| 6 | Grip pads + fingertip **pressure sensors** for gentle handling of paper | *later* |
+| 7 | **Rolling station:** holder for a rolling machine, tobacco hopper, paper slot, damp sponge; recorded move sequence | *later* |
+| 8 | Hand copies your hand through a webcam (MediaPipe → WiFi → ESP32) | *optional* |
 
 ## What's in this folder
 

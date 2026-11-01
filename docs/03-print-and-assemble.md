@@ -1,6 +1,11 @@
-# 03 · Print and assemble the one-finger rig
+# 03 · Print settings, fit test and finger assembly
 
-## Parts to print (`cad/stl/`)
+This guide covers printing and assembling **one finger**. Every finger of the hand is
+built the same way. Start with the **index finger's bones** as the fit test (step 2 of the
+roadmap). They become the hand's index finger, so nothing is wasted. The full-hand part list
+is in [guide 05](05-full-hand.md).
+
+## Fit-test parts (`cad/stl/`, identical to `cad/stl/hand/index_*`)
 
 | File | Qty | Size (mm) | Notes |
 |---|---|---|---|
@@ -8,7 +13,7 @@
 | `finger_middle.stl` | 1 | 40 × 16 × 16 | Middle bone |
 | `finger_distal.stl` | 1 | 30 × 16 × 16 | Fingertip |
 | `servo_spool.stl` | 1 (print 2, they're small) | Ø32 × 8 | Glued onto the servo horn and winds the tendon |
-| `finger_base.stl` | 1 | 62 × 58 × 72 | Stand: holds the finger upright and the servo underneath |
+| `finger_base.stl` | optional | 62 × 58 × 72 | Single-finger stand. **Skip it** when you go straight to the hand |
 
 All files are **already rotated for printing**. Don't rotate them in the slicer.
 The finger bones lie **on their back** (the flat top of the finger is on the bed). That way

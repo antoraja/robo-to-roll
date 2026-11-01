@@ -56,7 +56,9 @@ The ESP32 itself stays powered by the laptop's USB (or a second USB charger).
 
 ## C. Upload the code
 
-1. Open `firmware/finger_control/finger_control.ino` in Arduino IDE.
+1. Open `firmware/finger_control/finger_control.ino` in Arduino IDE. It's set up for the
+   full hand. For this first test only the servo on **pin 13 (index)** is connected; the others
+   simply aren't plugged in yet.
 2. *Tools → Board → esp32 → **ESP32 Dev Module***, and *Tools → Port →* your port.
 3. Click **Upload** (→ arrow).
    - If it gets stuck at `Connecting.....`, **hold the BOOT button** on the ESP32 until the
@@ -79,12 +81,13 @@ The ESP32 itself stays powered by the laptop's USB (or a second USB charger).
 
 ## E. Calibrate (after the finger and tendon are mounted, see guide 03)
 
-In the Serial Monitor, type raw angles for finger 0 and watch the finger:
+In the Serial Monitor, type raw angles for one finger and watch it. Finger numbers are
+0 thumb, 1 index, 2 middle, 3 ring, 4 little:
 
 ```
-a 0 90       <- move servo 0 to 90 degrees
-a 0 30
-a 0 150
+a 1 90       <- move the index servo to 90 degrees
+a 1 30
+a 1 150
 ```
 
 1. Find the angle where the finger is **just straight** with the line barely tight, e.g. 25.
@@ -92,9 +95,7 @@ a 0 150
    buzzing, e.g. 150.
 3. Put those numbers in the code and upload again:
    ```cpp
-   FingerConfig FINGERS[] = {
-     {"Index", 13, 25, 150},
-   };
+     {"Index",  13, 25, 150},
    ```
    (If the finger closes when the angle goes *down*, just swap them, e.g. `150, 25`. The
    code works either way.)
@@ -114,7 +115,6 @@ Now 0 % on the slider means fully open and 100 % means fully closed.
 
 ## Next step
 
-When one finger opens and closes from your phone, tell me. Then we will:
-1. Design the **palm** that holds 5 fingers + 5 servos (the same finger CAD, scaled per finger).
-2. Add 4 lines to `FINGERS[]` (pins 14, 27, 26, 25).
-3. Move to the 3 A external supply.
+When the servo moves from your phone, the electronics work. Go to
+[guide 05](05-full-hand.md) to build the full hand. The firmware is already set up for 5
+fingers, and the servo you just tested on pin 13 is the **index** finger.
