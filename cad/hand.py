@@ -47,6 +47,7 @@ PALM_DROP = 13.0          # palm top sits this far below each knuckle pin
 WRIST_Z = -100.0          # flat underside of the palm
 SPINE_T = 5.0             # spine plate thickness (x)
 SPINE_HW = 31.0           # spine half-width (y)
+RIB_D = 9.0               # stiffening ribs stick out this far behind the spine (back side only)
 SPINE_TOP = WRIST_Z + 14  # tab that goes up into the palm
 SOCKET_TOP = -285.0
 SPINE_BOT = -310.0
@@ -186,7 +187,7 @@ def palm():
     # wrist block: wide enough to take all five strings coming up from the spools
     for sx in (-23.0, 23.0):
         for sy in (-31.0, 31.0):
-            blobs.append(blob((sx, sy, WRIST_Z + 6), (6, 6, 6), 20))
+            blobs.append(m.Manifold.cylinder(14, 6, 6, 32).translate((sx, sy, WRIST_Z)))   # vertical walls at the bed
     p = m.Manifold.batch_hull(blobs)
     p ^= box(-60, 60, -60, 60, WRIST_Z, 200)                       # flat bottom (prints on it)
     for name in ORDER:
@@ -194,6 +195,15 @@ def palm():
     Rt = finger_basis("thumb")
     foot = finger_pin("thumb") + Rt @ np.array([0, 0, -PALM_DROP - 2])
     p += m.Manifold.batch_hull([blob(foot, (8, 8, 8), 24), blob((4.0, 30.0, -60.0), (9, 9, 9), 24)])
+    # clearance for the thumb: cut away whatever the thumb's lower bone sweeps through when its
+    # base joint bends to the limit (+3 deg margin), then put the thumb's knuckle fork back
+    prox = finger_bones("thumb")[0]
+    sweep = None
+    for ang in (40, 55, 65, 72, 78, 83, 88):
+        b = posed("thumb", ang, [prox, prox])[0]
+        sweep = b if sweep is None else sweep + b
+    p -= sweep
+    p += place(knuckle_local(), "thumb")
     # string channels (straight, smooth) and elastic anchor channels (exit on the back)
     for name in ORDER:
         _, w, k = string_path(name)
@@ -214,8 +224,8 @@ def palm():
 def spine():
     s = box(-SPINE_T / 2, SPINE_T / 2, -SPINE_HW, SPINE_HW, SPINE_BOT, WRIST_Z)
     s += box(-SPINE_T / 2, SPINE_T / 2, -15.0, 15.0, WRIST_Z - 0.1, SPINE_TOP)     # palm tab
-    for sy in (-SPINE_HW, SPINE_HW - 3):                                           # edge ribs
-        s += box(-7.0, 7.0, sy, sy + 3, SPINE_BOT, WRIST_Z)
+    for sy in (-SPINE_HW, SPINE_HW - 3):                                           # edge ribs, back side only:
+        s += box(-RIB_D, SPINE_T / 2, sy, sy + 3, SPINE_BOT, WRIST_Z)              # front face stays flat for printing
     for name in ORDER:
         _, _, holes, (y, z0, z1) = servo_geom(name)
         s -= box(-10, 10, y - S_WID / 2 - 0.2, y + S_WID / 2 + 0.2, z0, z1)
@@ -233,17 +243,17 @@ def spine():
 
 def stand():
     hx, hy, r = 80.0, 70.0, 10.0
-    corners = [blob((sx * (hx - r), sy * (hy - r), PLATE_Z - PLATE_T / 2), (r, r, PLATE_T / 2), 32)
+    corners = [m.Manifold.cylinder(PLATE_T, r, r, 48).translate((sx * (hx - r), sy * (hy - r), PLATE_Z - PLATE_T))
                for sx in (-1, 1) for sy in (-1, 1)]
-    plate = m.Manifold.batch_hull(corners) ^ box(-hx, hx, -hy, hy, PLATE_Z - PLATE_T, PLATE_Z)
+    plate = m.Manifold.batch_hull(corners)
     sock = box(-12.0, 12.0, -38.0, 38.0, PLATE_Z - 0.1, SOCKET_TOP)
     sock += m.Manifold.batch_hull([box(-12, 12, -38, 38, PLATE_Z - 0.1, PLATE_Z + 0.1),
                                    box(-26, 26, -46, 46, PLATE_Z - 0.1, PLATE_Z + 0.1),
                                    box(-12, 12, -38, 38, PLATE_Z + 12, PLATE_Z + 12.1)])   # gusset flare
     st = plate + sock
     st -= box(-SPINE_T / 2 - 0.2, SPINE_T / 2 + 0.2, -SPINE_HW - 0.2, SPINE_HW + 0.2, SPINE_BOT, SOCKET_TOP + 1)
-    st -= box(-7.2, 7.2, -SPINE_HW - 0.2, -SPINE_HW + 3.2, SPINE_BOT, SOCKET_TOP + 1)
-    st -= box(-7.2, 7.2, SPINE_HW - 3.2, SPINE_HW + 0.2, SPINE_BOT, SOCKET_TOP + 1)
+    st -= box(-RIB_D - 0.2, SPINE_T / 2 + 0.2, -SPINE_HW - 0.2, -SPINE_HW + 3.2, SPINE_BOT, SOCKET_TOP + 1)
+    st -= box(-RIB_D - 0.2, SPINE_T / 2 + 0.2, SPINE_HW - 3.2, SPINE_HW + 0.2, SPINE_BOT, SOCKET_TOP + 1)
     for y in (-20.0, 20.0):
         st -= rod((-30, y, SPINE_BOT + 11), (30, y, SPINE_BOT + 11), PIN_D)
     # coin pockets (weight) at the corners: 26 mm coins / washers, 3.5 mm deep

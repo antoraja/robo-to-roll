@@ -31,7 +31,7 @@ The full hand stands upright on its own printed stand, so you can test it on a t
 ## Parts to print
 
 **Easiest:** open the 5 ready-made plates in `cad/plates/` in your slicer. Every part is
-already oriented and laid out for a 220 × 220 mm bed:
+already oriented and laid out for a 256 × 256 mm bed (Bambu P1S, settings in [03b](03b-bambu-p1s.md)):
 
 | Plate | Contents | Notes |
 |---|---|---|
@@ -46,7 +46,7 @@ Single parts are also in `cad/stl/hand/`:
 | File | Qty | Size (mm) | How to print |
 |---|---|---|---|
 | `stand.stl` | 1 | 160 × 140 × 33 | flat as exported, **15 % infill** |
-| `spine.stl` | 1 | 224 × 62 × 14 | flat as exported. **Place it diagonally** on a 220 mm bed |
+| `spine.stl` | 1 | 224 × 62 × 12 | flat front face on the bed, ribs up, no supports |
 | `palm.stl` | 1 | 58 × 89 × 109 | standing on its flat wrist as exported, **15 % infill**, supports *touching build plate* for the thumb boss |
 | `servo_spool_x5.stl` | 5 | Ø32 × 8 | flat |
 | `thumb_*`, `index_*`, `middle_*`, `ring_*`, `little_*` | 1 each (14 bones) | | flat on their backs, no supports, brim on the small tips |

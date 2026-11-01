@@ -24,7 +24,7 @@ sys.path.insert(0, HERE)
 import generate_parts as gp  # noqa: E402
 import hand  # noqa: E402
 
-BED = 220.0
+BED = 256.0          # Bambu Lab P1S build plate (256 x 256 mm)
 GAP = 6.0
 COLORS = {
     "finger": (232, 116, 42), "palm": (225, 228, 232), "spine": (120, 140, 156), "stand": (70, 84, 96),
@@ -121,13 +121,14 @@ def main():
         plates.append((f"fingers{'' if i == 0 else i + 1}", pl))
     plates.append(("palm", [("palm", print_oriented(P, (0, 0, 0)))]))
     # spine: lie flat and turn 45 deg so 224 mm fits a 220 mm bed diagonally
-    sp = print_oriented(SP, (0, 90, 0))
-    sp.apply_transform(trimesh.transformations.rotation_matrix(math.radians(45), (0, 0, 1)))
-    sp.apply_translation(-sp.bounds[0] + (BED - sp.extents[0]) / 2 * np.array([1, 1, 0]))
+    sp = print_oriented(SP, (0, 90, 0))                     # flat front face on the bed
+    if sp.extents[0] > BED - 2 * GAP:                       # only small beds need the diagonal
+        sp.apply_transform(trimesh.transformations.rotation_matrix(math.radians(45), (0, 0, 1)))
+    sp.apply_translation(-sp.bounds[0] + np.array([(BED - sp.extents[0]) / 2, (BED - sp.extents[1]) / 2, 0.0]))
     plates.append(("spine", [("spine", sp)]))
     plates.append(("stand", [("stand", print_oriented(ST, (0, 0, 0)))]))
 
-    print("Print plates (220 x 220 mm bed) -> plates/")
+    print(f"Print plates ({BED:.0f} x {BED:.0f} mm bed) -> plates/")
     manifest = []
     for i, (title, items) in enumerate(plates, 1):
         if title == "fit_test":

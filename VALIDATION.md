@@ -34,11 +34,23 @@ It checks, in order: the printable finger parts and joint range → the full han
 | **Firmware** | Compiles with `-Wall -Wextra -Werror` (against stand-in ESP32 headers) | ✅ |
 | | 32 behaviour tests: sliders, gestures, bad input, clamping, serial commands | ✅ |
 
+## Printability (Bambu Lab P1S, PLA): see docs/03b-bambu-p1s.md
+
+| Part | Orientation | Supports |
+|---|---|---|
+| 14 bones, 5 spools | flat back / flat | none (brim on bones) |
+| Spine | flat front face down, ribs up | none: was a 56 mm bridge before the ribs moved to the back only |
+| Stand | base down | none: straight walls now (was a rounded bottom edge) |
+| Palm | on its flat wrist | tree supports from the build plate only (~480 mm² under the knuckles) |
+
+All 5 plates fit the 256 × 256 mm bed. About 290 g of PLA, ~13 h of printing.
+
 ## Problems this validation found, and fixed
 
 | Problem | Fix |
 |---|---|
 | **Servo leads are short.** The ordered MG90S have 20 cm leads, and the top (middle-finger) servo needs ~20.5 cm to reach the breadboard; jumpers must bridge the gap | Use **20 cm** male-male jumpers between each servo plug and the breadboard (tape the joints). The ESP32 plugs straight into the breadboard, so no male-female jumpers are needed |
+| **Thumb rubbed the palm** when its base joint bent fully (8.7 mm³ contact) | Clearance groove cut into the palm along the thumb's path: 0 mm³ at every angle |
 | **Thumb over-pulled.** The thumb has 2 joints, so it needs only ~110° of servo. The old default would have pushed it against its stop | Firmware default for the thumb is now 10° → 115° |
 | **Power spike at switch-on.** All 5 servos jumping at once can pull > 3 A and reset the ESP32 | Firmware now starts the servos one by one (250 ms apart) |
 | **Servos straining at the end stop** if calibrated too far | Calibration note: set `closedAngle` a few degrees **before** the finger stops |
