@@ -232,7 +232,11 @@ def spool():
     core = m.Manifold.cylinder(SPOOL_CORE_W, SPOOL_R, SPOOL_R, SEG).translate((0, 0, SPOOL_FLANGE_T))
     f1 = m.Manifold.cylinder(SPOOL_FLANGE_T, SPOOL_FLANGE_R, SPOOL_FLANGE_R, SEG)
     f2 = f1.translate((0, 0, SPOOL_FLANGE_T + SPOOL_CORE_W))
-    s = core + f1 + f2
+    # 45-degree cone under the top flange so it prints without a flat overhang
+    lip = SPOOL_FLANGE_R - SPOOL_R
+    cone = m.Manifold.cylinder(lip, SPOOL_R, SPOOL_FLANGE_R, SEG).translate(
+        (0, 0, SPOOL_FLANGE_T + SPOOL_CORE_W - lip))
+    s = core + f1 + f2 + cone
     total = 2 * SPOOL_FLANGE_T + SPOOL_CORE_W
     s -= m.Manifold.cylinder(total + 2, 2.0, 2.0, SEG).translate((0, 0, -1))  # screwdriver access to horn screw
     # two tendon anchor holes through the core, near the rim, opposite each other

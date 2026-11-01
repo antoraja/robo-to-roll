@@ -22,8 +22,19 @@ there are no overhangs, and the pin holes come out round.
 | Layer height | 0.2 mm (0.16 mm for the finger if you want smoother joints) | |
 | Walls / perimeters | **4** | Strength around the pin holes |
 | Infill | 30 % | |
-| Supports | **Off** for the finger bones and spool. Base: off; turn on *"supports touching build plate only"* only if the 37 mm roof bridge sags on your printer | |
+| Supports | **Off** for the finger bones and spool. **Base: on**, *"supports touching build plate only"* (the roof under the finger is a 37 mm bridge) | |
 | Brim | **Yes for `finger_distal`** (it stands on a small flat strip), optional for the base | |
+
+## Print order: test the fit first (saves filament)
+
+1. **Print `finger_middle` + `finger_distal` first** (~10 g, about 1 hour). Check the joint
+   pin fit and that the string and elastic slide through the channels (see the fit test
+   below). This tells you whether **your** printer's holes come out right.
+2. If the fit is good, print `finger_proximal` and the `servo_spool`.
+3. Print `finger_base` last. It's the biggest part (~45 g with supports).
+
+If the holes are off, tell me how (too tight or too loose, and by how much) and I'll
+regenerate all the parts with adjusted sizes before you print the big ones.
 
 ## How the finger is shaped (and why)
 
