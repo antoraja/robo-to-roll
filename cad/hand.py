@@ -358,7 +358,7 @@ def seg_dist(p1, q1, p2, q2):
     return float(np.linalg.norm((p1 + d1 * s) - (p2 + d2 * t)))
 
 
-SERVO_LEAD = 250.0        # MG90S lead length (mm), typical 25 cm
+SERVO_LEAD = 200.0        # MG90S lead length (mm): the ordered 6-pack has 20 cm leads
 
 
 def extra_checks(P):
@@ -397,14 +397,14 @@ def extra_checks(P):
     slot = box(-SPINE_T / 2 - 0.2, SPINE_T / 2 + 0.2, -15.2, 15.2, WRIST_Z - 1, SPINE_TOP + 0.3)
     hit = sum((rod(*elastics[n], gp.EXT_D) ^ slot).volume() + (rod(*strings[n], STRING_D) ^ slot).volume() for n in ORDER)
     print(f"   channels cutting into the spine slot: {hit:.1f} mm3")
-    print("   servo lead reach (MG90S lead ~25 cm) to the breadboard behind the arm:")
+    print("   servo lead reach (MG90S lead 20 cm) to the breadboard behind the arm:")
     bb = np.array([-50.0, 0.0, PLATE_Z + 9])
     for n in ORDER:
         body, _, _, _ = servo_geom(n)
         lo, hi = body.bounding_box()[:3], body.bounding_box()[3:]
         exit_pt = np.array([(lo[0] + hi[0]) / 2, SERVOS[n]["y"], lo[2]])   # lead leaves the bottom end of the case
         route = abs(exit_pt[2] - (PLATE_Z + 2)) + abs(exit_pt[0] - bb[0]) + abs(exit_pt[1] - bb[1]) + 30  # +30 slack
-        ok = "OK" if route <= SERVO_LEAD - 20 else "tight - fine with the male-male jumpers to the breadboard (+10-20 cm)"
+        ok = "OK" if route <= SERVO_LEAD - 20 else "short - bridged by the 20 cm male-male jumpers to the breadboard"
         print(f"      {n:<7} needs ~{route:3.0f} mm  {ok}")
 
 

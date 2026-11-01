@@ -13,7 +13,7 @@ offer with good reviews. Prices are typical amazon.de prices (Nov 2026) and chan
 |---|---|---|---|---|---|
 | 1 | **MG90S servo**, metal gear, pack of 5–6 | 6 | [amazon.de: MG90S Servo 6 Stück](https://www.amazon.de/s?k=MG90S+Servo+Metallgetriebe+6+St%C3%BCck) | "MG90S" + "Metallgetriebe". Not SG90 (plastic gears) | 15–20 |
 | 2 | **ESP32 DevKit** (ESP-WROOM-32, 30 pins) | 1 | [amazon.de: ESP32 NodeMCU Development Board](https://www.amazon.de/s?k=ESP32+NodeMCU+Development+Board+WROOM-32+30+pin) | AZ-Delivery or similar, **USB-C** if offered. A 2–3 pack is often only slightly more | 7–10 |
-| 3 | **Jumper wires** M-M, M-F, F-F | 1 set | [amazon.de: Jumper Kabel Set](https://www.amazon.de/s?k=Jumper+Kabel+Set+male+female+120+St%C3%BCck) | "3 × 40" set with all three kinds | 5–7 |
+| 3 | **Jumper wires** M-M, M-F, F-F | 1 set | [amazon.de: Jumper Kabel Set](https://www.amazon.de/s?k=Jumper+Kabel+Set+male+female+120+St%C3%BCck) | **20 cm**, "3 × 40" set with all three kinds. 10 cm is too short: ESP32 and breadboard sit ~11 cm apart and the 20 cm servo leads need extending | 5–7 |
 | 4 | **Breadboard**, 400 holes | 1 | [amazon.de: Breadboard 400](https://www.amazon.de/s?k=Breadboard+400+Kontakte) | 400 points (fits the tray in the stand). Packs of 3 are fine | 4–6 |
 | 5 | **5 V / 3 A power supply** (barrel plug) | 1 | [amazon.de: Netzteil 5V 3A Hohlstecker](https://www.amazon.de/s?k=Netzteil+5V+3A+5.5x2.1+Hohlstecker) | 5.5 × 2.1 mm plug, ≥ 3 A | 8–11 |
 | 6 | **DC socket → screw terminal adapter** | 1 | [amazon.de: DC Buchse Schraubklemme Adapter](https://www.amazon.de/s?k=DC+Buchse+5.5x2.1+Schraubklemme+Adapter) | Female 5.5 × 2.1 mm, packs of 5–10 | 4–6 |

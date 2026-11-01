@@ -38,7 +38,7 @@ It checks, in order: the printable finger parts and joint range → the full han
 
 | Problem | Fix |
 |---|---|
-| **Top (middle-finger) servo lead is tight.** The route is ~205 mm (+30 mm slack), and MG90S leads are ~250 mm | No purchase needed: the **male-male jumpers** between each servo plug and the breadboard add 10–20 cm. Tape each plug-jumper joint. 30 cm servo extensions are an optional, neater alternative |
+| **Servo leads are short.** The ordered MG90S have 20 cm leads, and the top (middle-finger) servo needs ~20.5 cm to reach the breadboard; the ESP32 sits ~11 cm from the breadboard | Use **20 cm** male-male jumpers between each servo plug and the breadboard (tape the joints), and 20 cm male-female jumpers from the ESP32. 10 cm jumpers are too short |
 | **Thumb over-pulled.** The thumb has 2 joints, so it needs only ~110° of servo. The old default would have pushed it against its stop | Firmware default for the thumb is now 10° → 115° |
 | **Power spike at switch-on.** All 5 servos jumping at once can pull > 3 A and reset the ESP32 | Firmware now starts the servos one by one (250 ms apart) |
 | **Servos straining at the end stop** if calibrated too far | Calibration note: set `closedAngle` a few degrees **before** the finger stops |
