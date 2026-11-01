@@ -225,6 +225,9 @@ def spine():
         s -= rod((-10, y, WRIST_Z + 7), (10, y, WRIST_Z + 7), PIN_D)
     for y in (-20.0, 20.0):                                                        # stand pins
         s -= rod((-10, y, SPINE_BOT + 11), (10, y, SPINE_BOT + 11), PIN_D)
+    # FRONT marker: a 5 mm dot pressed into the front (palm-side) face just below the wrist.
+    # Front servos (middle, thumb, little) mount with their tabs and spools on this side.
+    s -= rod((SPINE_T / 2 - 1.2, 0.0, WRIST_Z - 12), (SPINE_T / 2 + 1, 0.0, WRIST_Z - 12), 5.0)
     return s
 
 

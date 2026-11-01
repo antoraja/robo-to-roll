@@ -11,3 +11,7 @@ video/electronics/frames/
 video/electronics/_tts/
 video/electronics/*.log
 video/electronics/still_*.png
+video/assembly/frames/
+video/assembly/_tts/
+video/assembly/*.log
+video/assembly/still_*.png
