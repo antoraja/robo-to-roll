@@ -115,6 +115,10 @@ Flexy-Hand and e-NABLE:
      **into hole 2** from the rounded side, so the line loops around the little bar between the holes;
    - tie the short end to the long end **behind the cap** (flat side) with 3 knots, leaving a 1 cm tail,
      and melt the tail end with the lighter into a small blob. No glue needed.
+   **Already printed the original tips (small knot notch, no socket)?** Don't reprint: use a
+   **filament toggle** instead of the cap. Tie the line around the middle of a **5 mm piece of
+   1.75 mm filament** (3 knots, melt the tail). The 5 mm piece lies across the 2 mm hole in the
+   fingertip notch and can't pull through.
 3. Thread the long end into the **socket at the fingertip** and down the **palm-side channel**
    (the thin one). Pull until the **cap slides into its socket**, flush with the fingertip. The
    string tension holds it there.
