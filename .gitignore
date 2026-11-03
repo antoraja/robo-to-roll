@@ -15,3 +15,7 @@ video/assembly/frames/
 video/assembly/_tts/
 video/assembly/*.log
 video/assembly/still_*.png
+video/finger_strings/frames/
+video/finger_strings/_tts/
+video/finger_strings/*.log
+video/finger_strings/still_*.png
