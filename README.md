@@ -21,6 +21,7 @@ It is designed for someone with a 3D printer and little electronics experience:
 | **Print plates**, laid out for a 256 × 256 mm bed (**Bambu Lab P1S**; settings in [`docs/03b-bambu-p1s.md`](docs/03b-bambu-p1s.md)) | [`cad/plates/`](cad/plates/): `plate_1_fit_test.3mf` … `plate_5_stand.3mf` |
 | **Shopping list with amazon.de links** | [`docs/02b-amazon-de.md`](docs/02b-amazon-de.md) |
 | **Design validation** (all checks, what was fixed, pre-build checklist): run `./validate.sh` | [`VALIDATION.md`](VALIDATION.md) |
+| **Design lessons**: every flaw found so far and the rule for the next design | [`docs/DESIGN_LESSONS.md`](docs/DESIGN_LESSONS.md) |
 | Step-by-step build guide (text) | [`docs/05-full-hand.md`](docs/05-full-hand.md) |
 
 ## The roadmap
