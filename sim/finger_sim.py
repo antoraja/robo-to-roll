@@ -72,6 +72,7 @@ V2 = dict(mode="per_joint", cord=2.0, pre=[1.3, 1.3, 1.3], ext_x=EXT_X)   # N pe
 # v3: one elastic strand in the middle of the back, wrapping over a rounded groove in each
 # knuckle (constant leverage), locked in every bone
 KNUCKLE_R = (gp.EXT_Z - gp.ZP) * mm      # cord centre runs on this radius around the pin
+V3C = dict(mode="knuckle_continuous", cord=2.0, pre=[2.4], ext_x=EXT_X)   # no lock pins: knots at both ends
 V3 = dict(mode="knuckle", cord=2.0, pre=[2.4, 2.4, 2.4], ext_x=EXT_X)   # CURRENT design: 2 mm cord stretched ~50%
 
 GRAVITY = {"finger up": (0, 0, -G), "palm up": (-G, 0, 0), "palm down": (G, 0, 0)}
@@ -108,6 +109,15 @@ def build(design, gravity=(0, 0, -G), obstacle=None):
         tendons = (f'<spatial name="el" stiffness="{k}" springlength="SL0"><site site="eb0"/><site site="eb"/>'
                    + "".join(f'<site site="e{i}a"/><site site="e{i}b"/>' for i in range(len(L))) + "</spatial>")
         springs = [("el", k, 2 * design["pre"])]
+    elif design["mode"] == "knuckle_continuous":
+        # one elastic, knotted at the palm and at the fingertip, wrapping every rounded knuckle (no lock pins)
+        nb = len(L)
+        pts = '<site site="lockb"/>' + "".join(f'<geom geom="knuckle{j}" sidesite="kside{j}"/><site site="lock{j}"/>' for j in range(nb))
+        tip_site = f"lock{nb - 1}"
+        seg_len = BASE_LOCK + sum(L[:-1]) + L[-1]
+        k = EA / seg_len
+        tendons = f'<spatial name="el0" stiffness="{k}" springlength="SL0">{pts}</spatial>'
+        springs = [("el0", k, design["pre"][0])]
     elif design["mode"] == "knuckle":
         tendons, springs = "", []
         for j in range(len(L)):

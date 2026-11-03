@@ -50,6 +50,7 @@ All 5 plates fit the 256 × 256 mm bed. About 290 g of PLA, ~13 h of printing.
 | Problem | Fix |
 |---|---|
 | **Servo leads are short.** The ordered MG90S have 20 cm leads, and the top (middle-finger) servo needs ~20.5 cm to reach the breadboard; jumpers must bridge the gap | Use **20 cm** male-male jumpers between each servo plug and the breadboard (tape the joints). The ESP32 plugs straight into the breadboard, so no male-female jumpers are needed |
+| **Elastic lock pins don't grip** (found during the build): the pin only reaches 0.57 mm into the 2.6 mm channel, leaving 2.03 mm for a 2.0 mm cord | Lock pins dropped: the elastic is knotted at the fingertip and at the palm. Simulated: same smooth curl, same 38 % servo load, same hold-open margins |
 | **Thumb rubbed the palm** when its base joint bent fully (8.7 mm³ contact) | Clearance groove cut into the palm along the thumb's path: 0 mm³ at every angle |
 | **Thumb over-pulled.** The thumb has 2 joints, so it needs only ~110° of servo. The old default would have pushed it against its stop | Firmware default for the thumb is now 10° → 115° |
 | **Power spike at switch-on.** All 5 servos jumping at once can pull > 3 A and reset the ESP32 | Firmware now starts the servos one by one (250 ms apart) |

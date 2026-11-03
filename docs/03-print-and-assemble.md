@@ -127,25 +127,20 @@ Flexy-Hand and e-NABLE:
 4. With the servo at its **open** angle and the finger **straight**, the line should be just
    barely tight, with no slack. Adjust by re-tying or by winding it once around the spool.
 
-## Thread and lock the elastic (return spring)
+## Thread the elastic (return spring)
 
-The elastic runs along the **back** of the finger and over a rounded groove at each knuckle.
-It's pinched in every bone by a **lock pin**, so each joint gets its own spring. The
-simulation showed this is what makes the joints bend smoothly instead of snapping
-(see `sim/README.md`).
+The elastic runs along the **back** of the finger, over the rounded groove at each knuckle, and is
+**knotted at both ends**. (Earlier versions locked it with filament pins in the small cross holes;
+those pins don't grip the 2 mm cord, so **leave the cross holes empty**. The simulation shows the
+knotted version works just as well: smooth curl, same servo load, finger stays open.)
 
-1. Cut ~25 cm of **2 mm** round elastic cord. Thread it **down** from the fingertip through the
-   back channel of all three bones and the base, until ~5 cm comes out under the base roof.
-2. Push a ~17 mm filament **lock pin** through the cross hole of the **fingertip** bone. It
-   pinches the cord. Melt the pin ends like the joint pins.
-3. With a pen, make two marks on the cord **50 mm apart** just below the base. Pull the cord
-   from underneath until the marks are **75 mm apart** (≈50 % stretch, the tension the
-   simulation was checked with).
-4. Holding that stretch, push lock pins into the **middle** bone, the **lower** bone and the
-   **base** cross hole. Trim the spare cord.
-5. Test: the finger should **spring back straight firmly**, even with the base held upside
-   down. If it's floppy, re-do step 3 with more stretch. If the servo struggles later, use a
-   little less.
+1. Cut ~25 cm of **2 mm** round elastic cord.
+2. Tie a **fat knot** (double overhand) at one end, close to the end.
+3. Thread the other end **into the wide hole at the fingertip**, on the back, and down through all
+   the bones until the knot sits against the fingertip.
+4. Leave the rest hanging out of the bottom of the finger. It's stretched and knotted later, when the
+   finger is pinned to the palm (guide 05): mark two dots **5 cm apart**, pull until they're
+   **7.5 cm apart**, and tie a fat knot against the back of the palm.
 
 ## How it should behave
 

@@ -88,14 +88,13 @@ The narrated video `video/assembly/robohand_full_assembly.mp4` shows every step 
 | Pins for | Qty | Length |
 |---|---|---|
 | Finger joints (bone to bone, finger to palm) | 14 | 17 mm |
-| Elastic locks (cross hole in each bone) | 14 | 17 mm |
 | Spine → stand (through the socket) | 2 | 26 mm |
 | Palm → spine (through the bottom of the palm) | 2 | 45 mm |
 
 Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
 
-1. **Fingers** (guide 03): joint pins with melted ends, string knotted in the tip and glued,
-   elastic locked in the tip, stretched 50 % (marks 50 → 75 mm), then locked in the other bones.
+1. **Fingers** (guide 03): joint pins with melted ends, string anchored at the tip, elastic knotted
+   at the fingertip and threaded down the back (no lock pins).
 2. **Stand:** 4 coins into the corner pockets (drop of glue), 4 hot-glue dots underneath as feet.
 3. **Spine:** the small round **dot** below the top marks the **FRONT** (palm side).
    Push each servo through its window from the spool side: tabs on the spine, **shaft at the
@@ -107,8 +106,8 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
 6. **Spools:** with the power on, press a single-arm horn onto each shaft (centre screw) and
    glue a spool flat onto it. Let it cure 5 minutes. **Unplug the power.**
 7. **Fingers onto the palm:** pin each finger to its knuckle fork. The thumb goes on the angled boss.
-8. **Elastic knots:** each elastic comes out on the back of the palm. Pull until the finger is
-   straight and firm, then tie a fat knot against the palm.
+8. **Elastic knots:** each elastic comes out on the back of the palm. Mark two dots 5 cm apart,
+   pull until they're 7.5 cm apart (finger straight and firm), then tie a fat knot against the palm.
 9. **Palm onto the spine:** bundle the 5 strings (they come out under the wrist) with tape,
    feed them down beside the spine, push the palm onto the spine's top tab, 2 pins.
 10. **Strings to the spools:** each string runs straight down to its own spool (table above).
