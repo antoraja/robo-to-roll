@@ -228,6 +228,24 @@ def phalanx(length, distal=False, which=None):
     return part ^ skin(0.0, length, s0, s1)
 
 
+STRING_BUTTON_D = 7.0     # anchor "button" for the string at the fingertip (no glue, can't pull through)
+STRING_BUTTON_T = 2.2
+STRING_BUTTON_HOLE = 1.3  # two holes for 0.3 mm braided line, looped like a shirt button
+STRING_BUTTON_PITCH = 3.0
+
+
+def string_button():
+    """Small button the string is tied to; it rests on the fingertip over the 2 mm string hole."""
+    b = m.Manifold.cylinder(STRING_BUTTON_T, STRING_BUTTON_D / 2, STRING_BUTTON_D / 2, SEG)
+    # soften the top edge
+    b ^= m.Manifold.cylinder(STRING_BUTTON_T, STRING_BUTTON_D / 2 + 0.6, STRING_BUTTON_D / 2 - 0.5, SEG)
+    for x in (-STRING_BUTTON_PITCH / 2, STRING_BUTTON_PITCH / 2):
+        b -= m.Manifold.cylinder(STRING_BUTTON_T + 2, STRING_BUTTON_HOLE / 2, STRING_BUTTON_HOLE / 2, 24).translate((x, 0, -1))
+    # shallow groove on top between the holes, so the loop of line sits flush
+    b -= box(-STRING_BUTTON_PITCH / 2, STRING_BUTTON_PITCH / 2, -0.4, 0.4, STRING_BUTTON_T - 0.5, STRING_BUTTON_T + 1)
+    return b
+
+
 def spool():
     core = m.Manifold.cylinder(SPOOL_CORE_W, SPOOL_R, SPOOL_R, SEG).translate((0, 0, SPOOL_FLANGE_T))
     f1 = m.Manifold.cylinder(SPOOL_FLANGE_T, SPOOL_FLANGE_R, SPOOL_FLANGE_R, SEG)
@@ -372,6 +390,7 @@ def main():
     save(phalanx(L_DIST, distal=True), "finger_distal.stl", flip_top_down=True)
     print("3-D joint check (real parts, rotated):", joint_check_3d())
     save(spool(), "servo_spool.stl")
+    save(string_button(), "string_button.stl")
     b, info = base()
     save(b, "finger_base.stl")
     print("Base info:", {k: tuple(round(v, 1) for v in val) if isinstance(val, tuple) else round(val, 1)

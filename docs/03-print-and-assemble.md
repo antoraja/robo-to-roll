@@ -107,10 +107,16 @@ Flexy-Hand and e-NABLE:
 
 ## Thread the tendon (flexor)
 
-1. Cut ~40 cm of braided line.
-2. Tie a fat knot (double overhand) at one end. Thread the line **from the fingertip down**
-   through the **palm-side channel** (the single channel near the palm, centre). Pull until the
-   knot sits in the small recess at the fingertip, then add a drop of super glue on the knot.
+1. Cut ~60 cm of braided line.
+2. **Anchor button** (`string_button.stl`, plate 6): a knot alone slips through the 2 mm hole,
+   because 0.3 mm braided line is thin and slippery. So the line is looped through the button instead:
+   - push one end **up through hole 1** of the button and **down through hole 2**, then do it
+     **once more** (two loops around the bar between the holes);
+   - tie the short end to the long end **under the button** with 3 knots, leaving a 1 cm tail;
+   - **no glue needed:** melt the very end of the tail with the lighter into a small blob.
+   The button holds the line by the bar between its holes, so even if the knot slipped, it can't pull through.
+3. Thread the long end **from the fingertip down** through the **palm-side channel** (the thin
+   one). Pull until the button sits against the fingertip.
 3. Continue through the hole in the base roof into the bay. Pass the line through one of the
    spool's small holes via the slot in the rim, and tie it.
 4. With the servo at its **open** angle and the finger **straight**, the line should be just
