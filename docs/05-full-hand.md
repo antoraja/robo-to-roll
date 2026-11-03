@@ -83,8 +83,16 @@ Label each servo cable with tape as you mount it.
 
 The narrated video `video/assembly/robohand_full_assembly.mp4` shows every step below.
 
-**Pins:** cut 1.75 mm filament into **17 mm** pieces, about 35 in total: 14 finger joints,
-14 elastic locks, 2 spine → stand, 2 palm → spine, plus spares.
+**Pins:** cut them from your own 1.75 mm printer filament (from the PLA spool; not a shopping-list item):
+
+| Pins for | Qty | Length |
+|---|---|---|
+| Finger joints (bone to bone, finger to palm) | 14 | 17 mm |
+| Elastic locks (cross hole in each bone) | 14 | 17 mm |
+| Spine → stand (through the socket) | 2 | 26 mm |
+| Palm → spine (through the bottom of the palm) | 2 | 45 mm |
+
+Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
 
 1. **Fingers** (guide 03): joint pins with melted ends, string knotted in the tip and glued,
    elastic locked in the tip, stretched 50 % (marks 50 → 75 mm), then locked in the other bones.
