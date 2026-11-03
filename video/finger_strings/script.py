@@ -14,51 +14,44 @@ S = []
 def scene(id, text, say=None, part=None):
     S.append(dict(id=id, text=text, say=say or text, part=part))
 
-scene("intro", "This video shows how to put the string and the elastic into one finger. Afterwards you do exactly the same for the other four fingers.",
-      "This video shows how to put the string, and the elastic, into one finger. Afterwards, you do exactly the same for the other four fingers.")
-scene("items", "From your shopping list you need item 1, the braided fishing line (0.30 mm), and item 2, the 2 mm rubber cord. Also: super glue, scissors, a ruler, a pen and three 1.7 cm filament pins.",
-      "From your shopping list, you need item one, the braided fishing line, zero point three millimetres. And item two, the two millimetre rubber cord. Also: super glue, scissors, a ruler, a pen, and three filament pins, 1.7 centimetres long.", part="What you need")
+scene("intro", "This video shows how to put the string and the elastic into one finger, the updated way: no glue and no lock pins. Afterwards you do the same for the other four fingers.",
+      "This video shows how to put the string and the elastic into one finger, the updated way. No glue, and no lock pins. Afterwards, you do the same for the other four fingers.")
+scene("items", "From your shopping list: item 1, the braided fishing line (0.30 mm), and item 2, the 2 mm rubber cord. Also: a 5 mm piece of printer filament, scissors or side cutters, a ruler, a pen and a lighter.",
+      "From your shopping list, you need item one, the braided fishing line, zero point three millimetres. And item two, the two millimetre rubber cord. Also: a five millimetre piece of printer filament, scissors or side cutters, a ruler, a pen, and a lighter.", part="What you need")
 scene("sides", "First find the two sides of the finger. The BACK has a small flat lip at each joint. The other side is the PALM side. The finger bends towards the palm side.",
       "First, find the two sides of the finger. The back has a small flat lip at each joint. The other side is the palm side. The finger bends towards the palm side.", part="Know your finger")
 scene("channels", "Inside, two long holes run through all the bones: a THIN one on the palm side for the string, and a WIDE one on the back for the elastic.",
       "Inside, two long holes run through all the bones. A thin one on the palm side, for the string. And a wide one on the back, for the elastic.")
-scene("tipholes", "Look at the end of the fingertip: you can see both holes. The thin hole near the palm side has a small pocket around it. That pocket holds the knot.",
-      "Look at the end of the fingertip. You can see both holes. The thin hole, near the palm side, has a small pocket around it. That pocket holds the knot.")
-
+scene("tipholes", "At the fingertip you can see both holes. The thin hole sits in a small notch near the palm side. The wide hole is near the back.",
+      "At the fingertip, you can see both holes. The thin hole sits in a small notch, near the palm side. The wide hole is near the back.")
 scene("cut_line", "Part 1, the string. Cut 60 cm of the braided fishing line.",
       "Part one, the string. Cut 60 centimetres of the braided fishing line.", part="The string")
-scene("knot", "Tie a knot at one end: make a loop, pass the end through it, and pull tight. Then tie a second knot right on top of the first. This double knot is fatter than the hole, so it can't slip through.",
-      "Tie a knot at one end. Make a loop, pass the end through it, and pull tight. Then tie a second knot, right on top of the first one. This double knot is fatter than the hole, so it can't slip through.")
-scene("stiffen", "Tip: braided line is floppy. Put a drop of super glue on the last 2 cm of the OTHER end and let it dry. Cut it at an angle. Now it is stiff like a needle.",
-      "A tip. Braided line is floppy. Put a drop of super glue on the last two centimetres of the other end, and let it dry. Cut it at an angle. Now it is stiff, like a needle.")
-scene("thread_in", "Push the stiff end into the THIN hole at the fingertip.",
-      "Push the stiff end into the thin hole at the fingertip.")
+scene("toggle", "Cut a 5 mm piece of filament: this is the toggle. Lay the line over its middle and tie it around the piece with three tight knots. Melt the short tail with the lighter.",
+      "Cut a five millimetre piece of filament. This is the toggle. Lay the line over its middle, and tie it around the piece with three tight knots. Melt the short tail with the lighter.")
+scene("why_toggle", "Why: a knot alone slips through the 2 mm hole, because the line is so thin. The 5 mm toggle lies across the hole and can never pull through. No glue needed.",
+      "Why? A knot alone slips through the two millimetre hole, because the line is so thin. The five millimetre toggle lies across the hole, and can never pull through. No glue needed.")
+scene("thread_in", "Cut the free end of the line at an angle and push it into the THIN hole at the fingertip.",
+      "Cut the free end of the line at an angle, and push it into the thin hole at the fingertip.")
 scene("thread_through", "Keep pushing. At every joint the line crosses a small gap. Bend the finger a little so the next hole lines up, and guide the line in. If it gets stuck, clear the hole with a piece of filament first.",
       "Keep pushing. At every joint, the line crosses a small gap. Bend the finger a little, so the next hole lines up, and guide the line in. If it gets stuck, clear the hole with a piece of filament first.")
-scene("pull", "The line comes out at the other end of the finger, under the round tab. Pull it until the knot sits tight in the pocket at the fingertip.",
-      "The line comes out at the other end of the finger, under the round tab. Pull it, until the knot sits tight in the pocket at the fingertip.")
-scene("glue", "Put ONE small drop of super glue on the knot and let it dry for a minute. Keep glue away from the joints.",
-      "Put one small drop of super glue on the knot, and let it dry for a minute. Keep glue away from the joints.")
+scene("pull", "The line comes out at the other end, under the round tab. Pull until the toggle lies across the notch at the fingertip.",
+      "The line comes out at the other end, under the round tab. Pull, until the toggle lies across the notch at the fingertip.")
+scene("cut_elastic", "Part 2, the elastic. Cut 25 cm of the 2 mm rubber cord, and tie a fat double knot at one end.",
+      "Part two, the elastic. Cut 25 centimetres of the two millimetre rubber cord, and tie a fat double knot at one end.", part="The elastic")
+scene("elastic_in", "Push the other end into the WIDE hole at the fingertip, on the back, and through all the bones, until the knot sits against the fingertip.",
+      "Push the other end into the wide hole at the fingertip, on the back, and through all the bones, until the knot sits against the fingertip.")
+scene("no_pins", "Leave the small cross holes in the middle of the bones EMPTY. Lock pins are not used any more: they cannot grip the 2 mm cord.",
+      "Leave the small cross holes in the middle of the bones empty. Lock pins are not used any more. They cannot grip the two millimetre cord.")
+scene("hang", "Leave the rest of the elastic hanging out of the bottom of the finger. It is stretched and knotted later, at the palm.",
+      "Leave the rest of the elastic hanging out of the bottom of the finger. It is stretched, and knotted, later, at the palm.")
+scene("later_palm", "Later, at the palm: make two pen marks 5 cm apart on the hanging elastic, pull until they are 7.5 cm apart with the finger straight, and tie a fat knot against the back of the palm.",
+      "Later, at the palm. Make two pen marks, five centimetres apart, on the hanging elastic. Pull until they are 7.5 centimetres apart, with the finger straight, and tie a fat knot against the back of the palm.", part="Later, at the palm")
+scene("check", "Check now: the finger bends freely, and pulling the string curls it. It springs back straight once the elastic is knotted at the palm.",
+      "Check now. The finger bends freely, and pulling the string curls it. It springs back straight, once the elastic is knotted at the palm.", part="Check")
+scene("others", "Do the same for the other fingers. The thumb works exactly the same way, it just has two bones.",
+      "Do the same for the other fingers. The thumb works exactly the same way. It just has two bones.")
 
-scene("cut_elastic", "Part 2, the elastic. Cut 25 cm of the 2 mm rubber cord. Cut the end at an angle; a little tape wrapped around the end makes it easier to push.",
-      "Part two, the elastic. Cut 25 centimetres of the two millimetre rubber cord. Cut the end at an angle. A little tape wrapped around the end makes it easier to push.", part="The elastic")
-scene("elastic_in", "Push the elastic into the WIDE hole at the fingertip, on the back side, and through all the bones until it comes out at the other end.",
-      "Push the elastic into the wide hole at the fingertip, on the back side, and through all the bones, until it comes out at the other end.")
-scene("lock_tip", "Lock it in the tip: push a 1.7 cm filament pin through the small cross hole in the side of the tip bone. The pin pinches the elastic.",
-      "Lock it in the tip. Push a 1.7 centimetre filament pin through the small cross hole, in the side of the tip bone. The pin pinches the elastic.")
-scene("marks", "Below the finger, make two pen marks on the elastic, 5 cm apart.",
-      "Below the finger, make two pen marks on the elastic, five centimetres apart.")
-scene("stretch", "Pull the elastic until the two marks are 7.5 cm apart, and hold it there.",
-      "Pull the elastic, until the two marks are 7.5 centimetres apart, and hold it there.")
-scene("lock_rest", "While holding it, push pins through the cross holes of the middle bone and the lower bone. Then let go.",
-      "While holding it, push pins through the cross holes of the middle bone, and the lower bone. Then let go.")
 
-scene("check", "Check: bend the finger and let go. It springs back straight. Pull the string: the finger curls.",
-      "Check. Bend the finger, and let go. It springs back straight. Pull the string. The finger curls.", part="Check")
-scene("ends", "Leave the loose ends of the string and the elastic hanging. They are connected later at the palm and the servo spools.",
-      "Leave the loose ends of the string and the elastic hanging. They are connected later, at the palm, and at the servo spools.")
-scene("others", "Now do the same for the other fingers. The thumb has only two bones, so it needs two lock pins instead of three.",
-      "Now do the same for the other fingers. The thumb has only two bones, so it needs two lock pins, instead of three.")
 def speak(text, path):
     subprocess.run(["espeak-ng", "-v", VOICE, "-s", str(SPEED), "-a", "110", "-w", path, text], check=True,
                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

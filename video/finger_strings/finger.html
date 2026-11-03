@@ -95,7 +95,8 @@ joints.forEach((j, i) => {
 // lock pins
 const lockPins = joints.map((j, i) => { const p = new THREE.Mesh(new THREE.CylinderGeometry(.9, .9, 17, 12), pinMat); j.add(p); p.userData.x = L[i] / 2; return p; });
 // knot
-const knot = new THREE.Mesh(new THREE.SphereGeometry(1.8, 16, 12), new THREE.MeshStandardMaterial({ color: '#a8122a' })); joints[2].add(knot);
+const knot = new THREE.Mesh(new THREE.CylinderGeometry(0.88, 0.88, 5, 16), pinMat); joints[2].add(knot);   // 5 mm filament toggle (cylinder along y)
+const eKnot = new THREE.Mesh(new THREE.SphereGeometry(2.3, 16, 12), new THREE.MeshStandardMaterial({ color: '#b88a00' })); joints[2].add(eKnot);
 const glueDrop = new THREE.Mesh(new THREE.SphereGeometry(1.4, 16, 12), new THREE.MeshStandardMaterial({ color: '#dff3ff', transparent: true, opacity: .85 })); joints[2].add(glueDrop);
 
 const tubeLine = new THREE.Mesh(new THREE.BufferGeometry(), lineMat); root.add(tubeLine);
@@ -125,11 +126,11 @@ function setTube(mesh, pts, r) {
 const CAM = {
   intro: [[30, -280, 140], [0, 0, 10]], items: [[30, -280, 140], [0, 0, 10]],
   sides: [[0, -230, 90], [0, 0, 5]], channels: [[0, -200, 70], [0, 0, 18]], tipholes: [[120, -55, 40], [48, 0, 18]],
-  cut_line: [[0, -230, 90], [0, 0, 10]], knot: [[0, -230, 90], [0, 0, 10]], stiffen: [[0, -230, 90], [0, 0, 10]],
-  thread_in: [[110, -90, 50], [50, 0, 14]], thread_through: [[0, -200, 70], [0, 0, 14]], pull: [[-20, -200, 70], [-20, 0, 14]],
-  glue: [[105, -75, 45], [50, 0, 14]], cut_elastic: [[0, -230, 90], [0, 0, 10]], elastic_in: [[0, -200, 75], [0, 0, 20]],
-  lock_tip: [[60, -95, 75], [42, 0, 20]], marks: [[0, -230, 90], [0, 0, 10]], stretch: [[0, -230, 90], [0, 0, 10]],
-  lock_rest: [[-10, -200, 85], [-10, 0, 20]], check: [[10, -300, 60], [10, 0, -25]], ends: [[-30, -220, 85], [-30, 0, 12]], others: [[30, -280, 140], [0, 0, 10]],
+  cut_line: [[0, -230, 90], [0, 0, 10]], toggle: [[0, -230, 90], [0, 0, 10]], why_toggle: [[0, -230, 90], [0, 0, 10]],
+  thread_in: [[110, -90, 50], [50, 0, 14]], thread_through: [[0, -200, 70], [0, 0, 14]], pull: [[105, -80, 45], [48, 0, 12]],
+  cut_elastic: [[0, -230, 90], [0, 0, 10]], elastic_in: [[0, -200, 75], [0, 0, 20]], no_pins: [[0, -170, 60], [0, 0, 20]],
+  hang: [[-30, -220, 85], [-30, 0, 12]], later_palm: [[0, -230, 90], [0, 0, 10]], check: [[10, -300, 60], [10, 0, -25]],
+  others: [[30, -280, 140], [0, 0, 10]],
 };
 const toThree = v => new THREE.Vector3(v[0], v[2], -v[1]);
 function setCam(t) {
@@ -145,15 +146,13 @@ function project(v) { const p = v.clone().applyMatrix4(root.matrixWorld).project
 const LABELS = {
   sides: [['BACK: flat lip at each joint', () => W(joints[1], 3, 0, 12), 'blu'], ['PALM side (finger bends this way)', () => W(joints[1], 18, 0, -16), 'red']],
   channels: [['THIN hole → string', () => W(joints[1], 16, 0, fz - 3), 'red'], ['WIDE hole → elastic', () => W(joints[1], 16, 0, ez + 5), 'yel']],
-  tipholes: [['thin hole + knot pocket', () => W(joints[2], L[2] + 1, 0, fz + 1), 'red'], ['wide hole', () => W(joints[2], L[2] - 2, 0, ez + 2), 'yel']],
-  thread_in: [['in here: thin hole', () => W(joints[2], L[2] + 2, 0, fz + 2), 'red']],
+  tipholes: [['thin hole in a small notch', () => W(joints[2], L[2] + 1, 0, fz + 1), 'red'], ['wide hole', () => W(joints[2], L[2] - 2, 0, ez + 2), 'yel']],
+  thread_in: [['in here: thin hole', () => W(joints[2], L[2] + 2, 0, fz + 2), 'red'], ['5 mm toggle', () => W(joints[2], L[2] + 2 + 25, 0, fz + 3), 'grn']],
   thread_through: [['joint gap: bend a little, guide the line in', () => W(joints[1], -1, 0, fz - 2), 'red']],
-  pull: [['comes out here, under the tab', () => W(joints[0], -C - 4, 0, fz - 2), 'red']],
-  glue: [['one drop of glue on the knot', () => W(joints[2], L[2] + 2, 0, fz + 1), 'grn']],
-  elastic_in: [['wide hole on the back', () => W(joints[2], L[2] - 1, 0, ez + 3), 'yel']],
-  lock_tip: [['cross hole → pin', () => W(joints[2], L[2] / 2, -9, ez - 1.6), 'grn']],
-  lock_rest: [['pin', () => W(joints[1], L[1] / 2, -9, ez - 1.6), 'grn'], ['pin', () => W(joints[0], L[0] / 2, -9, ez - 1.6), 'grn']],
-  ends: [['string end', () => W(joints[0], -C - 30, 0, fz - 6), 'red'], ['elastic end', () => W(joints[0], -C - 30, 0, ez - 2), 'yel']],
+  pull: [['toggle lies across the notch', () => W(joints[2], L[2] + 1.5, 0, fz + 2), 'grn']],
+  elastic_in: [['wide hole on the back', () => W(joints[1], L[1] / 2, 0, ez + 3), 'yel'], ['knot stops here', () => W(joints[2], L[2] + 2, 0, ez + 4), 'yel']],
+  no_pins: [['leave EMPTY', () => W(joints[2], L[2] / 2, -9, ez - 1.6), 'red'], ['leave EMPTY', () => W(joints[1], L[1] / 2, -9, ez - 1.6), 'red'], ['leave EMPTY', () => W(joints[0], L[0] / 2, -9, ez - 1.6), 'red']],
+  hang: [['string end', () => W(joints[0], -C - 30, 0, fz - 6), 'red'], ['elastic end: knotted later at the palm', () => W(joints[0], -C - 26, 0, ez - 2), 'yel']],
 };
 function setLabels(list) { labelsEl.innerHTML = ''; (list || []).forEach(([txt, fn, cls]) => { const d = document.createElement('div'); d.className = 'lab ' + (cls || ''); d.textContent = txt;
   labelsEl.appendChild(d); const [x, y, z] = project(fn()); d.style.left = x + 'px'; d.style.top = (y - 4) + 'px'; d.style.display = z < 1 ? 'block' : 'none'; }); }
@@ -177,26 +176,40 @@ function elasticSVG(stretch) {   // stretch 0..1  ->  50 mm .. 75 mm
    ${[0, 1, 2, 3, 4, 5, 6, 7, 8].map(k => `<path d="M${a + 30 + k * 10 * px} 125 V${k % 5 === 0 ? 145 : 137}" stroke="#5b6873" stroke-width="2"/><text x="${a + 30 + k * 10 * px}" y="165" text-anchor="middle" font-size="14" fill="#5b6873">${k}</text>`).join('')}
    <text x="${a + 30 + 8 * 10 * px + 18}" y="165" font-size="14" fill="#5b6873">cm</text></svg>`;
 }
+function toggleSVG(stage) {
+  return `<svg width="880" height="180">
+   <rect x="300" y="72" width="200" height="34" rx="17" fill="#f7f1e0" stroke="#b8b2a0" stroke-width="2"/>
+   <text x="400" y="140" text-anchor="middle" font-size="17" fill="#5b6873">5 mm piece of filament</text>
+   ${stage >= 1 ? `<path d="M40 89 H392 M392 89 C392 40 418 40 418 89 C418 138 380 138 380 89" fill="none" stroke="#d7263d" stroke-width="5"/>` : `<path d="M40 89 H290" stroke="#d7263d" stroke-width="5"/>`}
+   ${stage >= 2 ? `<circle cx="372" cy="89" r="9" fill="#d7263d"/><circle cx="356" cy="89" r="9" fill="#d7263d"/><circle cx="340" cy="89" r="9" fill="#d7263d"/>
+      <text x="356" y="58" text-anchor="middle" font-size="16" fill="#c25a17" font-weight="bold">3 knots</text>` : ''}
+   ${stage >= 3 ? `<circle cx="322" cy="96" r="6" fill="#8a1020"/><text x="300" y="168" font-size="15" fill="#5b6873">tail melted into a blob</text>` : ''}
+   <text x="40" y="70" font-size="16" fill="#5b6873">long end → into the finger</text></svg>`;
+}
 function cards(s, t) {
   const v = (a, b) => ramp(t, V(s.id, a), V(s.id, b));
   switch (s.id) {
     case 'items': return `<div class="card"><h2>What you need for one finger</h2><div class="items">
-      <div class="item"><span class="n">1</span><div><b>Braided fishing line, 0.30 mm</b><br><span class="small">"Fishing Line 8x Braided … 0.30 mm" → the STRING</span></div></div>
-      <div class="item"><span class="n">2</span><div><b>Rubber cord, 2 mm</b><br><span class="small">"Brotree Rubber Cord 2 mm" → the ELASTIC</span></div></div>
-      <div class="item"><span class="n" style="background:#5b6873">+</span><div><b>3 filament pins, 1.7 cm</b><br><span class="small">cut from your printer filament</span></div></div>
-      <div class="item"><span class="n" style="background:#5b6873">+</span><div><b>Super glue · scissors · ruler · pen</b><br><span class="small">tape helps too</span></div></div></div></div>`;
+      <div class="item"><span class="n">1</span><div><b>Braided fishing line, 0.30 mm</b><br><span class="small">→ the STRING</span></div></div>
+      <div class="item"><span class="n">2</span><div><b>Rubber cord, 2 mm</b><br><span class="small">→ the ELASTIC</span></div></div>
+      <div class="item"><span class="n" style="background:#5b6873">+</span><div><b>5 mm piece of filament</b><br><span class="small">the toggle for the string</span></div></div>
+      <div class="item"><span class="n" style="background:#5b6873">+</span><div><b>Cutters · ruler · pen · lighter</b><br><span class="small">no glue, no lock pins</span></div></div></div></div>`;
     case 'cut_line': return `<div class="card"><h2>Cut 60 cm of braided line</h2><svg width="880" height="90"><path d="M20 45 H860" stroke="#d7263d" stroke-width="5"/>
       <path d="M20 20 V70 M860 20 V70" stroke="#172026" stroke-width="3"/><text x="440" y="30" text-anchor="middle" font-size="22" font-weight="bold">60 cm</text></svg>
       <p class="small" style="margin:6px 0 0">Longer than needed on purpose: the spare end is tied to the servo spool later.</p></div>`;
-    case 'knot': { const st = t < V('knot', .2) ? 1 : t < V('knot', .4) ? 2 : t < V('knot', .62) ? 3 : 4;
-      return `<div class="card"><h2>A fat double knot at one end</h2>${knotSVG(st)}<p class="small" style="margin:6px 0 0">The double knot is bigger than the 2 mm hole, so it can't pull through.</p></div>`; }
-    case 'stiffen': return `<div class="card"><h2>Tip: make the other end stiff</h2><svg width="880" height="110"><path d="M20 55 H700" stroke="#d7263d" stroke-width="5"/>
-      <path d="M700 55 H840 L860 48" stroke="#8a1020" stroke-width="7"/><path d="M680 20 Q700 0 720 20 Q700 45 680 20" fill="#9fd8ff"/><text x="770" y="100" text-anchor="middle" font-size="17">2 cm with super glue, cut at an angle</text></svg></div>`;
-    case 'cut_elastic': return `<div class="card"><h2>Cut 25 cm of the 2 mm rubber cord</h2><svg width="880" height="90"><rect x="20" y="38" width="820" height="14" rx="7" fill="#e0a800"/>
-      <path d="M20 15 V75 M840 15 V75" stroke="#172026" stroke-width="3"/><text x="430" y="28" text-anchor="middle" font-size="22" font-weight="bold">25 cm</text></svg>
-      <p class="small" style="margin:6px 0 0">Cut the end at an angle and wrap a little tape around it.</p></div>`;
-    case 'marks': return `<div class="card"><h2>Two pen marks, 5 cm apart</h2>${elasticSVG(0)}</div>`;
-    case 'stretch': return `<div class="card"><h2>Stretch until the marks are 7.5 cm apart</h2>${elasticSVG(v(.15, .75))}</div>`;
+    case 'toggle': { const st = t < V('toggle', .3) ? 0 : t < V('toggle', .55) ? 1 : t < V('toggle', .8) ? 2 : 3;
+      return `<div class="card"><h2>Tie the line around a 5 mm filament piece</h2>${toggleSVG(st)}</div>`; }
+    case 'why_toggle': return `<div class="card"><h2>Why the toggle can't pull through</h2><svg width="880" height="170">
+      <rect x="250" y="20" width="380" height="120" rx="10" fill="#f0a43a" opacity=".35"/><circle cx="440" cy="80" r="20" fill="#fff" stroke="#c25a17" stroke-width="3"/>
+      <text x="440" y="160" text-anchor="middle" font-size="16" fill="#5b6873">fingertip notch with the 2 mm hole</text>
+      <rect x="390" y="66" width="100" height="28" rx="14" fill="#f7f1e0" stroke="#b8b2a0" stroke-width="2"/>
+      <text x="660" y="60" font-size="18" fill="#2f7d4f" font-weight="bold">toggle 5 mm</text><text x="660" y="88" font-size="18" fill="#c25a17" font-weight="bold">hole 2 mm</text>
+      <text x="40" y="60" font-size="18" fill="#c9182f" font-weight="bold">knot alone ✗</text><text x="40" y="88" font-size="16" fill="#5b6873">thin line: slips through</text></svg></div>`;
+    case 'cut_elastic': return `<div class="card"><h2>Cut 25 cm of 2 mm rubber cord, knot one end</h2><svg width="880" height="100"><rect x="60" y="40" width="780" height="14" rx="7" fill="#e0a800"/>
+      <circle cx="58" cy="47" r="16" fill="#b88a00"/><path d="M60 15 V80 M840 15 V80" stroke="#172026" stroke-width="3"/>
+      <text x="450" y="30" text-anchor="middle" font-size="22" font-weight="bold">25 cm</text><text x="58" y="96" text-anchor="middle" font-size="15" fill="#5b6873">fat double knot</text></svg></div>`;
+    case 'later_palm': return `<div class="card"><h2>Later, at the palm: stretch 5 → 7.5 cm, then knot</h2>${elasticSVG(v(.25, .6))}
+      <p class="small" style="margin:4px 0 0">Finger straight · then tie a fat knot against the back of the palm.</p></div>`;
     default: return '';
   }
 }
@@ -205,47 +218,43 @@ const PIN_START = 26;
 
 window.renderAt = function (t) {
   const s = sceneAt(t); const id = s.id;
-  // see-through finger while showing the holes and threading
-  const xr = ['channels', 'tipholes', 'thread_in', 'thread_through', 'pull', 'elastic_in', 'lock_tip', 'lock_rest'].includes(id) ? 0.38 : 1;
+  const xr = ['channels', 'tipholes', 'thread_in', 'thread_through', 'pull', 'elastic_in', 'no_pins'].includes(id) ? 0.38 : 1;
   finMat.opacity = xr; finMat.depthWrite = xr === 1;
   chanThin.opacity = ['channels', 'tipholes', 'thread_in'].includes(id) ? 0.55 : 0;
   chanWide.opacity = ['channels', 'tipholes', 'elastic_in'].includes(id) ? 0.55 : 0;
   lipMat.opacity = id === 'sides' ? 0.6 + 0.3 * Math.sin(t * 5) : 0;
-  // bending: demo in "sides", small wiggle while threading, curl in "check"
   let curl = 0;
   if (id === 'sides') curl = 35 * Math.sin(Math.PI * ramp(t, V('sides', .55), V('sides', 1)));
   if (id === 'thread_through') curl = 12 * Math.sin(Math.PI * ramp(t, V('thread_through', .2), V('thread_through', .7)));
-  if (id === 'check') curl = t < V('check', .45) ? 30 * Math.sin(Math.PI * ramp(t, V('check', .05), V('check', .4))) : 40 * Math.sin(Math.PI * ramp(t, V('check', .55), V('check', 1)));
+  if (id === 'check') curl = t < V('check', .4) ? 30 * Math.sin(Math.PI * ramp(t, V('check', .05), V('check', .35))) : 40 * Math.sin(Math.PI * ramp(t, V('check', .4), V('check', .8)));
   if (id === 'intro' || id === 'others') curl = 20 + 15 * Math.sin(t * .8);
   joints.forEach(j => j.rotation.y = THREE.MathUtils.degToRad(curl));
   root.updateMatrixWorld(true);
-  // string
+  // string with its toggle
   let sf = 0, tip = 25;
   if (t >= T0('thread_in')) sf = 0.12 * ramp(t, V('thread_in', .2), V('thread_in', .9));
   if (t >= T0('thread_through')) sf = 0.12 + 0.68 * ramp(t, V('thread_through', .05), V('thread_through', .95));
-  if (t >= T0('pull')) { sf = 0.8 + 0.2 * ramp(t, V('pull', .05), V('pull', .4)); tip = 25 * (1 - ramp(t, V('pull', .4), V('pull', .9))); }
+  if (t >= T0('pull')) { sf = 0.8 + 0.2 * ramp(t, V('pull', .05), V('pull', .4)); tip = 25 * (1 - ramp(t, V('pull', .35), V('pull', .85))); }
   if (t >= T1x('pull')) { sf = 1; tip = 0; }
-  const lineVisible = t >= T0('thread_in') && !['cut_elastic', 'marks', 'stretch'].includes(id);
-  if (lineVisible) setTube(tubeLine, trim(pathPts(fz, 40, 3 + tip), sf), .45); else tubeLine.visible = false;
-  // knot follows the line into the pocket
-  knot.visible = lineVisible || id === 'glue'; knot.position.set(L[2] + 2.2 + tip, 0, fz);
-  glueDrop.visible = t >= V('glue', .25) && !['marks', 'stretch', 'cut_elastic'].includes(id); glueDrop.position.set(L[2] + 3.4, 0, fz + 1.2);
-  // elastic
-  let ef = 0;
-  if (t >= T0('elastic_in')) ef = ramp(t, V('elastic_in', .1), V('elastic_in', .95));
-  const elaVisible = t >= T0('elastic_in') && !['marks', 'stretch'].includes(id);
-  if (elaVisible) setTube(tubeEla, trim(pathPts(ez, 30, 1), ef), .9); else tubeEla.visible = false;
-  // lock pins slide in from the viewer side
-  const pinT = [ramp(t, V('lock_rest', .55), V('lock_rest', .8)), ramp(t, V('lock_rest', .35), V('lock_rest', .6)), ramp(t, V('lock_tip', .3), V('lock_tip', .75))];
-  lockPins.forEach((p, i) => { p.visible = pinT[i] > 0.001 && !['marks', 'stretch'].includes(id); p.position.set(p.userData.x, -PIN_START * (1 - pinT[i]), ez - 1.6); });
+  const cardScene = ['items', 'cut_line', 'toggle', 'why_toggle', 'cut_elastic', 'later_palm'].includes(id);
+  const lineVisible = t >= T0('thread_in') && !cardScene;
+  if (lineVisible) setTube(tubeLine, trim(pathPts(fz, 40, 2 + tip), sf), .45); else tubeLine.visible = false;
+  knot.visible = lineVisible; knot.position.set(L[2] + 1.2 + tip, 0, fz);
+  glueDrop.visible = false;
+  // elastic, knotted at the tip end, no lock pins
+  let ef = 0, etip = 30;
+  if (t >= T0('elastic_in')) { ef = ramp(t, V('elastic_in', .1), V('elastic_in', .8)); etip = 30 * (1 - ramp(t, V('elastic_in', .6), V('elastic_in', .95))); }
+  const elaVisible = t >= T0('elastic_in') && !cardScene;
+  if (elaVisible) setTube(tubeEla, trim(pathPts(ez, 30, 1 + etip), ef), .9); else tubeEla.visible = false;
+  eKnot.visible = elaVisible; eKnot.position.set(L[2] + 2.5 + etip, 0, ez);
+  lockPins.forEach(p => p.visible = false);
   setCam(t);
   renderer.render(scene, camera);
-  // overlays
   const card = cards(s, t); el('cards').innerHTML = card; el('dim').style.opacity = card ? 1 : 0;
   setLabels(card ? [] : LABELS[id]);
   const ti = el('title');
-  if (id === 'intro') { ti.style.opacity = 1; ti.innerHTML = '<div class="tag">RoboHand · close-up</div><h1>String &amp; elastic</h1><p>Putting the string and the elastic into one finger, step by step.</p>'; }
-  else if (id === 'others') { ti.style.opacity = ramp(t, s.t0 + .5, s.t0 + 1.5); ti.innerHTML = '<div class="tag">Done</div><h1>One finger ready</h1><p>Repeat for the other four. Thumb: 2 lock pins.</p>'; }
+  if (id === 'intro') { ti.style.opacity = 1; ti.innerHTML = '<div class="tag">RoboHand · close-up (updated)</div><h1>String &amp; elastic</h1><p>Toggle for the string, knots for the elastic. No glue, no lock pins.</p>'; }
+  else if (id === 'others') { ti.style.opacity = ramp(t, s.t0 + .5, s.t0 + 1.5); ti.innerHTML = '<div class="tag">Done</div><h1>One finger ready</h1><p>Repeat for the other four fingers.</p>'; }
   else ti.style.opacity = 0;
   let part = ''; for (const x of TL.scenes) if (x.t0 <= t && x.part) part = x.part;
   el('part').textContent = id === 'intro' ? '' : part;
