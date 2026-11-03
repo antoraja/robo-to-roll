@@ -108,6 +108,7 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
 7. **Fingers onto the palm:** pin each finger to its knuckle fork. The thumb goes on the angled boss.
 8. **Elastic knots:** each elastic comes out on the back of the palm. Mark two dots 5 cm apart,
    pull until they're 7.5 cm apart (finger straight and firm), then tie a fat knot against the palm.
+   Picture guide: [video/palm_knot/elastic_knot_at_palm.png](../video/palm_knot/elastic_knot_at_palm.png).
 9. **Palm onto the spine:** bundle the 5 strings (they come out under the wrist) with tape,
    feed them down beside the spine, push the palm onto the spine's top tab, 2 pins.
 10. **Strings to the spools:** each string runs straight down to its own spool (table above).

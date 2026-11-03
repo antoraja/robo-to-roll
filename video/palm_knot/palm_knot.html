@@ -1,0 +1,112 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Elastic knot at the palm</title>
+<style>
+  html, body { margin: 0; width: 1280px; background: #eef1f3; font-family: "DejaVu Sans", Arial, sans-serif; color: #172026; }
+  header { padding: 22px 34px 6px; }
+  .tag { font-size: 14px; letter-spacing: .16em; text-transform: uppercase; color: #c25a17; font-weight: bold; }
+  h1 { font-size: 34px; margin: 4px 0 4px; }
+  .sub { font-size: 18px; color: #4a5a64; margin: 0; }
+  #stage { position: relative; width: 1280px; height: 560px; }
+  #stage canvas { position: absolute; inset: 0; }
+  #labels { position: absolute; inset: 0; pointer-events: none; }
+  .lab { position: absolute; transform: translate(-50%, -100%); background: #b88700; color: #fff; font-size: 17px; font-weight: bold;
+         padding: 4px 10px; border-radius: 6px; white-space: nowrap; }
+  .lab::after { content: ""; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: #b88700; transform: translateX(-50%); }
+  .lab.tall::after { bottom: calc(-1 * var(--stem)); height: var(--stem); }
+  .lab.dark { background: #172026; } .lab.dark::after { display: none; }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 10px 34px 18px; }
+  .step { background: #fff; border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+  .step h3 { margin: 0 0 6px; font-size: 19px; } .step h3 b { color: #c25a17; }
+  .step p { margin: 6px 0 0; font-size: 15.5px; line-height: 1.45; color: #33424c; }
+  .tips { margin: 0 34px 26px; background: #172026; color: #fff; border-radius: 12px; padding: 14px 20px; font-size: 16px; line-height: 1.6; }
+  svg text { font-family: "DejaVu Sans", Arial, sans-serif; }
+</style></head>
+<body>
+<header>
+  <div class="tag">RoboHand · elastic at the palm</div>
+  <h1>Tying the elastic knot on the back of the palm</h1>
+  <p class="sub">Do this after the finger is pinned to its knuckle fork. Each finger's elastic comes out of its own small hole on the back of the palm.</p>
+</header>
+<div id="stage"><canvas id="c" width="1280" height="560"></canvas><div id="labels"></div></div>
+
+<div class="steps">
+  <div class="step"><h3><b>1</b> Find the exit hole</h3>
+    <svg width="360" height="170"><rect x="20" y="10" width="320" height="70" rx="10" fill="#e1e4e8" stroke="#aab4bb"/>
+      <text x="30" y="32" font-size="13" fill="#5b6873">back of the palm</text><circle cx="180" cy="60" r="7" fill="#fff" stroke="#5b6873" stroke-width="2"/>
+      <path d="M180 60 C182 95 176 125 182 165" stroke="#e0a800" stroke-width="7" fill="none" stroke-linecap="round"/></svg>
+    <p>The finger is pinned to the palm and <b>straight</b>. Its elastic hangs out of the small hole on the back of the palm.</p></div>
+  <div class="step"><h3><b>2</b> Mark 5 cm</h3>
+    <svg width="360" height="170"><rect x="20" y="10" width="320" height="40" rx="10" fill="#e1e4e8" stroke="#aab4bb"/><circle cx="180" cy="38" r="7" fill="#fff" stroke="#5b6873" stroke-width="2"/>
+      <path d="M180 38 V165" stroke="#e0a800" stroke-width="7" stroke-linecap="round"/>
+      <path d="M168 60 H192 M168 135 H192" stroke="#172026" stroke-width="4"/><path d="M215 60 V135 M209 60 H221 M209 135 H221" stroke="#c25a17" stroke-width="2.5"/>
+      <text x="228" y="103" font-size="18" fill="#c25a17" font-weight="bold">5 cm</text></svg>
+    <p>With a pen, put two dots on the elastic <b>5 cm apart</b>, the first one just below the hole.</p></div>
+  <div class="step"><h3><b>3</b> Stretch to 7.5 cm</h3>
+    <svg width="360" height="170"><rect x="20" y="10" width="320" height="40" rx="10" fill="#e1e4e8" stroke="#aab4bb"/><circle cx="180" cy="38" r="7" fill="#fff" stroke="#5b6873" stroke-width="2"/>
+      <path d="M180 38 V165" stroke="#e0a800" stroke-width="5" stroke-linecap="round"/>
+      <path d="M168 52 H192 M168 152 H192" stroke="#172026" stroke-width="4"/><path d="M215 52 V152 M209 52 H221 M209 152 H221" stroke="#c25a17" stroke-width="2.5"/>
+      <text x="228" y="108" font-size="18" fill="#c25a17" font-weight="bold">7.5 cm</text><path d="M140 120 V160 M132 150 L140 162 L148 150" stroke="#172026" stroke-width="3" fill="none"/>
+      <text x="40" y="140" font-size="14" fill="#5b6873">pull down</text></svg>
+    <p>Keep the finger <b>straight</b> and pull the elastic until the dots are <b>7.5 cm apart</b>. The rubber gets a bit thinner, which is normal.</p></div>
+  <div class="step"><h3><b>4</b> Pinch at the hole, tie the knot</h3>
+    <svg width="360" height="170"><rect x="20" y="10" width="320" height="40" rx="10" fill="#e1e4e8" stroke="#aab4bb"/><circle cx="180" cy="38" r="7" fill="#fff" stroke="#5b6873" stroke-width="2"/>
+      <rect x="160" y="52" width="40" height="18" rx="4" fill="#2f7d4f"/><text x="210" y="66" font-size="14" fill="#2f7d4f" font-weight="bold">peg or fingers</text>
+      <path d="M180 38 V80" stroke="#e0a800" stroke-width="5"/><circle cx="180" cy="92" r="13" fill="#b88a00"/><path d="M180 105 V160" stroke="#e0a800" stroke-width="5"/>
+      <text x="200" y="98" font-size="14" fill="#5b6873">fat double knot,</text><text x="200" y="116" font-size="14" fill="#5b6873">close to the hole</text></svg>
+    <p>Holding the stretch, <b>pinch the elastic right at the hole</b> with your fingers or a clothes peg, so it can't slide back. Tie a <b>fat double knot</b> just below the pinch.</p></div>
+  <div class="step"><h3><b>5</b> Let go, then check</h3>
+    <svg width="360" height="170"><rect x="20" y="10" width="320" height="40" rx="10" fill="#e1e4e8" stroke="#aab4bb"/><circle cx="180" cy="38" r="7" fill="#fff" stroke="#5b6873" stroke-width="2"/>
+      <circle cx="180" cy="62" r="13" fill="#b88a00"/><path d="M180 75 V92" stroke="#e0a800" stroke-width="5" stroke-linecap="round"/>
+      <path d="M196 88 L216 88" stroke="#c25a17" stroke-width="2.5"/><text x="220" y="93" font-size="14" fill="#c25a17" font-weight="bold">trim, 1 cm left</text>
+      <text x="40" y="140" font-size="15" fill="#2f7d4f" font-weight="bold">✓ bend the finger, let go:</text><text x="40" y="160" font-size="15" fill="#2f7d4f" font-weight="bold">   it springs back straight</text></svg>
+    <p>Let go: the knot is pulled up against the palm and can't go back in. Bend the finger and let go: it should <b>spring back straight</b>. Trim the elastic, leaving 1 cm.</p></div>
+  <div class="step"><h3><b>!</b> Adjusting</h3>
+    <svg width="360" height="170"><text x="20" y="40" font-size="17" fill="#c9182f" font-weight="bold">Finger floppy?</text><text x="20" y="64" font-size="15" fill="#33424c">untie, stretch a little more</text>
+      <text x="20" y="104" font-size="17" fill="#c9182f" font-weight="bold">Servo hums / struggles?</text><text x="20" y="128" font-size="15" fill="#33424c">untie, stretch a little less</text>
+      <text x="20" y="160" font-size="15" fill="#5b6873">Same for every finger, including the thumb.</text></svg>
+    <p>The knot can be untied any time, so you can tune each finger. Elastic was cut to 25 cm, so there's plenty to re-tie.</p></div>
+</div>
+<div class="tips">Order for each finger: pin the finger to the palm → elastic hangs out of its hole on the back → mark 5 cm → stretch to 7.5 cm (finger straight) → pinch at the hole → fat knot → let go → check → trim.</div>
+
+<script src="../node_modules/three/build/three.min.js"></script>
+<script src="palm.js"></script>
+<script>
+(function () {
+const D = window.PALM;
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('c'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(1280, 560, false);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#eef1f3');
+const camera = new THREE.PerspectiveCamera(30, 1280 / 560, 1, 3000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x606a74, 0.85));
+const key = new THREE.DirectionalLight(0xffffff, 0.65); key.position.set(-300, 300, 200); scene.add(key);
+const root = new THREE.Group(); root.rotation.x = -Math.PI / 2; scene.add(root);
+const b2a = s => { const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
+function geom(e) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(b2a(e.v)), 3));
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(e.i)), 1)); g.computeVertexNormals(); return g; }
+const mat = c => new THREE.MeshStandardMaterial({ color: c, flatShading: true, roughness: .6 });
+root.add(new THREE.Mesh(geom(D.palm), mat('#e1e4e8')));
+D.fingers.forEach(f => root.add(new THREE.Mesh(geom(f), mat('#f0a43a'))));
+const ela = new THREE.MeshStandardMaterial({ color: '#e0a800', roughness: .6 }), kn = new THREE.MeshStandardMaterial({ color: '#b88a00' });
+const NAMES = { thumb: 'Thumb', index: 'Index', middle: 'Middle', ring: 'Ring', little: 'Little' };
+const labelPts = [];
+Object.entries(D.exits).forEach(([n, e]) => {
+  const p = new THREE.Vector3(...e.p), d = new THREE.Vector3(...e.d);
+  const a = p.clone().addScaledVector(d, -3), b = p.clone().addScaledVector(d, 4);
+  const c2 = b.clone().add(new THREE.Vector3(-4, 0, -18)), c3 = c2.clone().add(new THREE.Vector3(0, 0, -22));
+  root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([a, p, b, c2, c3]), 30, 1.0, 8), ela));
+  const k = new THREE.Mesh(new THREE.SphereGeometry(2.4, 16, 12), kn); k.position.copy(p.clone().addScaledVector(d, 2.2)); root.add(k);
+  labelPts.push([NAMES[n], ({ index: 70, ring: 70, middle: 20, little: 20 })[n] || 0, p.clone().addScaledVector(d, 3).add(new THREE.Vector3(0, 0, 9))]);
+});
+camera.position.set(-260, 20, -60); // three coords: CAD (x, z, -y) -> looking at the back (-x side)
+camera.position.copy(new THREE.Vector3(-230, -10, 70));   // CAD (-230, -70, -10) -> three (x, z, -y)
+camera.lookAt(new THREE.Vector3(0, -45, -5));
+camera.updateMatrixWorld(); root.updateMatrixWorld(true);
+renderer.render(scene, camera);
+const L = document.getElementById('labels');
+labelPts.forEach(([t, up, v]) => { const q = v.clone().applyMatrix4(root.matrixWorld).project(camera);
+  const d = document.createElement('div'); d.className = 'lab'; d.textContent = t + ' elastic'; d.style.left = ((q.x + 1) / 2 * 1280) + 'px'; d.style.top = ((1 - q.y) / 2 * 560 - up) + 'px'; if (up) { d.style.setProperty('--stem', (16 + up) + 'px'); d.classList.add('tall'); } L.appendChild(d); });
+const note = document.createElement('div'); note.className = 'lab dark'; note.textContent = 'back of the palm'; note.style.left = '1080px'; note.style.top = '80px'; L.appendChild(note);
+window.READY = true;
+})();
+</script>
+</body></html>
