@@ -55,5 +55,24 @@
   "parts": [
    "stand"
   ]
+ },
+ {
+  "plate": 6,
+  "title": "tips_and_caps",
+  "file": "plate_6_tips_and_caps.3mf",
+  "parts": [
+   "thumb_distal",
+   "middle_distal",
+   "index_distal",
+   "ring_distal",
+   "little_distal",
+   "thumb_tip_cap",
+   "index_tip_cap",
+   "middle_tip_cap",
+   "ring_tip_cap",
+   "little_tip_cap",
+   "spare_tip_cap_1",
+   "spare_tip_cap_2"
+  ]
  }
 ]

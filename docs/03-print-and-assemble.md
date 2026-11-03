@@ -108,15 +108,16 @@ Flexy-Hand and e-NABLE:
 ## Thread the tendon (flexor)
 
 1. Cut ~60 cm of braided line.
-2. **Anchor button** (`string_button.stl`, plate 6): a knot alone slips through the 2 mm hole,
-   because 0.3 mm braided line is thin and slippery. So the line is looped through the button instead:
-   - push one end **up through hole 1** of the button and **down through hole 2**, then do it
-     **once more** (two loops around the bar between the holes);
-   - tie the short end to the long end **under the button** with 3 knots, leaving a 1 cm tail;
-   - **no glue needed:** melt the very end of the tail with the lighter into a small blob.
-   The button holds the line by the bar between its holes, so even if the knot slipped, it can't pull through.
-3. Thread the long end **from the fingertip down** through the **palm-side channel** (the thin
-   one). Pull until the button sits against the fingertip.
+2. **Tip cap** (plate 6: one cap per finger, shaped to fit that fingertip): a knot alone slips
+   through the 2 mm hole, because 0.3 mm braided line is thin and slippery. So the line is looped
+   through the cap instead:
+   - push one end **into hole 1 from the flat (inner) face**, out of the rounded face, and back
+     **into hole 2** from the rounded side, so the line loops around the little bar between the holes;
+   - tie the short end to the long end **behind the cap** (flat side) with 3 knots, leaving a 1 cm tail,
+     and melt the tail end with the lighter into a small blob. No glue needed.
+3. Thread the long end into the **socket at the fingertip** and down the **palm-side channel**
+   (the thin one). Pull until the **cap slides into its socket**, flush with the fingertip. The
+   string tension holds it there.
 3. Continue through the hole in the base roof into the bay. Pass the line through one of the
    spool's small holes via the slot in the rim, and tie it.
 4. With the servo at its **open** angle and the finger **straight**, the line should be just

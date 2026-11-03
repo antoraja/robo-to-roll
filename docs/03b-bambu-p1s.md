@@ -56,7 +56,7 @@ clearances. If the fit test shows tight or loose pins, tell me and I'll change t
 | 3 · palm | palm (+ tree supports) | ~110 g | ~5–6 h |
 | 4 · spine | servo spine | ~40 g | ~1.5 h |
 | 5 · stand | stand | ~70 g | ~2.5 h |
-| 6 · string buttons | 8 anchor buttons for the strings (5 + 3 spare) | ~1 g | ~15 min |
+| 6 · tips and caps | the 5 fingertips (with the cap socket) + 5 tip caps + 2 spare caps | ~12 g | ~1 h |
 | **Total** | | **~290 g** | **~13 h** |
 
 Bambu Studio shows the exact grams and time after you click **Slice plate**. Use those numbers.

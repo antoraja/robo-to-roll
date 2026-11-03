@@ -217,8 +217,8 @@ def phalanx(length, distal=False, which=None):
         part -= lock_hole(length / 2)
         part -= relief(C, +1)
         part ^= skin(0.0, length, s0, s1, tip=True)
-        # small recess for the flexor knot
-        part -= box(length - 2.0, length + 1, -2.0, 2.0, FLEX_Z - 1.5, FLEX_Z + 1.5)
+        # socket for the tip cap that anchors the string (see tip_cap())
+        part -= cap_socket(length)
         return part
     prof = body_profile(C, length - C)
     part = slab(prof, -W / 2, W / 2) + joint_proximal_end(0) + joint_distal_end(length)
@@ -228,22 +228,28 @@ def phalanx(length, distal=False, which=None):
     return part ^ skin(0.0, length, s0, s1)
 
 
-STRING_BUTTON_D = 7.0     # anchor "button" for the string at the fingertip (no glue, can't pull through)
-STRING_BUTTON_T = 2.2
-STRING_BUTTON_HOLE = 1.3  # two holes for 0.3 mm braided line, looped like a shirt button
-STRING_BUTTON_PITCH = 3.0
+# Tip cap: a flush plug in the fingertip that anchors the string (replaces knot + glue).
+# The string loops through two small holes in the cap; string tension pulls the cap into its socket.
+CAP_DEPTH = 7.0          # how far the socket reaches into the fingertip from its end
+CAP_HW, CAP_HH = 3.0, 1.8  # socket half-width (y) / half-height (z) around the string channel
+CAP_CLEAR = 0.15         # clearance per side between cap and socket
+CAP_HOLE = 1.2           # the two holes for the 0.3 mm braided line
+CAP_HOLE_Y = 1.3         # holes at y = +/-1.3 (1.4 mm bar between them)
 
 
-def string_button():
-    """Small button the string is tied to; it rests on the fingertip over the 2 mm string hole."""
-    b = m.Manifold.cylinder(STRING_BUTTON_T, STRING_BUTTON_D / 2, STRING_BUTTON_D / 2, SEG)
-    # soften the top edge
-    b ^= m.Manifold.cylinder(STRING_BUTTON_T, STRING_BUTTON_D / 2 + 0.6, STRING_BUTTON_D / 2 - 0.5, SEG)
-    for x in (-STRING_BUTTON_PITCH / 2, STRING_BUTTON_PITCH / 2):
-        b -= m.Manifold.cylinder(STRING_BUTTON_T + 2, STRING_BUTTON_HOLE / 2, STRING_BUTTON_HOLE / 2, 24).translate((x, 0, -1))
-    # shallow groove on top between the holes, so the loop of line sits flush
-    b -= box(-STRING_BUTTON_PITCH / 2, STRING_BUTTON_PITCH / 2, -0.4, 0.4, STRING_BUTTON_T - 0.5, STRING_BUTTON_T + 1)
-    return b
+def cap_socket(length):
+    return box(length - CAP_DEPTH, length + 2, -CAP_HW, CAP_HW, FLEX_Z - CAP_HH, FLEX_Z + CAP_HH)
+
+
+def tip_cap(length):
+    """Cap for the distal bone of a given length, in the bone's own coordinates (flush with the skin)."""
+    s0, s1 = BONE_TAPER["dist"]
+    c = box(length - CAP_DEPTH + CAP_CLEAR, length + 2, -CAP_HW + CAP_CLEAR, CAP_HW - CAP_CLEAR,
+            FLEX_Z - CAP_HH + CAP_CLEAR, FLEX_Z + CAP_HH - CAP_CLEAR)
+    c ^= skin(0.0, length, s0, s1, tip=True)
+    for y in (-CAP_HOLE_Y, CAP_HOLE_Y):
+        c -= rod_x(CAP_HOLE, y, FLEX_Z, length - CAP_DEPTH - 1, length + 3)
+    return c
 
 
 def spool():
@@ -365,7 +371,9 @@ def joint_check_3d():
     return f"max overlap {worst:.2f} mm3 over -3..85 deg"
 
 
-def save(part, name, flip_top_down=False):
+def save(part, name, flip_top_down=False, rot=None):
+    if rot is not None:
+        part = part.rotate(rot)
     if flip_top_down:
         part = part.rotate((180.0, 0.0, 0.0))
     lo = np.array(part.bounding_box()[:3])
@@ -390,7 +398,7 @@ def main():
     save(phalanx(L_DIST, distal=True), "finger_distal.stl", flip_top_down=True)
     print("3-D joint check (real parts, rotated):", joint_check_3d())
     save(spool(), "servo_spool.stl")
-    save(string_button(), "string_button.stl")
+    save(tip_cap(L_DIST), "tip_cap_index.stl", rot=(0, -90, 0))
     b, info = base()
     save(b, "finger_base.stl")
     print("Base info:", {k: tuple(round(v, 1) for v in val) if isinstance(val, tuple) else round(val, 1)

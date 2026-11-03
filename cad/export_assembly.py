@@ -127,6 +127,15 @@ def main():
     sp.apply_translation(-sp.bounds[0] + np.array([(BED - sp.extents[0]) / 2, (BED - sp.extents[1]) / 2, 0.0]))
     plates.append(("spine", [("spine", sp)]))
     plates.append(("stand", [("stand", print_oriented(ST, (0, 0, 0)))]))
+    # plate 6: the five fingertips (with the cap socket) and their string caps (+2 spares)
+    tips = []
+    for n in hand.ORDER:
+        Ld = hand.finger_L(n)[-1]
+        tips.append((f"{n}_distal", print_oriented(bones[n][-1], (180, 0, 0))))
+        tips.append((f"{n}_tip_cap", print_oriented(gp.tip_cap(Ld), (0, -90, 0))))
+    for k in range(2):
+        tips.append((f"spare_tip_cap_{k + 1}", print_oriented(gp.tip_cap(25), (0, -90, 0))))
+    plates.append(("tips_and_caps", [it for pl in pack(tips) for it in pl]))
 
     print(f"Print plates ({BED:.0f} x {BED:.0f} mm bed) -> plates/")
     manifest = []
