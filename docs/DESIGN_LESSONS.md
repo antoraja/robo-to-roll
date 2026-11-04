@@ -19,6 +19,7 @@ Status: ✅ fixed in the current files · 🔧 worked around in the build (no re
 | B7 | **Coin pockets looked like magnet pockets** | Unlabelled features | — | **Label or explain every non-obvious feature** in the guide and the 3D view |
 | B8 | **Videos lag behind design changes** (lock pins, knot + glue, 17 mm pins) | Videos were rendered before later fixes | Text guides updated, videos re-rendered on request | **Re-render the videos as part of every design change** (`video/*/render.js`), or mark outdated steps on screen |
 | B9 | **All 10 palm holes blocked** (string and elastic don't go through) | The palm's outer shape was joined to the knuckle forks *after* their holes were cut, so it filled ~6 mm of every hole back in. The checks only looked at the channel walls lower down, never at whether the path is open end to end | ✅ Holes re-cut through each knuckle fork after joining, plus a rounded chamber at each corner. New check slides a ball through every path end to end. 🔧 Printed palm: reprint plate 3 (or drill the plugs) | **Cut holes last**, after every solid is added. **Check every channel end to end with a probe** (open-path test), not only its walls |
+| B10 | **Elastic jams in the palm** (string goes through fine) | Each elastic hole runs 14 mm straight down the knuckle, then turns a **sharp 53° corner** (almost no radius) into a 10 mm sloping hole. A pushed 2 mm rubber cord in a 2.6 mm hole hits the wall at the corner. Printed holes also come out ~0.2–0.3 mm small, and rubber grips. The checks only slid an ideal 1.8 mm ball along the centre line, which passes a corner the real cord can't. See [img/elastic_corner.png](img/elastic_corner.png) | 📝 to decide: redesign the palm's elastic anchor (reprint) | **A cord or string path needs a bend radius ≥ 5× its diameter, or no closed corner at all.** Holes for rubber cord: ≥ 1.0 mm larger than the cord. Checks must model the real item (diameter after print shrink, stiffness), not just an ideal ball. Prefer open slots and knots you can see over hidden tunnels |
 
 ## Found in simulation and checks (before printing)
 
@@ -45,6 +46,7 @@ Status: ✅ fixed in the current files · 🔧 worked around in the build (no re
 - [ ] Every string anchored around a solid bar, never a knot against a hole (B2)
 - [ ] Every pocket/socket enclosed by material (B3); walls ≥ 1.2 mm around holes (B4)
 - [ ] Holes cut after all solids are joined; every channel probed open end to end (B9)
+- [ ] Cord/string paths: bend radius ≥ 5× diameter, rubber-cord holes ≥ cord + 1 mm, no hidden sharp corners (B10)
 - [ ] Parts labelled and impossible to mix up or mount backwards (B5, S11)
 - [ ] Pin and screw lists generated from the CAD (B6)
 - [ ] Springs: leverage constant or increasing with angle; all orientations simulated (S1, S2)
