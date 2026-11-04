@@ -55,6 +55,8 @@ def assembly(P, SP, ST, bones, curl=12):
     add("stand", tm(ST), COLORS["stand"])
     add("spine", tm(SP), COLORS["spine"])
     add("palm", tm(P), COLORS["palm"])
+    import palm_camera
+    add("palm_camera_cover", tm(palm_camera.cover()), (194, 90, 23))
     for n in hand.ORDER:
         body, sp, _, _ = hand.servo_geom(n)
         add(f"servo_{n}", tm(body), COLORS["servo"])

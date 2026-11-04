@@ -35,6 +35,22 @@ It checks, in order: the printable finger parts and joint range → the full han
 | **Firmware** | Compiles with `-Wall -Wextra -Werror` (against stand-in ESP32 headers) | ✅ |
 | | 32 behaviour tests: sliders, gestures, bad input, clamping, serial commands | ✅ |
 
+## How the parts fit together (`cad/audit.py`, added after the palm-plug mistake)
+
+Every pin, socket, slot and channel is probed with a solid slightly smaller than the real
+item. Any plastic in the way fails the check.
+
+| Check | Result |
+|---|---|
+| New palm vs the old palm file | ✅ only removes the 10 plugs and adds the camera rail. Knuckle forks identical, so the printed fingers fit as before |
+| 5 knuckle forks: pin path, finger swing 0–85°, string path, elastic path | ✅ all open, 0 mm³ in the way |
+| Spine tab into the palm, 2 palm pins (45 mm), 2 stand pins (26 mm) | ✅ open through both parts |
+| 5 servos in their spine windows, 10 screw holes | ✅ |
+| 14 finger bones: string + elastic holes and pin holes | ✅ all open (already printed: confirms they are right) |
+| Camera cover: slides on the rail, lock pin, never touched by fingers/thumb at 0–90° | ✅ |
+| Every printed part is one solid piece | ✅ |
+| Supports: only the palm needs them (tree, from the build plate); everything else prints without | ✅ |
+
 ## Printability (Bambu Lab P1S, PLA): see docs/03b-bambu-p1s.md
 
 | Part | Orientation | Supports |

@@ -74,6 +74,19 @@ HORN_GAP = 9.5            # tab top -> spool base (shaft + horn)
 
 STRING_D = 2.4            # palm string channel
 PIN_D = 1.9               # filament pin holes
+# camera rail on the inside of the palm, low down where the curled fingers never reach
+CAM_RAIL_Z = (WRIST_Z, -72.0)                 # rail runs from the palm's flat bottom up to here
+CAM_RAIL_X = (30.0, 33.0)                     # dovetail: narrow (+-6) at x=30, wide (+-8) at x=33
+CAM_RAIL_HW = (6.0, 8.0)
+
+
+def cam_rail():
+    z0, z1 = CAM_RAIL_Z
+    x0, x1 = CAM_RAIL_X
+    ped = box(22.0, x0 + 0.01, -9.0, 9.0, z0, z1)
+    dove = m.Manifold.batch_hull([box(x0, x0 + 0.01, -CAM_RAIL_HW[0], CAM_RAIL_HW[0], z0, z1),
+                                  box(x1 - 0.01, x1, -CAM_RAIL_HW[1], CAM_RAIL_HW[1], z0, z1)])
+    return ped + dove
 
 
 # ----------------------------------------------------------------- helpers
@@ -204,6 +217,7 @@ def palm():
         sweep = b if sweep is None else sweep + b
     p -= sweep
     p += place(knuckle_local(), "thumb")
+    p += cam_rail()                                   # added BEFORE any hole is cut
     # re-open the channels inside every knuckle column: the palm hull above filled them back in
     # (prototype 1 printed with ~6 mm solid plugs in all 10 holes). Each column channel stops at
     # the point where the palm channel takes over, and a rounded chamber there lets the

@@ -23,6 +23,7 @@ It is designed for someone with a 3D printer and little electronics experience:
 | **Design validation** (all checks, what was fixed, pre-build checklist): run `./validate.sh` | [`VALIDATION.md`](VALIDATION.md) |
 | **Design lessons**: every flaw found so far and the rule for the next design | [`docs/DESIGN_LESSONS.md`](docs/DESIGN_LESSONS.md) |
 | Step-by-step build guide (text) | [`docs/05-full-hand.md`](docs/05-full-hand.md) |
+| Camera in the palm (ESP32-CAM) | [`docs/06-palm-camera.md`](docs/06-palm-camera.md) |
 
 ## The roadmap
 

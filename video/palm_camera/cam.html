@@ -1,0 +1,32 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Palm camera</title>
+<style>html,body{margin:0;width:1280px;background:#eef1f3;font-family:"DejaVu Sans",Arial,sans-serif;color:#172026}
+header{padding:20px 32px 4px}.tag{font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#c25a17;font-weight:bold}
+h1{font-size:32px;margin:4px 0}.sub{font-size:17px;color:#4a5a64;margin:0}
+.row{display:flex;gap:16px;padding:10px 32px 26px}.cell{position:relative;width:616px;height:640px;background:#fff;border-radius:12px;overflow:hidden}
+.cell h2{position:absolute;left:16px;top:10px;margin:0;font-size:19px;z-index:2}
+.lab{position:absolute;transform:translate(-50%,-100%);background:#172026;color:#fff;font-size:14px;font-weight:bold;padding:3px 8px;border-radius:5px;white-space:nowrap;z-index:2}
+.lab::after{content:"";position:absolute;left:50%;bottom:-12px;width:2px;height:12px;background:#172026}
+.lab.o{background:#c25a17}.lab.o::after{background:#c25a17}.lab.b{background:#1f4f8f}.lab.b::after{background:#1f4f8f}.lab.y{background:#9c7400}.lab.y::after{background:#9c7400}</style></head><body>
+<header><div class="tag">RoboHand · camera in the palm</div><h1>ESP32-CAM on the inside of the palm</h1>
+<p class="sub">Low down, centred: the curled fingers never reach this area. The orange cover slides onto a rail that's part of the palm.</p></header>
+<div class="row"><div class="cell" id="A"><h2>Hand closed to 85°: fingers stay clear</h2></div><div class="cell" id="B"><h2>Close-up: the cover on the palm</h2></div></div>
+<script src="../node_modules/three/build/three.min.js"></script><script src="model.js"></script>
+<script>
+const M=window.MODEL;const b2a=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+function view(id,cam,look,fov,groups,labels){
+  const el=document.getElementById(id),W=616,Hh=640;const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+  r.setPixelRatio(1);r.setSize(W,Hh);el.appendChild(r.domElement);const s=new THREE.Scene();s.background=new THREE.Color('#ffffff');
+  s.add(new THREE.HemisphereLight(0xffffff,0x606a74,.85));const k=new THREE.DirectionalLight(0xffffff,.6);k.position.set(300,400,300);s.add(k);
+  const root=new THREE.Group();root.rotation.x=-Math.PI/2;s.add(root);
+  M.parts.forEach(p=>{if(!groups.includes(p.g))return;const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b2a(p.v)),3));
+    g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(p.i)),1));g.computeVertexNormals();
+    root.add(new THREE.Mesh(g,new THREE.MeshStandardMaterial({color:p.c,flatShading:true,roughness:.6})));});
+  const T=v=>new THREE.Vector3(v[0],v[2],-v[1]);const c=new THREE.PerspectiveCamera(fov,W/Hh,1,5000);c.position.copy(T(cam));c.lookAt(T(look));c.updateMatrixWorld();r.render(s,c);
+  labels.forEach(([t,p,cls])=>{const q=T(p).project(c);const d=document.createElement('div');d.className='lab '+(cls||'');d.textContent=t;
+    d.style.left=((q.x+1)/2*W)+'px';d.style.top=((1-q.y)/2*Hh)+'px';el.appendChild(d);});
+}
+const L=M.L;
+view('A',[330,-260,40],[20,0,-75],30,['robot','closed','cam','board'],[["camera cover",[L.xf,0,L.zt+6],'o'],["lens window",[L.xf+1,0,L.zl-14],'b'],["fingers at 85°",[60,-5,-20]],["palm",[0,-40,-55]]]);
+view('B',[L.xf+95,-75,L.zm+10],[L.xb+8,0,L.zm-4],30,['robot','cam','board'],[["lens window",[L.xf,0,L.zl+10],"b"],["slides down onto the palm rail",[L.xb+3,0,L.zt+2],"o"],["22 mm lock pin here",[L.xb+3,-11,L.lock]],["2 jumpers (5 V, GND) leave here",[L.xb+8,13,L.zb]]]);
+window.READY=true;
+</script></body></html>

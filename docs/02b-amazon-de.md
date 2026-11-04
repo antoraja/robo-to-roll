@@ -26,6 +26,13 @@ offer with good reviews. Prices are typical amazon.de prices (Nov 2026) and chan
 (Sekundenkleber), a lighter, a small Phillips screwdriver, scissors, and 4 coins (2-euro
 coins fit the stand's pockets).
 
+## Camera in the palm (guide 06, ≈ €15–20)
+
+| Item | Link | Pick | ≈ € |
+|---|---|---|---|
+| **ESP32-CAM with ESP32-CAM-MB** programmer | [amazon.de: ESP32-CAM MB](https://www.amazon.de/s?k=ESP32-CAM+MB+OV2640) | AI-Thinker ESP32-CAM **with** the MB USB board | 10–14 |
+| **Jumper wires female-male, 40 cm** | [amazon.de: Jumper Kabel female male 40cm](https://www.amazon.de/s?k=Jumper+Kabel+female+male+40cm) | 2 needed (5 V + GND up to the palm) | 4–6 |
+
 ## Optional, saves time
 
 | Item | Link | ≈ € |

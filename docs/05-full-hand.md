@@ -116,6 +116,9 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
     turns. **Wrap the string once around the spool in that direction**, pull it just tight with
     the finger straight, and tie it through the anchor hole.
 
+11. **Camera (optional):** slide the camera cover onto the rail on the inside of the palm, see
+    [guide 06](06-palm-camera.md).
+
 ## Wiring five servos
 
 Same method as guide 04 (ESP32 pushed into the breadboard, male-male jumpers only):
