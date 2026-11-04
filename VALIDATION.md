@@ -67,6 +67,7 @@ All 5 plates fit the 256 × 256 mm bed. About 290 g of PLA, ~13 h of printing.
 | Problem | Fix |
 |---|---|
 | **Servo leads are short.** The ordered MG90S have 20 cm leads, and the top (middle-finger) servo needs ~20.5 cm to reach the breadboard; jumpers must bridge the gap | Use **20 cm** male-male jumpers between each servo plug and the breadboard (tape the joints). The ESP32 plugs straight into the breadboard, so no male-female jumpers are needed |
+| **Elastic jammed at a sharp corner in the palm** (found during the build, flaw B10): 2.6 mm hole with a 53° corner | Same palm, only the elastic tunnels changed: 3.4 mm, smooth 12 mm-radius curve, funnel. Checked with a real 2.3 mm cord along the path, wall all round, knot can't enter |
 | **All 10 palm holes blocked** (found during the build): the palm shape was joined to the knuckle forks after their holes were cut, filling ~6 mm of each hole | Holes now cut after joining, with a rounded chamber at each corner; new end-to-end open-path check. Reprint plate 3. See [docs/img/palm_channel_fix.png](docs/img/palm_channel_fix.png) |
 | **Elastic lock pins don't grip** (found during the build): the pin only reaches 0.57 mm into the 2.6 mm channel, leaving 2.03 mm for a 2.0 mm cord | Lock pins dropped: the elastic is knotted at the fingertip and at the palm. Simulated: same smooth curl, same 38 % servo load, same hold-open margins |
 | **Thumb rubbed the palm** when its base joint bent fully (8.7 mm³ contact) | Clearance groove cut into the palm along the thumb's path: 0 mm³ at every angle |

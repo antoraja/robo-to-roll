@@ -117,8 +117,8 @@ def main():
     fork_change = ((P ^ forks) - (old_m ^ forks)).volume() + ((old_m ^ forks) - (P ^ forks)).volume()
     ok(added < 0.5, f"new palm adds plastic only for the camera rail and where the old elastic tunnels were (elsewhere {added:.2f} mm3)")
     ok(fork_change < 1.0 + sum((H.ELASTIC[n]["cut"] ^ forks).volume() for n in H.ORDER),
-       f"knuckle forks (where the printed fingers pin on) unchanged except the elastic slot between the prongs ({fork_change:.1f} mm3)")
-    ok(removed > 50, f"new palm removes {removed:.0f} mm3 (plugs in the string holes, elastic slots and cleats)")
+       f"knuckle forks (where the printed fingers pin on) unchanged except the elastic funnel ({fork_change:.1f} mm3)")
+    ok(removed > 50, f"new palm removes {removed:.0f} mm3 (plugs in the string holes, wider smooth elastic tunnels)")
     stl_diff = (new_stl.translate(tuple(off)) ^ P).volume() / P.volume()
     ok(abs(stl_diff - 1) < 0.01, f"palm.stl on disk = the current model ({stl_diff * 100:.1f} %)")
     col_len = H.PALM_DROP + 2
@@ -136,11 +136,9 @@ def main():
         _, w, k = H.string_path(n)
         top_s = H.local_to_world_pt((-gp.C + 0.5, 0.0, gp.FLEX_Z - gp.ZP), n)
         b3 = blocked(P, seg_probe([top_s, k, w - np.array([0, 0, 3])], 1.2))
-        # elastic: the REAL cord (2.3 mm = 2 mm + print shrink) from the knuckle into the cleat
+        # elastic: the REAL cord (2.3 mm = 2 mm + print shrink) along the smooth tunnel to the exit
         E_ = H.ELASTIC[n]
-        fa_ = H.finger_basis(n)[:, 2]
-        st_ = E_["g"] + E_["t"] * (gp.C + 0.5) / max(np.dot(E_["t"], -fa_), 0.3)
-        b4 = blocked(P, H.rod(st_, E_["c1"] - E_["t"] * 2.0, 2.3, 16))
+        b4 = blocked(P, seg_probe(E_["path"] + [E_["exit"] + E_["dir"] * 2], 2.3))
         ok(max(b1, b2, b3, b4) < 0.3, f"{n:<6} fork pin path {b1:.2f}, finger 0-85 deg {b2:.2f}, "
            f"string path {b3:.2f}, elastic path {b4:.2f} mm3 of plastic in the way")
     tab = gp.box(-H.SPINE_T / 2, H.SPINE_T / 2, -15.0, 15.0, H.WRIST_Z - 0.5, H.SPINE_TOP)
