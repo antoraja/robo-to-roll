@@ -30,7 +30,7 @@ Change only what's listed; everything else stays at the profile default.
 |---|---|---|---|---|---|
 | Strength → **Wall loops** | 4 | 4 | 3 | 4 | 3 |
 | Strength → **Top / bottom shell layers** | 5 / 4 | 5 / 4 | 4 / 3 | 5 / 4 | 4 / 3 |
-| Strength → **Sparse infill density** | 25 % | 25 % | **15 %** | 30 % | **15 %** |
+| Strength → **Sparse infill density** | 25 % | 25 % | **10 %** | 30 % | **15 %** |
 | Strength → **Sparse infill pattern** | Gyroid | Gyroid | Gyroid | Gyroid | Gyroid |
 | Support → **Enable support** | off | off | **on** | off | off |
 | Support → **Type** | | | **tree(auto)** | | |
@@ -40,7 +40,8 @@ Change only what's listed; everything else stays at the profile default.
 
 Why these values:
 - **4 walls on bones and spine:** the pin holes and servo screw holes sit in solid walls. That's where the strength is needed.
-- **15 % infill on the palm and stand:** they're big and not highly loaded, so this saves about 40 g of PLA compared with 30 %.
+- **10 % infill on the palm:** it's big and lightly loaded. The 10 string/elastic holes, pin holes and spine socket each get their own 3 walls, so the strength is there. Saves ~15 g and some time versus 15 %. The palm's shape can't get much smaller: the 10 channels fan through almost all of it.
+- **15 % infill on the stand, and keep it heavy:** the stand's weight is what stops the hand tipping over, so don't lighten it.
 - **Support on build plate only:** stops supports from growing inside the string channels.
 - **Brim on the bones:** the fingertips stand on a small flat strip, and a 3 mm outer brim keeps them stuck down. Peel it off afterwards.
 
