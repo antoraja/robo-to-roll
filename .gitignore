@@ -26,3 +26,8 @@ video/palm_knot/still_*.png
 video/palm_camera/*.log
 video/palm_camera/model.js
 video/palm_cleat/model.js
+video/finger_pin/frames/
+video/finger_pin/_tts/
+video/finger_pin/*.log
+video/finger_pin/still_*.png
+video/finger_pin/model.js

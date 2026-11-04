@@ -1,0 +1,121 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>RoboHand: fitting a finger</title>
+<style>
+  html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; background: #e9edf0; font-family: "DejaVu Sans", Arial, sans-serif; }
+  canvas { position: absolute; inset: 0; } .ov { position: absolute; }
+  #part { left: 36px; top: 24px; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: #c25a17; font-weight: bold; }
+  #cap { left: 50%; bottom: 30px; transform: translateX(-50%); width: 1140px; box-sizing: border-box; background: rgba(23,32,38,.9); color: #fff;
+         font-size: 23px; line-height: 1.38; padding: 13px 24px; border-radius: 10px; text-align: center; }
+  #bar { left: 0; bottom: 0; height: 6px; background: #e8742a; }
+  #labels { inset: 0; pointer-events: none; }
+  .lab { position: absolute; transform: translate(-50%, -100%); background: #172026; color: #fff; font-size: 18px; font-weight: bold; padding: 5px 10px; border-radius: 6px; white-space: nowrap; }
+  .lab::after { content: ""; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: #172026; transform: translateX(-50%); }
+  .lab.o { background: #c25a17; } .lab.o::after { background: #c25a17; } .lab.g { background: #2a9d8f; } .lab.g::after { background: #2a9d8f; }
+  #title { inset: 0; display: flex; flex-direction: column; justify-content: center; padding-left: 80px;
+           background: linear-gradient(90deg, rgba(233,237,240,.97) 0%, rgba(233,237,240,.9) 45%, rgba(233,237,240,0) 70%); color: #172026; }
+  #title h1 { font-size: 52px; margin: 0 0 10px; max-width: 640px; } #title p { font-size: 24px; margin: 6px 0; max-width: 560px; color: #33424c; }
+  #title .tag { font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c25a17; font-weight: bold; margin-bottom: 14px; }
+</style></head><body>
+<canvas id="c" width="1280" height="720"></canvas>
+<div id="labels" class="ov"></div>
+<div id="title" class="ov"><div class="tag">RoboHand · fingers onto the palm</div><h1>Fitting a finger with the new pin slots</h1>
+  <p>You need: a 17 mm piece of 1.75 mm filament per finger, and a lighter.</p></div>
+<div id="part" class="ov"></div><div id="cap" class="ov"></div><div id="bar" class="ov"></div>
+<script src="../node_modules/three/build/three.min.js"></script>
+<script src="model.js"></script><script src="timeline.js"></script>
+<script>
+(function () {
+const D = window.MODEL, TL = window.TIMELINE;
+const FPS = 15; window.FPS = FPS; window.DURATION = TL.total;
+const SC = {}; TL.scenes.forEach((s, i) => { s.i = i; SC[s.id] = s; });
+const V = (id, a) => SC[id].voice[0] + (SC[id].voice[1] - SC[id].voice[0]) * a;
+const ease = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+const ramp = (t, a, b) => ease((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const sceneAt = t => { let s = TL.scenes[0]; for (const x of TL.scenes) if (t >= x.t0) s = x; return s; };
+const el = id => document.getElementById(id);
+const v3 = a => new THREE.Vector3(a[0], a[1], a[2]);
+const O = v3(D.o), FA = v3(D.fa), BK = v3(D.back), AX = v3(D.ax);
+const P = (x, z, y) => O.clone().addScaledVector(FA, x).addScaledVector(BK, z).addScaledVector(AX, y || 0);
+
+const renderer = new THREE.WebGLRenderer({ canvas: el('c'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(1280, 720, false);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#e9edf0');
+const camera = new THREE.PerspectiveCamera(30, 1280 / 720, 1, 4000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x5a646e, 0.75));
+const key = new THREE.DirectionalLight(0xffffff, 0.75); key.position.set(-200, 300, 250); scene.add(key);
+const root = new THREE.Group(); root.rotation.x = -Math.PI / 2; scene.add(root);
+const b2a = s => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u.buffer; };
+const fing = new THREE.Group(); fing.matrixAutoUpdate = false; root.add(fing);
+const pinG = new THREE.Group(); pinG.matrixAutoUpdate = false; fing.add(pinG);
+const ends = [];
+D.parts.forEach(p => {
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(b2a(p.v)), 3));
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(p.i)), 1)); g.computeVertexNormals();
+  const mat = new THREE.MeshStandardMaterial({ color: p.c, flatShading: true, roughness: .6, transparent: p.g.startsWith('pinend'), opacity: 1 });
+  const mesh = new THREE.Mesh(g, mat);
+  if (p.g === 'demo') fing.add(mesh); else if (p.g === 'pin') pinG.add(mesh);
+  else if (p.g.startsWith('pinend')) { pinG.add(mesh); ends.push(mesh); } else root.add(mesh);
+});
+function setFinger(x, z, ang, slide) {
+  const R = new THREE.Matrix4().makeTranslation(O.x, O.y, O.z)
+    .multiply(new THREE.Matrix4().makeRotationAxis(AX, ang * Math.PI / 180))
+    .multiply(new THREE.Matrix4().makeTranslation(-O.x, -O.y, -O.z));
+  const off = FA.clone().multiplyScalar(x).addScaledVector(BK, z);
+  fing.matrix.copy(new THREE.Matrix4().makeTranslation(off.x, off.y, off.z).multiply(R));
+  const s = AX.clone().multiplyScalar(slide); pinG.matrix.makeTranslation(s.x, s.y, s.z);
+  fing.matrixWorldNeedsUpdate = true; pinG.matrixWorldNeedsUpdate = true;
+}
+const Z0 = D.slotz;
+const CLOSE = { cam: P(14, 22, -78), at: P(3, 0.6, 0) };
+const CAMS = {
+  intro: { cam: P(70, 120, -190), at: P(18, 0, 10) }, slots: CLOSE, pin: { cam: P(30, 26, -95), at: P(16, 1, 0) },
+  above: { cam: P(24, 24, -88), at: P(9, 1, 0) }, lower: CLOSE, nudge: CLOSE, melt: { cam: P(10, 30, -70), at: P(2, 0, 0) },
+  check: { cam: P(30, 70, -120), at: P(20, 0, 0) }, all: { cam: v3([-230, -150, 90]), at: v3([0, 5, -30]) },
+};
+const T = v => new THREE.Vector3(v.x, v.z, -v.y);   // CAD -> three
+function placeCam(t, s) {
+  const cur = CAMS[s.id], prev = s.i > 0 ? CAMS[TL.scenes[s.i - 1].id] : cur;
+  const k = ramp(t, s.t0, s.t0 + 1.4);
+  const c = prev.cam.clone().lerp(cur.cam, k), a = prev.at.clone().lerp(cur.at, k);
+  camera.position.copy(T(c)); camera.lookAt(T(a)); camera.updateMatrixWorld();
+}
+function pose(t, id) {
+  const path = D.path;
+  let x = 60, z = Z0, ang = 0, slide = 0;
+  if (id === 'intro' || id === 'slots') { x = 60; }
+  if (id === 'pin') { x = 28; slide = lerp(32, 0, ramp(t, V('pin', .2), V('pin', .8))); }
+  if (id === 'above') { x = lerp(28, 12, ramp(t, V('above', .1), V('above', .8))); }
+  if (id === 'lower') { x = lerp(12, path[1][0], ramp(t, V('lower', .1), V('lower', .9))); }
+  if (id === 'nudge') { const k1 = ramp(t, V('nudge', .15), V('nudge', .45)), k2 = ramp(t, V('nudge', .45), V('nudge', .6));
+    x = lerp(path[1][0], 0, k2); z = lerp(Z0, 0, k1); }
+  if (['melt', 'check', 'all'].includes(id)) { x = 0; z = 0; }
+  if (id === 'check') { const u = (t - V('check', 0)) / 3.0; ang = u > 0 ? 80 * Math.pow(Math.sin(Math.min(u, 2) * Math.PI / 2), 2) : 0; }
+  return { x, z, ang, slide };
+}
+function labels(t, id, f) {
+  const L = [];
+  if (id === 'slots') { L.push(['slot, open at the top', P(5.2, Z0, -8.3), 'o', ramp(t, V('slots', .3), V('slots', .4))]);
+                        L.push(['round seat (the pivot)', P(-1.2, 0, -8.3), 'o', ramp(t, V('slots', .7), V('slots', .8)), -60]); }
+  if (id === 'pin') L.push(['17 mm filament pin', P(f.x + 1.5, f.z, -9.5 + f.slide), 'g', 1]);
+  if (id === 'lower') L.push(['pin end in the slot', P(f.x + 1.2, f.z, -8.6), 'g', 1]);
+  if (id === 'nudge') L.push([t > V('nudge', .6) ? 'seated ✓' : 'nudge to the palm side', P(f.x + 1.2, f.z, -8.6), 'g', 1]);
+  if (id === 'melt') L.push(['melt the end lightly', P(0.5, 0, -9.2), 'o', 1]);
+  el('labels').innerHTML = L.map(([txt, p, cls, op, up]) => { const q = T(p).applyMatrix4(root.matrixWorld.clone().multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2))).project(camera);
+    return `<div class="lab ${cls}" style="opacity:${op};left:${(q.x + 1) / 2 * 1280}px;top:${(1 - q.y) / 2 * 720 - (up || 0)}px">${txt}</div>`; }).join('');
+}
+window.renderAt = function (t) {
+  const s = sceneAt(t), id = s.id;
+  const f = pose(t, id); setFinger(f.x, f.z, f.ang, f.slide);
+  const glow = id === 'melt' ? 0.6 + 0.4 * Math.abs(Math.sin((t - s.t0) * 3)) : 0;
+  ends.forEach(e => { e.material.opacity = glow; e.visible = glow > 0; });
+  placeCam(t, s); renderer.render(scene, camera);
+  labels(t, id, f);
+  el('title').style.opacity = id === 'intro' ? 1 - ramp(t, SC.intro.dur - 1.5, SC.intro.dur - .3) : 0;
+  el('cap').textContent = s.text;
+  let part = ''; for (const x of TL.scenes) if (x.t0 <= t && x.part) part = x.part;
+  el('part').textContent = part; el('bar').style.width = (1280 * t / TL.total) + 'px';
+};
+window.renderAt(0); window.READY = true;
+})();
+</script></body></html>
