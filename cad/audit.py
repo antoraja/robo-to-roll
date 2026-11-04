@@ -116,16 +116,31 @@ def main():
         forks = f_ if forks is None else forks + f_
     fork_change = ((P ^ forks) - (old_m ^ forks)).volume() + ((old_m ^ forks) - (P ^ forks)).volume()
     ok(added < 0.5, f"new palm adds plastic only for the camera rail and where the old elastic tunnels were (elsewhere {added:.2f} mm3)")
-    ok(fork_change < 1.0 + sum((H.ELASTIC[n]["cut"] ^ forks).volume() for n in H.ORDER),
-       f"knuckle forks (where the printed fingers pin on) unchanged except the elastic funnel ({fork_change:.1f} mm3)")
+    slots_ = m.Manifold.batch_boolean([H.place(gp.slab(H.pin_slot_profile(), y0, y1), n) for n in H.ORDER for y0, y1 in ((gp.SLOT_HALF - 0.2, gp.W / 2 + 0.3), (-gp.W / 2 - 0.3, -gp.SLOT_HALF + 0.2))], m.OpType.Add)
+    ok(fork_change < 1.0 + sum((H.ELASTIC[n]["cut"] ^ forks).volume() for n in H.ORDER) + (slots_ ^ forks).volume(),
+       f"knuckle forks changed only by the elastic funnel and the pin slots ({fork_change:.1f} mm3)")
     ok(removed > 50, f"new palm removes {removed:.0f} mm3 (plugs in the string holes, wider smooth elastic tunnels)")
     stl_diff = (new_stl.translate(tuple(off)) ^ P).volume() / P.volume()
     ok(abs(stl_diff - 1) < 0.01, f"palm.stl on disk = the current model ({stl_diff * 100:.1f} %)")
     col_len = H.PALM_DROP + 2
     for n in H.ORDER:
-        # pin through the knuckle fork (1.75 mm filament, 17 mm long)
-        pin = H.place(gp.rod_y(1.7, 0, gp.ZP, -8.5, 8.5).translate((0, 0, -gp.ZP)), n)
-        b1 = blocked(P, pin)
+        # pin (1.75 mm filament, 17 mm, checked as 1.9 mm for printing) and finger LOWERED into the fork from
+        # above along the slot (flaw B11: there's no room to push a pin in from the side), then the seated pin
+        # can't lift straight out
+        B_ = H.finger_basis(n); o_ = H.finger_pin(n); ax_ = B_[:, 1]
+        off_ = lambda x, z: B_[:, 2] * x - B_[:, 0] * z
+        bone_ = H.posed(n, 0)[0]
+        others_ = [H.posed(q, 0)[0] for q in H.ORDER if q != n]
+        b1 = 0.0
+        path_ = H.pin_insert_path()
+        for (x0, z0), (x1, z1) in zip(path_[:-1], path_[1:]):
+            for t_ in np.linspace(0, 1, 8):
+                d_ = off_(x0 + (x1 - x0) * t_, z0 + (z1 - z0) * t_)
+                pin_ = H.rod(o_ + d_ - ax_ * 8.5, o_ + d_ + ax_ * 8.5, 1.9, 16)
+                b_ = bone_.translate(tuple(d_))
+                b1 = max(b1, (pin_ ^ P).volume(), (b_ ^ P).volume(), max((b_ ^ q).volume() for q in others_))
+        held = (H.rod(o_ + off_(2.0, 0) - ax_ * 8, o_ + off_(2.0, 0) + ax_ * 8, 1.75, 16) ^ P).volume()
+        ok(held > 1.0, f"{n:<6} seated pin can't lift straight out of the fork ({held:.1f} mm3 of step in the way)")
         # slot between the prongs: room for the finger's tongue (6 mm in a 6.6 mm slot)
         slot = H.place(gp.box(-gp.R, gp.R, -gp.TONGUE_HALF, gp.TONGUE_HALF, gp.ZP - gp.R, gp.ZP + gp.R)
                        .translate((0, 0, -gp.ZP)) - gp.rod_y(gp.PIN_HOLE_TONGUE + 4, 0, 0, -9, 9), n)
@@ -139,7 +154,7 @@ def main():
         # elastic: the REAL cord (2.3 mm = 2 mm + print shrink) along the smooth tunnel to the exit
         E_ = H.ELASTIC[n]
         b4 = blocked(P, seg_probe(E_["path"] + [E_["exit"] + E_["dir"] * 2], 2.3))
-        ok(max(b1, b2, b3, b4) < 0.3, f"{n:<6} fork pin path {b1:.2f}, finger 0-85 deg {b2:.2f}, "
+        ok(max(b1, b2, b3, b4) < 0.05, f"{n:<6} finger + pin lowered into the fork {b1:.2f}, finger 0-85 deg {b2:.2f}, "
            f"string path {b3:.2f}, elastic path {b4:.2f} mm3 of plastic in the way")
     tab = gp.box(-H.SPINE_T / 2, H.SPINE_T / 2, -15.0, 15.0, H.WRIST_Z - 0.5, H.SPINE_TOP)
     ok(blocked(P, tab) < 0.1, f"spine tab (5 x 30 mm) slides into the palm socket: {blocked(P, tab):.2f} mm3 in the way")

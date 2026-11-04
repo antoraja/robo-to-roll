@@ -139,6 +139,28 @@ def elastic_tunnel(name, solid):
     return cut
 
 
+# finger pins go in FROM ABOVE: a slot in each palm prong (flaw B11: the forks are only 1.1-1.6 mm
+# apart, so a 17 mm pin can't be pushed in from the side, and sideways holes print too small).
+# Pin through the finger's tab first, lower the finger into the fork (pin ends slide down the slots),
+# nudge it towards the palm side: the pin drops into the seat at the exact pivot. Elastic keeps it there.
+PIN_SEAT_D = 2.15         # seat at the pivot (pin 1.75 mm)
+PIN_SLOT_W = 2.0          # slot the pin slides down
+PIN_SLOT_Z = 2.4          # slot is this far towards the back of the hand from the seat
+PIN_STEP_X = 0.9          # the seat is ~1 mm deeper than the slot bottom: the pin can't lift straight out
+
+
+def pin_slot_profile():
+    J = gp.circ(PIN_SEAT_D / 2, 0.0, 0.0)
+    J += m.CrossSection.batch_hull([gp.circ(PIN_SLOT_W / 2, PIN_STEP_X, 0.0), gp.circ(PIN_SLOT_W / 2, PIN_STEP_X, PIN_SLOT_Z)])
+    J += m.CrossSection.batch_hull([gp.circ(PIN_SLOT_W / 2, PIN_STEP_X, PIN_SLOT_Z), gp.circ(PIN_SLOT_W / 2, 9.0, PIN_SLOT_Z)])
+    return J
+
+
+def pin_insert_path():
+    """Pin centre positions (local x along the finger, z towards the back), from above down into the seat."""
+    return [(9.0, PIN_SLOT_Z), (PIN_STEP_X, PIN_SLOT_Z), (PIN_STEP_X, 0.0), (0.0, 0.0)]
+
+
 def cam_rail():
     z0, z1 = CAM_RAIL_Z
     x0, x1 = CAM_RAIL_X
@@ -263,7 +285,8 @@ def palm():
     p = m.Manifold.batch_hull(blobs)
     p ^= box(-60, 60, -60, 60, WRIST_Z, 200)                       # flat bottom (prints on it)
     for name in ORDER:
-        p += place(knuckle_local(), name)
+        if name != "thumb":                          # the thumb's fork goes on once, after its clearance cut
+            p += place(knuckle_local(), name)
     Rt = finger_basis("thumb")
     foot = finger_pin("thumb") + Rt @ np.array([0, 0, -PALM_DROP - 2])
     p += m.Manifold.batch_hull([blob(foot, (8, 8, 8), 24), blob((4.0, 30.0, -60.0), (9, 9, 9), 24)])
@@ -277,6 +300,9 @@ def palm():
     p -= sweep
     p += place(knuckle_local(), "thumb")
     p += cam_rail()                                   # added BEFORE any hole is cut
+    for name in ORDER:                                # pin slots in the knuckle-fork prongs
+        for y0, y1 in ((gp.SLOT_HALF - 0.2, gp.W / 2 + 0.3), (-gp.W / 2 - 0.3, -gp.SLOT_HALF + 0.2)):   # each prong only
+            p -= place(gp.slab(pin_slot_profile(), y0, y1), name)
     # elastic tunnels, exits found on the palm surface BEFORE any hole is cut
     body = p
     cleats = [elastic_tunnel(name, body) for name in ORDER]

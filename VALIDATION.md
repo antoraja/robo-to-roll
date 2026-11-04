@@ -43,7 +43,7 @@ item. Any plastic in the way fails the check.
 | Check | Result |
 |---|---|
 | New palm vs the old palm file | ✅ only removes the 10 plugs and adds the camera rail. Knuckle forks identical, so the printed fingers fit as before |
-| 5 knuckle forks: pin path, finger swing 0–85°, string path, elastic path | ✅ all open, 0 mm³ in the way |
+| 5 knuckle forks: finger + pin lowered in along the slot, pin can't lift out, finger swing 0–85°, string path, elastic path | ✅ all open, 0 mm³ in the way |
 | Spine tab into the palm, 2 palm pins (45 mm), 2 stand pins (26 mm) | ✅ open through both parts |
 | 5 servos in their spine windows, 10 screw holes | ✅ |
 | 14 finger bones: string + elastic holes and pin holes | ✅ all open (already printed: confirms they are right) |
@@ -67,6 +67,7 @@ All 5 plates fit the 256 × 256 mm bed. About 290 g of PLA, ~13 h of printing.
 | Problem | Fix |
 |---|---|
 | **Servo leads are short.** The ordered MG90S have 20 cm leads, and the top (middle-finger) servo needs ~20.5 cm to reach the breadboard; jumpers must bridge the gap | Use **20 cm** male-male jumpers between each servo plug and the breadboard (tape the joints). The ESP32 plugs straight into the breadboard, so no male-female jumpers are needed |
+| **Finger pins couldn't be inserted** (found during the build, flaw B11): forks 1.1–1.6 mm apart, sideways holes printed small | Slot open at the top of each prong, pin seats at the pivot; finger + pin lowered along the slot in the check, can't lift straight out |
 | **Elastic jammed at a sharp corner in the palm** (found during the build, flaw B10): 2.6 mm hole with a 53° corner | Same palm, only the elastic tunnels changed: 3.4 mm, smooth 12 mm-radius curve, funnel. Checked with a real 2.3 mm cord along the path, wall all round, knot can't enter |
 | **All 10 palm holes blocked** (found during the build): the palm shape was joined to the knuckle forks after their holes were cut, filling ~6 mm of each hole | Holes now cut after joining, with a rounded chamber at each corner; new end-to-end open-path check. Reprint plate 3. See [docs/img/palm_channel_fix.png](docs/img/palm_channel_fix.png) |
 | **Elastic lock pins don't grip** (found during the build): the pin only reaches 0.57 mm into the 2.6 mm channel, leaving 2.03 mm for a 2.0 mm cord | Lock pins dropped: the elastic is knotted at the fingertip and at the palm. Simulated: same smooth curl, same 38 % servo load, same hold-open margins |

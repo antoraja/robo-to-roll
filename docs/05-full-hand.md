@@ -105,7 +105,11 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
    Upload the firmware and switch on: every servo goes to its open angle.
 6. **Spools:** with the power on, press a single-arm horn onto each shaft (centre screw) and
    glue a spool flat onto it. Let it cure 5 minutes. **Unplug the power.**
-7. **Fingers onto the palm:** pin each finger to its knuckle fork. The thumb goes on the angled boss.
+7. **Fingers onto the palm** (pins go in from above, see [the picture](img/finger_pin_slot.png)):
+   push a **17 mm filament pin through the finger's own tab** first (equal ends out both sides). Hold the
+   finger straight just above its knuckle, a little towards the back of the hand, and lower it: both pin
+   ends slide down the slots in the prongs. At the bottom, nudge the finger towards the palm side: the pin
+   drops into its seat. Lightly melt both pin ends. Same for the thumb on the angled boss.
 8. **Elastic knots:** each elastic comes out on the back of the palm. Mark two dots 5 cm apart,
    pull until they're 7.5 cm apart (finger straight and firm), then tie a fat knot against the palm.
    Picture guide: [elastic_knot_at_palm.png](../video/palm_knot/elastic_knot_at_palm.png) · video: [robohand_palm_elastic_knots.mp4](../video/palm_knot/robohand_palm_elastic_knots.mp4).
