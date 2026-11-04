@@ -204,6 +204,17 @@ def palm():
         sweep = b if sweep is None else sweep + b
     p -= sweep
     p += place(knuckle_local(), "thumb")
+    # re-open the channels inside every knuckle column: the palm hull above filled them back in
+    # (prototype 1 printed with ~6 mm solid plugs in all 10 holes). Each column channel stops at
+    # the point where the palm channel takes over, and a rounded chamber there lets the
+    # string / elastic turn the corner instead of butting into a wall.
+    col_len = PALM_DROP + 2
+    for name in ORDER:
+        k_x, e_x = -C - col_len, -C - col_len + 1
+        cut = gp.rod_x(gp.CHANNEL_D, 0, gp.FLEX_Z, k_x, -C + 1.0) + gp.rod_x(gp.EXT_D, 0, gp.EXT_Z, e_x, -C + 1.0)
+        cut += m.Manifold.sphere(gp.CHANNEL_D / 2 + 0.4, 24).translate((k_x, 0, gp.FLEX_Z))
+        cut += m.Manifold.sphere(gp.EXT_D / 2 + 0.5, 24).translate((e_x, 0, gp.EXT_Z))
+        p -= place(cut.translate((0, 0, -ZP)), name)
     # string channels (straight, smooth) and elastic anchor channels (exit on the back)
     for name in ORDER:
         _, w, k = string_path(name)
@@ -407,6 +418,28 @@ def extra_checks(P):
         probe = m.Manifold.sphere(1.5, 16).translate(tuple(e1))
         exits.append((probe ^ P).volume() < 0.5)
     print(f"   elastic channels reach the outside of the palm (to tie the knot): {sum(exits)}/5")
+    # open-path test: slide a ball (a bit thinner than the string / elastic) along the whole path,
+    # from the top of the knuckle fork to the palm exit. Any plastic in the way = a plug.
+    def blocked(pts, d):
+        worst = 0.0
+        for a, b in zip(pts[:-1], pts[1:]):
+            L = float(np.linalg.norm(b - a))
+            for t in np.linspace(0, 1, max(2, int(L / 0.5) + 1)):
+                s = m.Manifold.sphere(d / 2, 12).translate(tuple(a + (b - a) * t))
+                worst = max(worst, (s ^ P).volume() / s.volume())
+        return worst * 100
+    bad = []
+    for n in ORDER:
+        _, w, k = string_path(n)
+        top_s = local_to_world_pt((-C + 0.5, 0.0, gp.FLEX_Z - ZP), n)
+        top_e = local_to_world_pt((-C + 0.5, 0.0, gp.EXT_Z - ZP), n)
+        bs = blocked([top_s, k, w], 1.2)
+        be = blocked([top_e, elastics[n][0], elastics[n][0] + (elastics[n][1] - elastics[n][0]) * 0.3], 1.8)
+        print(f"   {n:<7} path open end to end: string {'OK' if bs < 1 else f'BLOCKED {bs:.0f} %'}, "
+              f"elastic {'OK' if be < 1 else f'BLOCKED {be:.0f} %'}")
+        if bs >= 1 or be >= 1:
+            bad.append(n)
+    assert not bad, f"channels blocked in: {bad}"
     slot = box(-SPINE_T / 2 - 0.2, SPINE_T / 2 + 0.2, -15.2, 15.2, WRIST_Z - 1, SPINE_TOP + 0.3)
     hit = sum((rod(*elastics[n], gp.EXT_D) ^ slot).volume() + (rod(*strings[n], STRING_D) ^ slot).volume() for n in ORDER)
     print(f"   channels cutting into the spine slot: {hit:.1f} mm3")

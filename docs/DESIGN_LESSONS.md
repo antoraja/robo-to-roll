@@ -18,6 +18,7 @@ Status: ✅ fixed in the current files · 🔧 worked around in the build (no re
 | B6 | **Pin lengths were wrong** for the stand and palm (all said 17 mm) | Instructions simplified one length for every pin | ✅ Guide 05: 17 / 26 / 45 mm | **Generate the pin list from the CAD** (hole lengths), never write it by hand |
 | B7 | **Coin pockets looked like magnet pockets** | Unlabelled features | — | **Label or explain every non-obvious feature** in the guide and the 3D view |
 | B8 | **Videos lag behind design changes** (lock pins, knot + glue, 17 mm pins) | Videos were rendered before later fixes | Text guides updated, videos re-rendered on request | **Re-render the videos as part of every design change** (`video/*/render.js`), or mark outdated steps on screen |
+| B9 | **All 10 palm holes blocked** (string and elastic don't go through) | The palm's outer shape was joined to the knuckle forks *after* their holes were cut, so it filled ~6 mm of every hole back in. The checks only looked at the channel walls lower down, never at whether the path is open end to end | ✅ Holes re-cut through each knuckle fork after joining, plus a rounded chamber at each corner. New check slides a ball through every path end to end. 🔧 Printed palm: reprint plate 3 (or drill the plugs) | **Cut holes last**, after every solid is added. **Check every channel end to end with a probe** (open-path test), not only its walls |
 
 ## Found in simulation and checks (before printing)
 
@@ -43,6 +44,7 @@ Status: ✅ fixed in the current files · 🔧 worked around in the build (no re
 - [ ] Every clamp / pinch: remaining gap ≤ 70 % of the clamped item (B1)
 - [ ] Every string anchored around a solid bar, never a knot against a hole (B2)
 - [ ] Every pocket/socket enclosed by material (B3); walls ≥ 1.2 mm around holes (B4)
+- [ ] Holes cut after all solids are joined; every channel probed open end to end (B9)
 - [ ] Parts labelled and impossible to mix up or mount backwards (B5, S11)
 - [ ] Pin and screw lists generated from the CAD (B6)
 - [ ] Springs: leverage constant or increasing with angle; all orientations simulated (S1, S2)

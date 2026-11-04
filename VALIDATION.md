@@ -22,6 +22,7 @@ It checks, in order: the printable finger parts and joint range → the full han
 | | Channels crossing each other | ✅ Closest pair still has 8.9 mm of plastic between them |
 | | Pin holes / spine slot vs channels | ✅ 5.5 mm clear / no contact |
 | | Elastic channels come out on the back of the palm | ✅ 5 / 5 |
+| | Every string and elastic path open end to end (ball slid from knuckle fork to palm exit) | ✅ 10 / 10 (added after the first printed palm had all 10 blocked) |
 | **Physics** | All 5 fingers close fully (85° every joint) | ✅ |
 | | Servo load incl. palm friction (μ = 0.25) | ✅ 27 % (thumb) to 44 % (little) of MG90S stall |
 | | Worse friction (μ = 0.35) | ⚠️ ~55–65 % of stall: works, servos run warmer |
@@ -50,6 +51,7 @@ All 5 plates fit the 256 × 256 mm bed. About 290 g of PLA, ~13 h of printing.
 | Problem | Fix |
 |---|---|
 | **Servo leads are short.** The ordered MG90S have 20 cm leads, and the top (middle-finger) servo needs ~20.5 cm to reach the breadboard; jumpers must bridge the gap | Use **20 cm** male-male jumpers between each servo plug and the breadboard (tape the joints). The ESP32 plugs straight into the breadboard, so no male-female jumpers are needed |
+| **All 10 palm holes blocked** (found during the build): the palm shape was joined to the knuckle forks after their holes were cut, filling ~6 mm of each hole | Holes now cut after joining, with a rounded chamber at each corner; new end-to-end open-path check. Reprint plate 3. See [docs/img/palm_channel_fix.png](docs/img/palm_channel_fix.png) |
 | **Elastic lock pins don't grip** (found during the build): the pin only reaches 0.57 mm into the 2.6 mm channel, leaving 2.03 mm for a 2.0 mm cord | Lock pins dropped: the elastic is knotted at the fingertip and at the palm. Simulated: same smooth curl, same 38 % servo load, same hold-open margins |
 | **Thumb rubbed the palm** when its base joint bent fully (8.7 mm³ contact) | Clearance groove cut into the palm along the thumb's path: 0 mm³ at every angle |
 | **Thumb over-pulled.** The thumb has 2 joints, so it needs only ~110° of servo. The old default would have pushed it against its stop | Firmware default for the thumb is now 10° → 115° |
