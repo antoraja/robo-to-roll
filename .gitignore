@@ -24,3 +24,4 @@ video/palm_knot/_tts/
 video/palm_knot/*.log
 video/palm_knot/still_*.png
 video/palm_camera/*.log
+video/palm_camera/model.js
