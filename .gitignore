@@ -19,3 +19,7 @@ video/finger_strings/frames/
 video/finger_strings/_tts/
 video/finger_strings/*.log
 video/finger_strings/still_*.png
+video/palm_knot/frames/
+video/palm_knot/_tts/
+video/palm_knot/*.log
+video/palm_knot/still_*.png

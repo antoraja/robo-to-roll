@@ -1,0 +1,214 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>RoboHand: elastic knots at the palm</title>
+<style>
+  html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; background: #e9edf0; font-family: "DejaVu Sans", Arial, sans-serif; }
+  canvas { position: absolute; inset: 0; }
+  .ov { position: absolute; }
+  #part { left: 36px; top: 24px; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: #c25a17; font-weight: bold; }
+  #cap { left: 50%; bottom: 30px; transform: translateX(-50%); width: 1140px; box-sizing: border-box; background: rgba(23,32,38,.9); color: #fff;
+         font-size: 23px; line-height: 1.38; padding: 13px 24px; border-radius: 10px; text-align: center; }
+  #bar { left: 0; bottom: 0; height: 6px; background: #e8742a; }
+  #labels { inset: 0; pointer-events: none; }
+  .lab { position: absolute; transform: translate(-50%, -100%); background: #b88700; color: #fff; font-size: 18px; font-weight: bold;
+         padding: 5px 10px; border-radius: 6px; white-space: nowrap; }
+  .lab::after { content: ""; position: absolute; left: 50%; bottom: calc(-1 * var(--stem, 16px)); width: 2px; height: var(--stem, 16px); background: #b88700; transform: translateX(-50%); }
+  #close { inset: 0; background: #e9edf0; }
+  #title { inset: 0; display: flex; flex-direction: column; justify-content: center; padding-left: 80px;
+           background: linear-gradient(90deg, rgba(233,237,240,.97) 0%, rgba(233,237,240,.9) 45%, rgba(233,237,240,0) 70%); color: #172026; }
+  #title h1 { font-size: 52px; margin: 0 0 10px; max-width: 640px; } #title p { font-size: 24px; margin: 6px 0; max-width: 560px; color: #33424c; }
+  #title .tag { font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c25a17; font-weight: bold; margin-bottom: 14px; }
+  svg text { font-family: "DejaVu Sans", Arial, sans-serif; }
+</style></head>
+<body>
+<canvas id="c" width="1280" height="720"></canvas>
+<div id="labels" class="ov"></div>
+<svg id="close" class="ov" width="1280" height="720" viewBox="0 0 1280 720"></svg>
+<div id="title" class="ov"><div class="tag">RoboHand · elastic</div><h1>Tying the elastic knots on the back of the palm</h1>
+  <p>5 fingers, one knot each. You need: a pen, a ruler, scissors, and a clothes peg (or your fingers).</p></div>
+<div id="part" class="ov"></div>
+<div id="cap" class="ov"></div>
+<div id="bar" class="ov"></div>
+<script src="../node_modules/three/build/three.min.js"></script>
+<script src="palm.js"></script>
+<script src="timeline.js"></script>
+<script>
+(function () {
+const D = window.PALM, TL = window.TIMELINE;
+const FPS = 15; window.FPS = FPS; window.DURATION = TL.total;
+const SC = {}; TL.scenes.forEach((s, i) => { s.i = i; SC[s.id] = s; });
+const V = (id, a) => SC[id].voice[0] + (SC[id].voice[1] - SC[id].voice[0]) * a;
+const ease = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+const ramp = (t, a, b) => ease((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const sceneAt = t => { let s = TL.scenes[0]; for (const x of TL.scenes) if (t >= x.t0) s = x; return s; };
+const el = id => document.getElementById(id);
+
+// ---------------- 3-D back view of the palm ----------------
+const renderer = new THREE.WebGLRenderer({ canvas: el('c'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(1280, 720, false);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#e9edf0');
+const camera = new THREE.PerspectiveCamera(30, 1280 / 720, 1, 3000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x606a74, 0.85));
+const key = new THREE.DirectionalLight(0xffffff, 0.65); key.position.set(-300, 300, 200); scene.add(key);
+const root = new THREE.Group(); root.rotation.x = -Math.PI / 2; scene.add(root);
+const b2a = s => { const bin = atob(s); const u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return u.buffer; };
+function geom(e) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(b2a(e.v)), 3));
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(e.i)), 1)); g.computeVertexNormals(); return g; }
+const mat = c => new THREE.MeshStandardMaterial({ color: c, flatShading: true, roughness: .6 });
+root.add(new THREE.Mesh(geom(D.palm), mat('#e1e4e8')));
+D.fingers.forEach(f => root.add(new THREE.Mesh(geom(f), mat('#f0a43a'))));
+const ela = new THREE.MeshStandardMaterial({ color: '#e0a800', roughness: .6 }), kn = new THREE.MeshStandardMaterial({ color: '#9c7400' });
+const NAMES = { thumb: 'Thumb', index: 'Index', middle: 'Middle', ring: 'Ring', little: 'Little' };
+const UP = { index: 70, ring: 70, middle: 20, little: 20, thumb: 0 };
+const ORDER = ['index', 'middle', 'ring', 'little', 'thumb'];
+const F = {};
+Object.entries(D.exits).forEach(([n, e]) => {
+  const p = new THREE.Vector3(...e.p), d = new THREE.Vector3(...e.d);
+  const a = p.clone().addScaledVector(d, -3), b = p.clone().addScaledVector(d, 3);
+  const hang = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([a, p, b, b.clone().add(new THREE.Vector3(-6, 0, -10)),
+    b.clone().add(new THREE.Vector3(-12, 0, -40))]), 30, 1.1, 8), ela);
+  const tied = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([a, p, b, b.clone().addScaledVector(d, 5)]), 10, 1.1, 8), ela);
+  const k = new THREE.Mesh(new THREE.SphereGeometry(3.6, 16, 12), kn); k.position.copy(p.clone().addScaledVector(d, 3.2));
+  [hang, tied, k].forEach(m => root.add(m));
+  F[n] = { hang, tied, k, lab: p.clone().addScaledVector(d, 3).add(new THREE.Vector3(0, 0, 9)) };
+});
+const CAMEND = new THREE.Vector3(-230, -10, 70), LOOK = new THREE.Vector3(0, -45, -5);
+function place3d(t, id) {
+  let pos = CAMEND.clone();
+  if (id === 'intro') { const k = ramp(t, 0, SC.intro.dur + 2); const ang = lerp(1.1, 0, k);
+    pos = new THREE.Vector3(-230 * Math.cos(ang) + 40 * Math.sin(ang), -10, 70 * Math.cos(ang) + 230 * Math.sin(ang)); }
+  camera.position.copy(pos); camera.lookAt(LOOK); camera.updateMatrixWorld(); root.updateMatrixWorld(true);
+}
+function labels3d(list) {
+  el('labels').innerHTML = list.map(([n, txt, op]) => { const q = F[n].lab.clone().applyMatrix4(root.matrixWorld).project(camera);
+    return `<div class="lab" style="left:${(q.x + 1) / 2 * 1280}px;top:${(1 - q.y) / 2 * 720 - UP[n]}px;--stem:${16 + UP[n]}px;opacity:${op}">${txt}</div>`; }).join('');
+}
+
+// ---------------- 2-D close-up ----------------
+const HX = 640, SLAB0 = 70, SLAB1 = 160, CM = 40;   // hole at (HX, SLAB1); 1 cm = 40 px
+function rulerBracket(x, y0, y1, txt, col) {
+  return `<path d="M${x} ${y0} V${y1} M${x - 8} ${y0} H${x + 8} M${x - 8} ${y1} H${x + 8}" stroke="${col}" stroke-width="3"/>
+    <text x="${x + 16}" y="${(y0 + y1) / 2 + 9}" font-size="28" font-weight="bold" fill="${col}">${txt}</text>`;
+}
+function hand(x, y, op) {   // two fingertips pinching the elastic end, arm from below-right
+  return `<g opacity="${op}"><path d="M${x + 20} ${y + 10} C${x + 70} ${y + 40} ${x + 120} ${y + 80} ${x + 170} ${y + 140}" stroke="#e8b48f" stroke-width="44" stroke-linecap="round" fill="none"/>
+    <ellipse cx="${x - 16}" cy="${y}" rx="18" ry="24" fill="#f1c39f" stroke="#c98f68" stroke-width="2"/>
+    <ellipse cx="${x + 16}" cy="${y + 2}" rx="18" ry="24" fill="#f1c39f" stroke="#c98f68" stroke-width="2"/></g>`;
+}
+function peg(x, y, op) {
+  return `<g opacity="${op}" transform="translate(${x} ${y})"><rect x="-6" y="-11" width="150" height="10" rx="3" fill="#2f7d4f"/><rect x="-6" y="1" width="150" height="10" rx="3" fill="#2f7d4f"/>
+    <rect x="70" y="-15" width="22" height="30" rx="4" fill="#9aa5ad"/><text x="160" y="8" font-size="20" font-weight="bold" fill="#2f7d4f">clothes peg</text></g>`;
+}
+function scissors(x, y, open, op) {
+  const a = open * 18;
+  return `<g opacity="${op}" transform="translate(${x} ${y})" stroke="#33424c" stroke-width="5" fill="none" stroke-linecap="round">
+    <g transform="rotate(${-a})"><path d="M-60 0 H40"/><circle cx="62" cy="-8" r="16"/></g><g transform="rotate(${a})"><path d="M-60 0 H40"/><circle cx="62" cy="8" r="16"/></g></g>`;
+}
+function miniFinger(x, y, bend) {   // inset: palm block + 3-bone finger pointing up, bending to the right
+  let s = `<rect x="${x - 60}" y="${y}" width="120" height="90" rx="10" fill="#e1e4e8" stroke="#aab4bb"/>`;
+  let px = x, py = y, ang = -Math.PI / 2; const L = [62, 44, 36];
+  L.forEach((l, i) => { ang += bend; const nx = px + l * Math.cos(ang), ny = py + l * Math.sin(ang);
+    s += `<line x1="${px}" y1="${py}" x2="${nx}" y2="${ny}" stroke="#f0a43a" stroke-width="22" stroke-linecap="round"/><circle cx="${px}" cy="${py}" r="4" fill="#7a4f12"/>`; px = nx; py = ny; });
+  return s;
+}
+
+function closeup(t, id) {
+  const s = SC[id], v = a => V(id, a), r = (a, b) => ramp(t, v(a), v(b));
+  // state
+  let dot1 = SLAB1 + 22, seg = 5 * CM, tail = 50, w = 9, handOp = 0, handPull = 0, pegX = 1300, pegOp = 0, knotR = 0, knotY = 0, shownDots = 0, ruler = '', lift = 0, cut = 0, scOp = 0, scOpen = 1;
+  const order = ['straight', 'mark', 'stretch', 'pinch', 'knot', 'release', 'check', 'adjust', 'trim'];
+  const at = order.indexOf(id);
+  const after = n => at > order.indexOf(n);
+  if (id === 'mark') shownDots = r(.1, .5) > 0 ? (r(.6, .9) > 0 ? 2 : 1) : 0;
+  if (after('mark')) shownDots = 2;
+  if (id === 'mark') ruler = r(.6, .9) > 0 ? rulerBracket(720, dot1, dot1 + seg, '5 cm', '#c25a17') : '';
+  let k = 0;
+  if (id === 'stretch') { handOp = r(0, .12); k = r(.15, .7); }
+  if (after('stretch')) { k = 1; handOp = 1; }
+  if (id === 'stretch' || id === 'pinch' || id === 'knot') {
+    seg = lerp(5, 7.5, k) * CM; w = lerp(9, 7, k);
+    ruler = rulerBracket(720, dot1, dot1 + seg, (lerp(5, 7.5, k)).toFixed(1) + ' cm', k > .99 ? '#2f7d4f' : '#c25a17');
+  }
+  if (id === 'pinch') { pegX = lerp(1000, HX - 70, r(.15, .55)); pegOp = 1; }
+  if (id === 'knot') { pegX = HX - 70; pegOp = 1; knotR = 15 * r(.05, .8); }
+  const KNOT0 = SLAB1 + 48;
+  if (after('knot')) {
+    knotR = 15; seg = 7.5 * CM; w = 9;
+    const rel = id === 'release' ? r(.3, .6) : 1;
+    pegX = id === 'release' ? lerp(HX - 70, 1000, r(0, .25)) : 1300; pegOp = id === 'release' ? 1 - r(.15, .3) : 0;
+    handOp = id === 'release' ? 1 - r(.05, .25) : 0; lift = rel * (KNOT0 - (SLAB1 + knotR - 2));
+  }
+  if (id === 'trim') { scOp = r(0, .15) * (1 - r(.75, .95)); scOpen = 1 - r(.3, .45); cut = r(.45, .9); }
+  knotY = KNOT0 - lift;
+  const end = dot1 + seg + tail - lift;
+  // drawing
+  let g = `<rect x="0" y="0" width="1280" height="720" fill="#e9edf0"/>`;
+  g += `<text x="40" y="104" font-size="20" fill="#5b6873">close-up</text><text x="40" y="130" font-size="20" fill="#5b6873">(side cut)</text>`;
+  g += `<rect x="330" y="${SLAB0}" width="620" height="${SLAB1 - SLAB0}" rx="10" fill="#d5dade" stroke="#9aa5ad" stroke-width="2"/>
+        <text x="350" y="${SLAB0 + 34}" font-size="21" fill="#4a5a64" font-weight="bold">back of the palm</text>
+        <rect x="${HX - 9}" y="${SLAB0}" width="18" height="${SLAB1 - SLAB0}" fill="#aab4bb"/>
+        <text x="${HX + 22}" y="${SLAB1 - 14}" font-size="17" fill="#4a5a64">hole</text>
+        <text x="350" y="${SLAB0 - 18}" font-size="17" fill="#5b6873">↑ the finger is up here, pinned and straight</text>`;
+  // elastic: inside channel, then below the hole
+  const cutY = knotY + knotR + 40;
+  const tailEnd = cut > 0 ? lerp(end, cutY, 1) : end;
+  g += `<path d="M${HX} ${SLAB0} V${tailEnd}" stroke="#e0a800" stroke-width="${w}" stroke-linecap="round"/>`;
+  if (cut > 0) g += `<g opacity="${1 - cut}" transform="translate(0 ${cut * 200})"><path d="M${HX} ${cutY + 4} V${end}" stroke="#e0a800" stroke-width="${w}" stroke-linecap="round"/></g>`;
+  // dots move with the elastic
+  if (shownDots >= 1 && knotR < 1 || (shownDots >= 1 && id === 'knot')) g += `<circle cx="${HX}" cy="${dot1 - lift}" r="5" fill="#172026"/>`;
+  if (shownDots >= 2 && (cut === 0 || cut < .01)) g += `<circle cx="${HX}" cy="${dot1 + seg - lift}" r="5" fill="#172026"/>`;
+  if (id === 'mark' && shownDots) g += `<text x="${HX - 150}" y="${dot1 + 6}" font-size="20" fill="#172026">dot 1 →</text>`;
+  if (id === 'mark' && shownDots > 1) g += `<text x="${HX - 150}" y="${dot1 + seg + 6}" font-size="20" fill="#172026">dot 2 →</text>`;
+  g += ruler;
+  if (knotR > 0) g += `<circle cx="${HX}" cy="${knotY}" r="${knotR}" fill="#9c7400"/><path d="M${HX - knotR * .7} ${knotY - 4} q${knotR * .7} 9 ${knotR * 1.4} 0" stroke="#e0a800" stroke-width="3" fill="none"/>`;
+  if (id === 'knot' && knotR > 3) g += `<text x="${HX + 30}" y="${knotY + 8}" font-size="22" font-weight="bold" fill="#9c7400">fat double knot</text>`;
+  g += peg(pegX, SLAB1 + 18, pegOp);
+  g += hand(HX, end - 10, handOp);
+  if (id === 'stretch' && k < .99 && k > 0) g += `<path d="M${HX - 120} ${end - 80} V${end - 10} M${HX - 132} ${end - 26} L${HX - 120} ${end - 6} L${HX - 108} ${end - 26}" stroke="#172026" stroke-width="4" fill="none"/><text x="${HX - 250}" y="${end - 40}" font-size="20" fill="#172026">pull down</text>`;
+  if (id === 'release' && r(.6, .7) > 0) g += `<g opacity="${r(.6, .7)}"><text x="${HX + 30}" y="${knotY + 8}" font-size="22" font-weight="bold" fill="#2f7d4f">knot pulled against the palm ✓</text></g>`;
+  if (id === 'trim' || id === 'check' || id === 'adjust') if (knotR) {}
+  if (id === 'trim') { g += scissors(HX + 70, cutY, scOpen, scOp);
+    if (cut > .5) g += `<g opacity="${r(.6, .8)}">${rulerBracket(HX + 60, knotY + knotR, cutY, '≈ 1 cm', '#c25a17')}</g>`; }
+  if (id === 'check') {
+    const tt = (t - v(.1)) % 3.2; const bend = tt < 0 ? 0 : (tt < 1.1 ? ease(tt / 1.1) * .9 : tt < 1.6 ? .9 : tt < 1.9 ? .9 * (1 - ease((tt - 1.6) / .3)) : 0);
+    g += `<rect x="900" y="200" width="330" height="330" rx="14" fill="#fff" stroke="#d6dce0"/>` + miniFinger(1040, 400, bend) +
+      `<text x="920" y="500" font-size="19" fill="${bend > .05 && tt > 1.6 ? '#2f7d4f' : '#33424c'}" font-weight="bold">${tt < 0 ? '' : tt < 1.6 ? 'bend it…' : 'let go: springs back ✓'}</text>`;
+  }
+  if (id === 'adjust') {
+    const o1 = r(0, .1), o2 = r(.45, .55), o3 = r(.85, .95);
+    g += `<g opacity="${o1}"><rect x="40" y="250" width="360" height="150" rx="14" fill="#fff" stroke="#d6dce0"/><text x="64" y="292" font-size="24" font-weight="bold" fill="#c9182f">Finger floppy?</text>
+      <text x="64" y="330" font-size="20" fill="#33424c">untie, stretch a little</text><text x="64" y="358" font-size="20" fill="#33424c">MORE (e.g. 8 cm)</text></g>
+      <g opacity="${o2}"><rect x="880" y="250" width="360" height="150" rx="14" fill="#fff" stroke="#d6dce0"/><text x="904" y="292" font-size="24" font-weight="bold" fill="#c9182f">Servo hums?</text>
+      <text x="904" y="330" font-size="20" fill="#33424c">untie, stretch a little</text><text x="904" y="358" font-size="20" fill="#33424c">LESS (e.g. 7 cm)</text></g>
+      <g opacity="${o3}"><text x="${HX}" y="590" text-anchor="middle" font-size="22" font-weight="bold" fill="#c25a17">adjust BEFORE you trim</text></g>`;
+  }
+  return g;
+}
+
+window.renderAt = function (t) {
+  const s = sceneAt(t), id = s.id;
+  const is3d = ['intro', 'where', 'all'].includes(id);
+  // 3-D state
+  ORDER.forEach((n, i) => {
+    let tied = false;
+    if (id === 'all') tied = n === 'index' || t >= V('all', .05 + i * .1);
+    F[n].hang.visible = !tied; F[n].tied.visible = tied; F[n].k.visible = tied;
+  });
+  place3d(t - s.t0, id); renderer.render(scene, camera);
+  let labs = [];
+  if (id === 'where') labs = ORDER.map((n, i) => [n, NAMES[n] + ' elastic', ramp(t, V('where', .1 + i * .1), V('where', .15 + i * .1))]);
+  if (id === 'all') labs = ORDER.map((n, i) => [n, NAMES[n] + ' ✓', n === 'index' ? 1 : ramp(t, V('all', .05 + i * .1), V('all', .1 + i * .1))]);
+  labels3d(labs);
+  el('close').style.display = is3d ? 'none' : 'block';
+  if (!is3d) el('close').innerHTML = closeup(t, id);
+  el('title').style.opacity = id === 'intro' ? 1 - ramp(t, SC.intro.dur - 1.5, SC.intro.dur - .3) : 0;
+  el('cap').textContent = s.text;
+  let part = ''; for (const x of TL.scenes) if (x.t0 <= t && x.part) part = x.part;
+  el('part').textContent = part;
+  el('bar').style.width = (1280 * t / TL.total) + 'px';
+};
+window.renderAt(0);
+window.READY = true;
+})();
+</script>
+</body></html>
