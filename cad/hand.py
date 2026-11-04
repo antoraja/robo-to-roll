@@ -80,6 +80,56 @@ CAM_RAIL_X = (30.0, 33.0)                     # dovetail: narrow (+-6) at x=30, 
 CAM_RAIL_HW = (6.0, 8.0)
 
 
+# elastic: open slot down the back of each knuckle + V-cleat on the back of the palm (no hidden tunnel)
+TRENCH_W = 2.8            # open slot the 2 mm cord lies in (printed ~2.5, cord 2.0)
+CLEAT_AT = 30.0           # cleat's narrow end sits this far below the knuckle pin (along the finger)
+CLEAT_LEN = 13.0          # length of the V
+CLEAT_NARROW, CLEAT_WIDE = 1.0, 3.4   # V width: squeezes the cord to 50 % at the top, easy to press in at the bottom
+CLEAT_DEPTH = 3.0         # V depth below the surface (cord fully inside)
+CORD_D = 2.0
+ELASTIC = {}              # filled by palm(): per finger the cord line (g, c1, c2, t, back)
+
+
+def _surface_point(solid, q, out_dir):
+    """First point outside `solid` when walking from q along out_dir."""
+    for s_ in np.arange(-6.0, 25.0, 0.1):
+        x = q + out_dir * s_
+        if (m.Manifold.sphere(0.15, 8).translate(tuple(x)) ^ solid).volume() < 1e-6 and s_ > -5.9:
+            inside_before = (m.Manifold.sphere(0.15, 8).translate(tuple(x - out_dir * 0.2)) ^ solid).volume() > 1e-6
+            if inside_before:
+                return x
+    raise RuntimeError("no surface found")
+
+
+def elastic_cleat(name, solid):
+    """Cord line from the knuckle groove to the cleat, and the cut (open trench + V-cleat)."""
+    B = finger_basis(name)
+    fa, back, side = B[:, 2], -B[:, 0], B[:, 1]
+    g = local_to_world_pt((0.0, 0.0, gp.EXT_Z - ZP), name)            # cord centre where it wraps the knuckle
+    s1 = _surface_point(solid, g - fa * CLEAT_AT, back)
+    c1 = s1 - back * (CLEAT_DEPTH - CORD_D / 2 - 0.3)                 # cord centre at the cleat's narrow end
+    t = (c1 - g) / np.linalg.norm(c1 - g)
+    c2 = c1 + t * CLEAT_LEN
+    nb = back - t * np.dot(back, t); nb /= np.linalg.norm(nb)          # 'outwards', square to the cord
+    ELASTIC[name] = dict(g=g, c1=c1, c2=c2, t=t, back=nb, side=side, s1=s1)
+
+    def plate(c, w, d0):
+        """thin plate across the cord at c: width w (side), from depth d0 below the cord centre to far outside"""
+        pts = [c + side * sy * w / 2 + nb * dz for sy in (-1, 1) for dz in (-d0, 14.0)]
+        pts += [p_ + t * 0.01 for p_ in pts]
+        return m.Manifold.batch_hull([m.Manifold.sphere(0.01, 4).translate(tuple(p_)) for p_ in pts])
+    # open trench from the column top (between the fork prongs) down to the cleat
+    start = g + t * (C - 0.5) / max(np.dot(t, -fa), 0.3)
+    trench = m.Manifold.batch_hull([plate(start, TRENCH_W, TRENCH_W / 2), plate(c1 - t * 2.0, TRENCH_W, TRENCH_W / 2)])
+    v = m.Manifold.batch_hull([plate(c1, CLEAT_NARROW, CORD_D / 2 + 0.3), plate(c2, CLEAT_WIDE, CORD_D / 2 + 0.3)])
+    tail = m.Manifold.batch_hull([plate(c2, CLEAT_WIDE, CORD_D / 2 + 0.3), plate(c2 + t * 4, CLEAT_WIDE + 1, CORD_D / 2 + 0.3)])
+    # the trench narrows into the V over 2 mm so the cord is guided straight into the pinch
+    lead = m.Manifold.batch_hull([plate(c1 - t * 2.0, TRENCH_W, TRENCH_W / 2), plate(c1, CLEAT_NARROW, CORD_D / 2 + 0.3)])
+    cut = trench + lead + v + tail
+    ELASTIC[name]['cut'] = cut
+    return cut
+
+
 def cam_rail():
     z0, z1 = CAM_RAIL_Z
     x0, x1 = CAM_RAIL_X
@@ -218,27 +268,24 @@ def palm():
     p -= sweep
     p += place(knuckle_local(), "thumb")
     p += cam_rail()                                   # added BEFORE any hole is cut
-    # re-open the channels inside every knuckle column: the palm hull above filled them back in
-    # (prototype 1 printed with ~6 mm solid plugs in all 10 holes). Each column channel stops at
-    # the point where the palm channel takes over, and a rounded chamber there lets the
-    # string / elastic turn the corner instead of butting into a wall.
+    # elastic: open trench + V-cleat per finger, found on the palm surface BEFORE any hole is cut
+    body = p
+    cleats = [elastic_cleat(name, body) for name in ORDER]
+    # re-open the string channel inside every knuckle column: the palm hull above filled it back in
+    # (prototype 1 printed with ~6 mm solid plugs in all 10 holes); a rounded chamber at the bottom
+    # lets the string turn into the palm channel.
     col_len = PALM_DROP + 2
     for name in ORDER:
-        k_x, e_x = -C - col_len, -C - col_len + 1
-        cut = gp.rod_x(gp.CHANNEL_D, 0, gp.FLEX_Z, k_x, -C + 1.0) + gp.rod_x(gp.EXT_D, 0, gp.EXT_Z, e_x, -C + 1.0)
+        k_x = -C - col_len
+        cut = gp.rod_x(gp.CHANNEL_D, 0, gp.FLEX_Z, k_x, -C + 1.0)
         cut += m.Manifold.sphere(gp.CHANNEL_D / 2 + 0.4, 24).translate((k_x, 0, gp.FLEX_Z))
-        cut += m.Manifold.sphere(gp.EXT_D / 2 + 0.5, 24).translate((e_x, 0, gp.EXT_Z))
         p -= place(cut.translate((0, 0, -ZP)), name)
-    # string channels (straight, smooth) and elastic anchor channels (exit on the back)
+    # string channels (straight, smooth)
     for name in ORDER:
         _, w, k = string_path(name)
         p -= rod(w - np.array([0, 0, 2]), k + (k - w) / np.linalg.norm(k - w) * 3, STRING_D)
-        col_len = PALM_DROP + 2
-        e0 = local_to_world_pt((-C - col_len + 1, 0.0, gp.EXT_Z - ZP), name)
-        back = -finger_basis(name)[:, 0]                   # opposite to the curl direction
-        down = -finger_basis(name)[:, 2]
-        e1 = e0 + (back * 0.8 + down * 0.6) * 40
-        p -= rod(e0, e1, gp.EXT_D)
+    for c in cleats:
+        p -= c
     # spine socket + pin holes
     p -= box(-SPINE_T / 2 - 0.2, SPINE_T / 2 + 0.2, -15.2, 15.2, WRIST_Z - 1, SPINE_TOP + 0.3)
     for y in (-5.0, 5.0):
@@ -396,6 +443,46 @@ def seg_dist(p1, q1, p2, q2):
     return float(np.linalg.norm((p1 + d1 * s) - (p2 + d2 * t)))
 
 
+def elastic_checks(P):
+    """The REAL cord, not an ideal ball (flaw B10): 2.0 mm cord + 0.3 mm for holes printing small."""
+    print("   elastic (2 mm cord, checked as 2.3 mm for print shrink):")
+    real = CORD_D + 0.3
+    bad = []
+    for n in ORDER:
+        e = ELASTIC[n]
+        g, c1, c2, t, nb, side = e["g"], e["c1"], e["c2"], e["t"], e["back"], e["side"]
+        fa = finger_basis(n)[:, 2]
+        start = g + t * (C + 0.5) / max(np.dot(t, -fa), 0.3)        # just below the knuckle fork's top
+        # 1) the cord's real path (knuckle -> cleat) is free of plastic
+        lay = (rod(start, c1 - t * 2.0, real, 16) ^ P).volume()
+        # 2) it can be LAID IN from outside: the cord swept outwards meets no plastic (no hidden tunnel)
+        sweep = m.Manifold.batch_hull([rod(start, c1 - t * 2.0, real, 16), rod(start + nb * 15, c1 - t * 2.0 + nb * 15, real, 16)])
+        open_ = (sweep ^ P).volume()
+        # 3) the cleat squeezes: at the narrow end the 2 mm cord meets plastic on both sides,
+        #    and the gap is <= 70 % of the cord (rule B1); at the wide end it drops in freely
+        narrow = (rod(c1 + t * 0.2, c1 + t * 1.2, CORD_D, 16) ^ P).volume()
+        gap_ok = (rod(c1 + t * 0.2, c1 + t * 1.2, CLEAT_NARROW - 0.1, 16) ^ P).volume() < 0.01 and CLEAT_NARROW <= 0.7 * CORD_D
+        wide = (rod(c2 - t * 1.0, c2 + t * 3.0, CORD_D, 16) ^ P).volume()
+        # 4) a knot (4 mm) can't pass the cleat if the cord ever slips: backup
+        knot = (m.Manifold.sphere(2.0, 16).translate(tuple(c1 + t * 1.0)) ^ P).volume()
+        # 5) bend where the cord leaves the knuckle (gentle = < 20 deg; old design: 53 deg corner)
+        bend = math.degrees(math.acos(np.clip(np.dot(t, -fa), -1, 1)))
+        ok_ = lay < 0.05 and open_ < 0.05 and narrow > 0.5 and gap_ok and wide < 0.05 and knot > 1.0 and bend < 20
+        print(f"     {n:<7} path free {lay:.2f} mm3, lay-in from outside {open_:.2f} mm3, bend {bend:4.1f} deg, "
+              f"cleat squeezes {narrow:.1f} mm3 (gap {CLEAT_NARROW:.1f} mm = {CLEAT_NARROW / CORD_D * 100:.0f} %), "
+              f"wide end free {wide:.2f}, knot stopped {knot:.1f} -> {'OK' if ok_ else 'FAIL'}")
+        if not ok_:
+            bad.append(n)
+    # 6) the cuts keep >= 1.2 mm of plastic around every string channel
+    walls = 0.0
+    for n in ORDER:
+        _, w, k = string_path(n)
+        ring_ = rod(w - np.array([0, 0, 2]), k, STRING_D + 2.4, 16) - rod(w - np.array([0, 0, 2]), k, STRING_D, 16)
+        walls += sum((ELASTIC[e]["cut"] ^ ring_).volume() for e in ORDER)
+    print(f"     string channel walls removed by the elastic slots / cleats: {max(walls, 0):.2f} mm3")
+    assert not bad and walls < 1.0, f"elastic path problems: {bad}, walls {walls:.2f}"
+
+
 SERVO_LEAD = 200.0        # MG90S lead length (mm): the ordered 6-pack has 20 cm leads
 
 
@@ -407,9 +494,9 @@ def extra_checks(P):
     for n in ORDER:
         _, w, k = string_path(n)
         strings[n] = (w, k)
-        e0 = local_to_world_pt((-C - col_len + 1, 0.0, gp.EXT_Z - ZP), n)
-        back, down = -finger_basis(n)[:, 0], -finger_basis(n)[:, 2]
-        elastics[n] = (e0, e0 + (back * 0.8 + down * 0.6) * 40)
+        if n not in ELASTIC:
+            palm()
+        elastics[n] = (ELASTIC[n]["g"], ELASTIC[n]["c2"])
     worst = (99.0, "")
     names = list(ORDER)
     for i, a in enumerate(names):
@@ -417,23 +504,16 @@ def extra_checks(P):
             d = seg_dist(*strings[a], *strings[b]) - STRING_D
             worst = min(worst, (d, f"string {a} / string {b}"))
         for b in names:
-            d = seg_dist(*strings[a], *elastics[b]) - (STRING_D + gp.EXT_D) / 2
-            worst = min(worst, (d, f"string {a} / elastic {b}"))
+            d = seg_dist(*strings[a], *elastics[b]) - (STRING_D + CLEAT_WIDE) / 2
+            worst = min(worst, (d, f"string {a} / elastic slot {b}"))
             if a < b:
-                d2 = seg_dist(*elastics[a], *elastics[b]) - gp.EXT_D
-                worst = min(worst, (d2, f"elastic {a} / elastic {b}"))
+                d2 = seg_dist(*elastics[a], *elastics[b]) - CLEAT_WIDE
+                worst = min(worst, (d2, f"elastic slot {a} / elastic slot {b}"))
     print(f"   closest pair of channels in the palm: {worst[1]} with {worst[0]:.1f} mm of plastic between them")
     pins = [(np.array([-40.0, y, WRIST_Z + 7]), np.array([40.0, y, WRIST_Z + 7])) for y in (-5.0, 5.0)]
     near_pin = min(seg_dist(*p, *strings[n]) - (PIN_D + STRING_D) / 2 for p in pins for n in ORDER)
     print(f"   palm pin holes vs string channels: {near_pin:.1f} mm apart")
-    exits = []
-    for n in ORDER:
-        e0, e1 = elastics[n]
-        probe = m.Manifold.sphere(1.5, 16).translate(tuple(e1))
-        exits.append((probe ^ P).volume() < 0.5)
-    print(f"   elastic channels reach the outside of the palm (to tie the knot): {sum(exits)}/5")
-    # open-path test: slide a ball (a bit thinner than the string / elastic) along the whole path,
-    # from the top of the knuckle fork to the palm exit. Any plastic in the way = a plug.
+    # string: slide a ball a bit thinner than the string along the whole path. Any plastic in the way = a plug.
     def blocked(pts, d):
         worst = 0.0
         for a, b in zip(pts[:-1], pts[1:]):
@@ -446,16 +526,14 @@ def extra_checks(P):
     for n in ORDER:
         _, w, k = string_path(n)
         top_s = local_to_world_pt((-C + 0.5, 0.0, gp.FLEX_Z - ZP), n)
-        top_e = local_to_world_pt((-C + 0.5, 0.0, gp.EXT_Z - ZP), n)
         bs = blocked([top_s, k, w], 1.2)
-        be = blocked([top_e, elastics[n][0], elastics[n][0] + (elastics[n][1] - elastics[n][0]) * 0.3], 1.8)
-        print(f"   {n:<7} path open end to end: string {'OK' if bs < 1 else f'BLOCKED {bs:.0f} %'}, "
-              f"elastic {'OK' if be < 1 else f'BLOCKED {be:.0f} %'}")
-        if bs >= 1 or be >= 1:
+        print(f"   {n:<7} string path open end to end: {'OK' if bs < 1 else f'BLOCKED {bs:.0f} %'}")
+        if bs >= 1:
             bad.append(n)
-    assert not bad, f"channels blocked in: {bad}"
+    assert not bad, f"string channels blocked in: {bad}"
+    elastic_checks(P)
     slot = box(-SPINE_T / 2 - 0.2, SPINE_T / 2 + 0.2, -15.2, 15.2, WRIST_Z - 1, SPINE_TOP + 0.3)
-    hit = sum((rod(*elastics[n], gp.EXT_D) ^ slot).volume() + (rod(*strings[n], STRING_D) ^ slot).volume() for n in ORDER)
+    hit = sum((rod(*elastics[n], CLEAT_WIDE) ^ slot).volume() + (rod(*strings[n], STRING_D) ^ slot).volume() for n in ORDER)
     print(f"   channels cutting into the spine slot: {hit:.1f} mm3")
     print("   servo lead reach (MG90S lead 20 cm) to the breadboard behind the arm:")
     bb = np.array([-50.0, 0.0, PLATE_Z + 9])

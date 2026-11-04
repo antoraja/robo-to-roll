@@ -100,10 +100,25 @@ def main():
     off = np.array(P.bounding_box()[:3]) - np.array(new_stl.bounding_box()[:3])
     old_m = old_m.translate(tuple(off))
     rail_zone = H.box(21.9, 40, -12, 12, H.WRIST_Z - 1, H.CAM_RAIL_Z[1] + 0.5)
-    added = ((P - old_m) - rail_zone).volume()
+    old_tunnels = None                     # the old elastic tunnels (column + sloping exit): now solid, as intended
+    for n in H.ORDER:
+        B_ = H.finger_basis(n)
+        e0_ = H.local_to_world_pt((-gp.C - H.PALM_DROP - 2 + 1, 0.0, gp.EXT_Z - gp.ZP), n)
+        top_ = H.local_to_world_pt((-gp.C + 1, 0.0, gp.EXT_Z - gp.ZP), n)
+        tun = H.rod(e0_, e0_ + (-B_[:, 0] * .8 - B_[:, 2] * .6) * 40, gp.EXT_D + 0.6) + H.rod(top_, e0_, gp.EXT_D + 0.6) \
+            + m.Manifold.sphere(gp.EXT_D / 2 + 0.8, 16).translate(tuple(e0_))
+        old_tunnels = tun if old_tunnels is None else old_tunnels + tun
+    added = ((P - old_m) - rail_zone - old_tunnels).volume()
     removed = (old_m - P).volume()
-    ok(added < 0.5, f"new palm adds plastic only for the camera rail (elsewhere {added:.2f} mm3) -> the fingers' fit is unchanged")
-    ok(removed > 50, f"new palm removes {removed:.0f} mm3 = the plugs in the 10 holes")
+    forks = None
+    for n in H.ORDER:
+        f_ = H.place(gp.box(-gp.R - 0.5, gp.R + 0.5, -gp.W / 2 - 0.5, gp.W / 2 + 0.5, gp.ZP - gp.R - 0.5, gp.H / 2 + 0.5).translate((0, 0, -gp.ZP)), n)
+        forks = f_ if forks is None else forks + f_
+    fork_change = ((P ^ forks) - (old_m ^ forks)).volume() + ((old_m ^ forks) - (P ^ forks)).volume()
+    ok(added < 0.5, f"new palm adds plastic only for the camera rail and where the old elastic tunnels were (elsewhere {added:.2f} mm3)")
+    ok(fork_change < 1.0 + sum((H.ELASTIC[n]["cut"] ^ forks).volume() for n in H.ORDER),
+       f"knuckle forks (where the printed fingers pin on) unchanged except the elastic slot between the prongs ({fork_change:.1f} mm3)")
+    ok(removed > 50, f"new palm removes {removed:.0f} mm3 (plugs in the string holes, elastic slots and cleats)")
     stl_diff = (new_stl.translate(tuple(off)) ^ P).volume() / P.volume()
     ok(abs(stl_diff - 1) < 0.01, f"palm.stl on disk = the current model ({stl_diff * 100:.1f} %)")
     col_len = H.PALM_DROP + 2
@@ -121,11 +136,11 @@ def main():
         _, w, k = H.string_path(n)
         top_s = H.local_to_world_pt((-gp.C + 0.5, 0.0, gp.FLEX_Z - gp.ZP), n)
         b3 = blocked(P, seg_probe([top_s, k, w - np.array([0, 0, 3])], 1.2))
-        top_e = H.local_to_world_pt((-gp.C + 0.5, 0.0, gp.EXT_Z - gp.ZP), n)
-        e0 = H.local_to_world_pt((-gp.C - col_len + 1, 0.0, gp.EXT_Z - gp.ZP), n)
-        B = H.finger_basis(n)
-        e1 = e0 + (-B[:, 0] * .8 - B[:, 2] * .6) * 40
-        b4 = blocked(P, seg_probe([top_e, e0, e1], 1.8))
+        # elastic: the REAL cord (2.3 mm = 2 mm + print shrink) from the knuckle into the cleat
+        E_ = H.ELASTIC[n]
+        fa_ = H.finger_basis(n)[:, 2]
+        st_ = E_["g"] + E_["t"] * (gp.C + 0.5) / max(np.dot(E_["t"], -fa_), 0.3)
+        b4 = blocked(P, H.rod(st_, E_["c1"] - E_["t"] * 2.0, 2.3, 16))
         ok(max(b1, b2, b3, b4) < 0.3, f"{n:<6} fork pin path {b1:.2f}, finger 0-85 deg {b2:.2f}, "
            f"string path {b3:.2f}, elastic path {b4:.2f} mm3 of plastic in the way")
     tab = gp.box(-H.SPINE_T / 2, H.SPINE_T / 2, -15.0, 15.0, H.WRIST_Z - 0.5, H.SPINE_TOP)
