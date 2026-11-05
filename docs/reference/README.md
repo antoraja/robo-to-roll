@@ -9,7 +9,7 @@ videos are listed at the bottom so they don't get mixed up.
 | File | What it shows |
 |---|---|
 | [`photos/2026-11-05_assembled_hand_front.jpg`](photos/2026-11-05_assembled_hand_front.jpg) | Complete hand on its stand, seen from the palm side: all 4 fingers curled, thumb out, camera rail on the lower palm, servo windows in the spine, coin pockets in the base |
-| [`photos/2026-11-05_assembled_hand_side.jpg`](photos/2026-11-05_assembled_hand_side.jpg) | Same, from the side: palm on the spine, strings running down to the servos |
+| [`photos/2026-11-05_assembled_hand_side.jpg`](photos/2026-11-05_assembled_hand_side.jpg) | Same, from the side: palm on the spine, strings hanging out under the wrist (servos not fitted yet) |
 | [`photos/2026-11-05_assembled_hand_thumb_out.jpg`](photos/2026-11-05_assembled_hand_thumb_out.jpg) | Front view, thumb on its angled boss |
 | [`photos/2026-11-05_assembled_hand.mp4`](photos/2026-11-05_assembled_hand.mp4) | Short walk-around video of the assembled hand |
 | [`photos/2026-11-02_fingers_correct_layout.jpg`](photos/2026-11-02_fingers_correct_layout.jpg) | All 14 finger bones pinned into the 5 fingers in the **correct** order, next to a ruler (the four 3-bone fingers, then the 2-bone thumb at the bottom) |
