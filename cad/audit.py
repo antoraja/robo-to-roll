@@ -196,6 +196,20 @@ def main():
     spl = lambda d: m.Manifold.cylinder(gp.SPLINE_DEPTH - 0.1, d / 2, d / 2, 48).translate((0, 0, -gp.SPLINE_DEPTH))
     ok((spl(gp.SPLINE_D - 0.05) ^ sv3).volume() < 0.01 and (spl(gp.SPLINE_D + 0.15) ^ sv3).volume() > 0.5,
        f"spool socket is {gp.SPLINE_D} mm = the fit-test hub that fitted the real servo (4 dots)")
+    # the centre screw can be put in from the top: head + shank lowered all the way to the floor
+    # touch nothing, and the shank then reaches >= 2 mm into the threaded shaft (flaw B13)
+    S_ = gp.SCREW
+    top_ = gp.V3_BODY_Z + 2 * gp.SPOOL_FLANGE_T + gp.SPOOL_CORE_W
+    def screw_at(zh):   # head underside at height zh
+        hd = S_["head_d"] + 0.5         # + 0.5 mm: printed holes come out ~0.3-0.5 mm small (that is what blocked it)
+        return (m.Manifold.cylinder(S_["head_h"], hd / 2, hd / 2, 32).translate((0, 0, zh))
+                + m.Manifold.cylinder(S_["shank_l"], S_["shank_d"] / 2 - 0.05, S_["shank_d"] / 2 - 0.05, 24).translate((0, 0, zh - S_["shank_l"])))
+    path_hit = max((screw_at(zh) ^ sv3).volume() for zh in np.arange(gp.V3_FLOOR + 0.01, top_ + 0.5, 0.25))
+    reach = S_["shank_l"] - gp.V3_FLOOR
+    ok(path_hit < 0.01 and reach >= 2.0, f"centre screw (head {S_['head_d']} mm + 0.5 print allowance) goes in from the top to the floor without touching ({path_hit:.2f} mm3) and reaches {reach:.1f} mm into the shaft")
+    probe = lambda d: m.Manifold.cylinder(2, d / 2, d / 2, 32).translate((0, 0, top_ - 4))
+    ok((probe(gp.V3_HEAD_D - 0.2) ^ sv3).volume() < 0.01 and (probe(gp.V3_HEAD_D + 0.3) ^ sv3).volume() > 0.1,
+       f"control: the head hole really is {gp.V3_HEAD_D} mm (a 0.3 mm wider probe hits), so the screw check means something")
     mid = gp.V3_BODY_Z + gp.SPOOL_FLANGE_T + gp.SPOOL_CORE_W / 2
     ring = lambda r: m.Manifold.cylinder(0.1, r + 0.05, r + 0.05, 64).translate((0, 0, mid - 0.05)) - m.Manifold.cylinder(0.1, r, r, 64).translate((0, 0, mid - 0.05))
     rg = min(r for r in np.arange(12.0, 16.0, 0.05) if (ring(r) ^ sv3).volume() < 1e-4)

@@ -374,7 +374,9 @@ V3_BODY_Z = 2.0           # spool body starts 2 mm above the shaft top: flanges 
                           # if the real shaft sits 2 mm lower than assumed
 V3_FLOOR = 0.9            # plastic under the screw head
 V3_RECESS = (6.0, 1.0)    # recess under the base around the shaft (gear boss on the servo case)
-V3_SCREW_D, V3_HEAD_D = 2.3, 4.6
+V3_SCREW_D, V3_HEAD_D = 2.3, 6.5   # head hole 6.5: the screw head + screwdriver go 9 mm down to the floor
+V3_HEAD_MOUTH = (0.5, 0.6)         # first 0.6 mm of that hole 0.5 wider (printed on the bed: first-layer squash)
+SCREW = dict(head_d=4.5, head_h=1.6, shank_d=2.0, shank_l=4.0)   # MG90S horn screw, generous assumption
 SPLINE_TEST_SIZES = (4.35, 4.5, 4.65, 4.8)
 
 
@@ -396,6 +398,7 @@ def spool_v3(spline_d=SPLINE_D):
     s -= m.Manifold.cylinder(SPLINE_DEPTH + 0.01, spline_d / 2, spline_d / 2, 48).translate((0, 0, -SPLINE_DEPTH - 0.02))
     s -= m.Manifold.cylinder(V3_FLOOR + 0.2, V3_SCREW_D / 2, V3_SCREW_D / 2, 24).translate((0, 0, -0.1))
     s -= m.Manifold.cylinder(top - V3_FLOOR + 1, V3_HEAD_D / 2, V3_HEAD_D / 2, 32).translate((0, 0, V3_FLOOR))
+    s -= m.Manifold.cylinder(V3_HEAD_MOUTH[1] + 1, (V3_HEAD_D + V3_HEAD_MOUTH[0]) / 2, (V3_HEAD_D + V3_HEAD_MOUTH[0]) / 2, 32).translate((0, 0, top - V3_HEAD_MOUTH[1]))
     for ang in (0, 180):                       # string anchor holes + rim slot, as before
         a = math.radians(ang)
         s -= m.Manifold.cylinder(top + SPLINE_DEPTH + 2, 0.75, 0.75, 24).translate(
