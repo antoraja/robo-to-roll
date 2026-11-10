@@ -23,8 +23,7 @@ The photos were re-saved without their phone data (no location or camera info).
 | [`design/finger_pin_slot.png`](design/finger_pin_slot.png) | How a finger goes onto the palm: pin through the finger's tab, lower it down the prong slots, nudge it into the seat, melt the pin ends |
 | [`design/elastic_tunnel_fix.png`](design/elastic_tunnel_fix.png) | The elastic hole in the palm: smooth 12 mm curve, 3.4 mm wide, with a funnel at the top. The old sharp corner is shown for comparison |
 | [`design/elastic_knot_at_palm.png`](design/elastic_knot_at_palm.png) | Tying the elastic on the back of the palm: mark 5 cm, stretch to 7.5 cm, knot, adjust, then trim |
-| [`design/spool_v2_design.png`](design/spool_v2_design.png) | Glue-free spool: trim the horn arm to 26 mm (31.3 as bought), horn in the pocket, lashed in with braided line, onto the shaft with the centre screw |
-| [`design/spool_versions.png`](design/spool_versions.png) | The two spool versions: A for the double-arm horn (plate 9, 2 dots), B for the single-arm horn (plate 10, 1 dot) |
+| [`design/spool_v3_design.png`](design/spool_v3_design.png) | Spool without horn: presses onto the servo shaft, held by the original centre screw (plates 8 + 9) |
 | [`design/palm_camera.png`](design/palm_camera.png) | The ESP32-CAM cover on the rail on the inside of the palm, clear of the fingers even in a full fist |
 
 ## Current videos
@@ -35,7 +34,7 @@ The photos were re-saved without their phone data (no location or camera info).
 | [`video/palm_knot/robohand_palm_elastic_knots.mp4`](../../video/palm_knot/robohand_palm_elastic_knots.mp4) | Tying the elastic knots on the back of the palm |
 | [`video/finger_strings/robohand_finger_string_elastic.mp4`](../../video/finger_strings/robohand_finger_string_elastic.mp4) | String (with the 5 mm filament toggle) and elastic into one finger, without glue or lock pins |
 | [`video/assembly/robohand_servo_mounting.mp4`](../../video/assembly/robohand_servo_mounting.mp4) | Mounting the 5 servos on the spine: front dot, which servo goes where, 2 screws each (40 s, cut from the full assembly video; this part is still correct) |
-| [`video/spool_setup/robohand_spool_setup.mp4`](../../video/spool_setup/robohand_spool_setup.mp4) | Tying the strings to the spools (direction, wrap once, slot + hole + knot, test) is still correct. **Its spool-fitting part shows the old glued spool:** for the glue-free spool follow [`design/spool_v2_design.png`](design/spool_v2_design.png) |
+| [`video/spool_setup/robohand_spool_setup.mp4`](../../video/spool_setup/robohand_spool_setup.mp4) | Tying the strings to the spools (direction, wrap once, slot + hole + knot, test) is still correct. **Its spool-fitting part shows the old glued spool with a horn:** follow [`design/spool_v3_design.png`](design/spool_v3_design.png) instead |
 | [`video/electronics/robohand_wiring_programming.mp4`](../../video/electronics/robohand_wiring_programming.mp4) | Wiring the servos and the ESP32, first upload |
 
 ## Outdated: don't build from these

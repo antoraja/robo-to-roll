@@ -103,14 +103,12 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
 4. **Spine into the stand**, front dot facing away from the breadboard tray, 2 pins.
 5. **Electronics** (guide 04): breadboard in the tray, ESP32 into the breadboard, all 5 servos.
    Upload the firmware and switch on: every servo goes to its open angle.
-6. **Spools (glue-free):** print the two horn fit tests (plate 8) first, then 5 spools from plate 9 (double-arm horn)
-   or plate 10 (single-arm horn), whichever fits better. See [the picture](img/spool_v2_design.png) and [both versions](img/spool_versions.png).
-   **Trim the horn first** so no arm reaches more than **13 mm** from the centre (double arm: 26 mm tip to tip, as bought 31.3 mm).
-   It goes in **flat side into the pocket, round hub sticking out**. Press the horn into the pocket
-   under the spool (round hub outwards) and **lash it in** with the braided line: down the slot over the
-   arm, through a horn hole, under the arm, up the slot beside it, knot on top (both arms).
-   With the power on (servos at their open angle), push spool + horn onto the shaft and screw the
-   **centre screw** in through the spool's centre hole. **Unplug the power.**
+6. **Spools (no horn, no glue):** see [the picture](img/spool_v3_design.png). Print the spline fit test
+   (plate 8) and pick the hub (1-4 dots) that needs a firm push onto a servo shaft and doesn't slip; then
+   5 spools (plate 9, socket 4.6 mm = 3 dots; ask for another size if a different hub fitted best).
+   With the power on (servos at their open angle), press each spool straight onto its shaft and screw the
+   **original centre screw** in through the top. There must be a small gap above the servo case.
+   **Unplug the power.** The servo horns are not used.
 7. **Fingers onto the palm** (pins go in from above, see [the picture](img/finger_pin_slot.png) and
    [the video](../video/finger_pin/robohand_finger_pin_slots.mp4)):
    push a **17 mm filament pin through the finger's own tab** first (equal ends out both sides). Hold the

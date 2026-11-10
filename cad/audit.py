@@ -177,25 +177,29 @@ def main():
         sh = sum(blocked(SP, H.rod((-4, hy, hz), (4, hy, hz), 1.5)) for hy, hz in holes)
         ok(bt < 0.1 and sh < 0.1, f"{n:<6} servo fits its window ({bt:.2f}) and both screw holes are open ({sh:.2f})")
 
-    # spool + horn (horn modelled, flaw B12) turned through a full circle never touch the neighbours
-    others_ = {n: m.Manifold.batch_boolean([SP, ST] + [H.servo_geom(q)[0] for q in H.ORDER if q != n]
-                                           + [H.servo_geom(q)[1] for q in H.ORDER if q != n], m.OpType.Add) for n in H.ORDER}
-    for arms, label in ((2, "double-arm"), (1, "single-arm")):
+    # horn-free spool (v3) on the spline, turned a full circle: never touches the neighbours or its own servo,
+    # also if the real shaft top sits 1 mm lower or 0.7 mm higher than assumed (B12: no horn at all)
+    for off in (-1.0, 0.0, 0.7):
+        H.SHAFT_OFFSET = off
+        everything = {("servo", q): H.servo_geom(q)[0] for q in H.ORDER}
+        everything.update({("spool", q): H.servo_geom(q)[1] for q in H.ORDER})
+        worst_ = 0.0
         for n in H.ORDER:
             s_ = H.SERVOS[n]
-            w_ = max(((gp.spool_v2(arms) + gp.horn_model(arms)).rotate((0, 0, a)).rotate((0.0, 90.0 * s_["side"], 0.0))
-                      .translate((H.spool_x(s_["side"]), s_["y"], s_["z"])) ^ others_[n]).volume() for a in range(0, 360, 15))
-            ok(w_ < 0.05, f"{n:<6} {label} spool + trimmed horn turned a full circle: touches nothing ({w_:.2f} mm3)")
-        sv = gp.spool_v2(arms)
-        ok((gp.horn_model(arms) ^ sv).volume() < 0.01 and (gp.horn_model(arms) ^ gp.horn_fit_test(arms)).volume() < 0.01,
-           f"{label} horn sits in its spool pocket and in its fit-test disc without forcing")
-        hm = gp.horn_model(arms)
-        ok(hm.volume() > 100, f"{label}: horn model is real ({hm.volume():.0f} mm3), so the fit checks mean something")
-        ok((hm.scale((1, 1, 2.2 / gp.HORN_T)) ^ sv).volume() < 0.01 and (hm.scale((1 + 0.4 / 5.6, 1, 1)) ^ sv).volume() < 0.01,
-           f"{label}: still fits a horn 0.4 mm thicker or 0.4 mm wider than measured")
-        ok((hm.scale((1 + 1.2 / 5.6, 1, 1)) ^ sv).volume() > 0.5, f"{label}: control - a horn 1.2 mm too wide is caught by the check")
-        over = (m.Manifold.cylinder(30, 0.4, 0.4, 12).translate((0, 9.0, -10)) ^ gp.horn_model(arms)).volume()
-        ok(over > 0.01, f"{label}: lashing slot lies over the horn arm (line can go through a horn hole)")
+            oth = m.Manifold.batch_boolean([SP, ST] + [v for k, v in everything.items() if k != ("spool", n)], m.OpType.Add)
+            for a_ in range(0, 360, 20):
+                sp_ = gp.spool_v3().rotate((0, 0, a_)).rotate((0.0, 90.0 * s_["side"], 0.0)).translate((H.shaft_top_x(s_["side"]), s_["y"], s_["z"]))
+                worst_ = max(worst_, (sp_ ^ oth).volume())
+        ok(worst_ < 0.05, f"spools (no horn) turned a full circle, shaft top {off:+.1f} mm vs assumed: touch nothing ({worst_:.2f} mm3)")
+    H.SHAFT_OFFSET = 0.0
+    sv3 = gp.spool_v3()
+    spl = lambda d: m.Manifold.cylinder(gp.SPLINE_DEPTH - 0.1, d / 2, d / 2, 48).translate((0, 0, -gp.SPLINE_DEPTH))
+    ok((spl(4.8) ^ sv3).volume() > 1.0, "4.8 mm metal spline grips the 4.6 mm socket (teeth bite into the PLA)")
+    ok((spl(4.5) ^ sv3).volume() < 0.01, "control: a spline smaller than the socket is NOT gripped (so the grip check means something)")
+    mid = gp.V3_BODY_Z + gp.SPOOL_FLANGE_T + gp.SPOOL_CORE_W / 2
+    ring = lambda r: m.Manifold.cylinder(0.1, r + 0.05, r + 0.05, 64).translate((0, 0, mid - 0.05)) - m.Manifold.cylinder(0.1, r, r, 64).translate((0, 0, mid - 0.05))
+    rg = min(r for r in np.arange(12.0, 16.0, 0.05) if (ring(r) ^ sv3).volume() < 1e-4)
+    ok(rg * math.pi >= 1.1 * 37.5, f"string groove radius {rg:.2f} mm: {rg * math.pi:.1f} mm of pull in 180 deg (needs 41.3)")
 
     # ------------------------------------------------------------------ 3 fingers (already printed: report only)
     print("\n3) Finger bones (already printed - checked so you know they are right)")
@@ -228,14 +232,15 @@ def main():
     # ------------------------------------------------------------------ 5 every part: one piece + supports
     print("\n5) Every printed part: one solid piece, supports needed in its print orientation")
     parts = [("palm", P, (0, 0, 0), True), ("spine", SP, (0, 90, 0), False), ("stand", ST, (0, 0, 0), False),
-             ("spool_double_arm", gp.spool_v2(2), (0, 0, 0), False), ("spool_single_arm", gp.spool_v2(1), (0, 0, 0), False), ("fit_test_double", gp.horn_fit_test(2), (0, 0, 0), False), ("fit_test_single", gp.horn_fit_test(1), (0, 0, 0), False), ("camera_cover", CV, (0, 0, 0), False)]
+             ("spool", gp.spool_v3(), (180, 0, 0), False), ("spline_fit_test", gp.spline_fit_test(), (0, 0, 0), False), ("camera_cover", CV, (0, 0, 0), False)]
     for n in H.ORDER:
         for i, b in enumerate(bones[n]):
             parts.append((f"{n}_{i + 1}", b, (180, 0, 0), False))
     for name, part, rot, sup in parts:
         pieces = len(part.decompose())
         area, bed = overhang(part, rot, name, sup)
-        ok(pieces == 1, f"{name:<16} is {pieces} solid piece(s)")
+        want = len(gp.SPLINE_TEST_SIZES) if name == "spline_fit_test" else 1
+        ok(pieces == want, f"{name:<16} is {pieces} solid piece(s) (expected {want})")
         if not sup:
             ok(area < 25 and bed > 40, f"{name:<16} prints without supports")
 

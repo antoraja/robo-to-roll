@@ -364,6 +364,61 @@ def horn_model(arms=2):
     return horn_pocket(fit=0.0, arms=arms, open_ends=False, mouth=False) ^ m.Manifold.cylinder(HORN_T, 40, 40, SEG).translate((0, 0, -HORN_T))
 
 
+# ---- spool v3: NO HORN. Presses straight onto the servo's 21-tooth spline (OD ~4.8 mm, community
+# measurements; clones vary, 4.6 mm often fits best) and is held by the horn's centre screw (threaded
+# shaft). Untrimmed horns would hit the next servo (B12), so they are not used at all.
+# z = 0 is the top of the servo shaft.
+SPLINE_D = 4.6            # socket for the spline (metal teeth bite into the PLA); pick from the fit test
+SPLINE_DEPTH = 2.8        # how far the spline goes into the spool
+V3_BODY_Z = 2.0           # spool body starts 2 mm above the shaft top: flanges clear the next servo even
+                          # if the real shaft sits 2 mm lower than assumed
+V3_FLOOR = 0.9            # plastic under the screw head
+V3_RECESS = (6.0, 1.0)    # recess under the base around the shaft (gear boss on the servo case)
+V3_SCREW_D, V3_HEAD_D = 2.3, 4.6
+SPLINE_TEST_SIZES = (4.35, 4.5, 4.65, 4.8)
+
+
+def spool_v3(spline_d=SPLINE_D):
+    """Spool that goes straight on the servo shaft. Printed upside down (outer flange on the bed): both
+    flanges have 45 deg inner slopes, so the string groove is a V with its bottom at r = 13.5 mm."""
+    body_h = 2 * SPOOL_FLANGE_T + SPOOL_CORE_W
+    z0 = V3_BODY_Z
+    f1 = m.Manifold.cylinder(SPOOL_FLANGE_T, SPOOL_FLANGE_R, SPOOL_FLANGE_R, SEG).translate((0, 0, z0))
+    f2 = f1.translate((0, 0, SPOOL_FLANGE_T + SPOOL_CORE_W))
+    core = m.Manifold.cylinder(SPOOL_CORE_W, SPOOL_R, SPOOL_R, SEG).translate((0, 0, z0 + SPOOL_FLANGE_T))
+    lip = SPOOL_FLANGE_R - SPOOL_R
+    c1 = m.Manifold.cylinder(lip, SPOOL_FLANGE_R, SPOOL_R, SEG).translate((0, 0, z0 + SPOOL_FLANGE_T))      # slope above f1
+    c2 = m.Manifold.cylinder(lip, SPOOL_R, SPOOL_FLANGE_R, SEG).translate((0, 0, z0 + body_h - SPOOL_FLANGE_T - lip))
+    base = m.Manifold.cylinder(z0 + SPLINE_DEPTH, BASE_R, BASE_R, SEG).translate((0, 0, -SPLINE_DEPTH))
+    s = f1 + f2 + core + c1 + c2 + base
+    top = z0 + body_h
+    s -= m.Manifold.cylinder(V3_RECESS[1], V3_RECESS[0], V3_RECESS[0], SEG).translate((0, 0, -SPLINE_DEPTH - 0.01))
+    s -= m.Manifold.cylinder(SPLINE_DEPTH + 0.01, spline_d / 2, spline_d / 2, 48).translate((0, 0, -SPLINE_DEPTH - 0.02))
+    s -= m.Manifold.cylinder(V3_FLOOR + 0.2, V3_SCREW_D / 2, V3_SCREW_D / 2, 24).translate((0, 0, -0.1))
+    s -= m.Manifold.cylinder(top - V3_FLOOR + 1, V3_HEAD_D / 2, V3_HEAD_D / 2, 32).translate((0, 0, V3_FLOOR))
+    for ang in (0, 180):                       # string anchor holes + rim slot, as before
+        a = math.radians(ang)
+        s -= m.Manifold.cylinder(top + SPLINE_DEPTH + 2, 0.75, 0.75, 24).translate(
+            (math.cos(a) * (SPOOL_R - 2), math.sin(a) * (SPOOL_R - 2), -SPLINE_DEPTH - 1))
+    s -= box(SPOOL_R - 2.5, SPOOL_FLANGE_R + 1, -0.6, 0.6, z0 + SPOOL_FLANGE_T, z0 + SPOOL_FLANGE_T + SPOOL_CORE_W)
+    return s
+
+
+def spline_fit_test():
+    """Four small hubs with the spline socket in 4.35 / 4.5 / 4.65 / 4.8 mm, marked with 1-4 dots."""
+    parts = []
+    for k, d in enumerate(SPLINE_TEST_SIZES):
+        h = m.Manifold.cylinder(SPLINE_DEPTH + V3_FLOOR + 1.0, 5.5, 5.5, SEG).translate((0, 0, -SPLINE_DEPTH))
+        h -= m.Manifold.cylinder(SPLINE_DEPTH + 0.01, d / 2, d / 2, 48).translate((0, 0, -SPLINE_DEPTH - 0.02))
+        h -= m.Manifold.cylinder(V3_FLOOR + 2, V3_SCREW_D / 2, V3_SCREW_D / 2, 24).translate((0, 0, -0.1))
+        top = V3_FLOOR + 1.0
+        for j in range(k + 1):
+            a = math.radians(90 * j)
+            h -= m.Manifold.cylinder(0.5, 0.7, 0.7, 16).translate((3.6 * math.cos(a), 3.6 * math.sin(a), top - 0.4))
+        parts.append(h.translate((14.0 * k, 0, 0)))
+    return m.Manifold.batch_boolean(parts, m.OpType.Add)
+
+
 # ----------------------------------------------------------------- the base
 # The base holds the finger standing UP. World frame for the base:
 #   X forward (direction the finger curls), Y sideways, Z up.

@@ -70,7 +70,9 @@ S_CASE_ABOVE_TAB = 4.3
 S_LEN, S_WID = 22.8, 12.2
 S_TAB_SPAN, S_HOLE_SPACING = 32.3, 27.8
 S_SHAFT_FROM_END = 5.9
-HORN_GAP = 9.5            # tab top -> spool base (shaft + horn)
+HORN_GAP = 9.5            # tab top -> spool base (shaft + horn)  [old glued spool]
+SHAFT_ABOVE_CASE = 4.0    # MG90S spline top above the case top (community measurement 'shoe height' 4.0)
+SHAFT_OFFSET = 0.0        # for robustness checks: real shaft top higher (+) / lower (-) than assumed
 
 STRING_D = 2.4            # palm string channel
 PIN_D = 1.9               # filament pin holes
@@ -228,6 +230,18 @@ def spool_x(side):
     return tab_top + side * HORN_GAP          # spool base (glued to horn)
 
 
+def shaft_top_x(side):
+    return side * (SPINE_T / 2 + S_TAB_T + S_CASE_ABOVE_TAB + SHAFT_ABOVE_CASE + SHAFT_OFFSET)
+
+
+def groove_x(side):
+    """x of the string groove centre on the horn-free spool (v3)."""
+    return shaft_top_x(side) + side * (gp.V3_BODY_Z + gp.SPOOL_FLANGE_T + gp.SPOOL_CORE_W / 2)
+
+
+GROOVE_R = gp.SPOOL_R + (gp.SPOOL_FLANGE_R - gp.SPOOL_R) - gp.SPOOL_CORE_W / 2   # 13.5: bottom of the V groove
+
+
 def spool_core_x(side):
     return spool_x(side) + side * (gp.SPOOL_FLANGE_T + gp.SPOOL_CORE_W / 2)
 
@@ -243,7 +257,7 @@ def servo_geom(name):
     zc = (z_top + z_bot) / 2
     tabs = box(min(face, face + side * S_TAB_T), max(face, face + side * S_TAB_T), y - S_WID / 2, y + S_WID / 2,
                zc - S_TAB_SPAN / 2, zc + S_TAB_SPAN / 2)
-    sp = (gp.spool_v2() + gp.horn_model()).rotate((0.0, 90.0 * side, 0.0)).translate((spool_x(side), y, z))   # glue-free spool with its horn
+    sp = gp.spool_v3().rotate((0.0, 90.0 * side, 0.0)).translate((shaft_top_x(side), y, z))   # horn-free spool on the spline
     holes = [(y, zc - S_HOLE_SPACING / 2), (y, zc + S_HOLE_SPACING / 2)]
     cut = (y, z_bot - 0.2, z_top + 0.2)
     return body + tabs, sp, holes, cut
@@ -253,7 +267,8 @@ def string_path(name):
     """World points of the flexor string from the spool to the knuckle column bottom."""
     s = SERVOS[name]
     xs = spool_core_x(s["side"])
-    tangent = (xs, s["ty"], s["z"])
+    # where the string really leaves the (horn-free, v3) spool: groove centre, at the groove radius
+    tangent = (groove_x(s["side"]), s["y"] + (s["ty"] - s["y"]) * GROOVE_R / gp.SPOOL_R, s["z"])
     wrist = (xs, s["ty"], WRIST_Z - 0.5)
     col_len = PALM_DROP + 2
     knuckle = local_to_world_pt((-C - col_len, 0.0, gp.FLEX_Z - ZP), name)
@@ -614,10 +629,8 @@ def write_stls(P, SP, ST, bones):
     save(P, "palm.stl")                              # stands on its flat wrist
     save(SP, "spine.stl", (0, 90, 0))                # lies flat
     save(ST, "stand.stl")
-    save(gp.spool_v2(2), "servo_spool_x5.stl")                 # for the double-arm horn
-    save(gp.spool_v2(1), "servo_spool_single_arm_x5.stl")      # for the single-arm horn
-    save(gp.horn_fit_test(2), "horn_fit_test.stl")
-    save(gp.horn_fit_test(1), "horn_fit_test_single_arm.stl")
+    save(gp.spool_v3(), "servo_spool_x5.stl", (180, 0, 0))      # no horn: presses on the spline, flange on the bed
+    save(gp.spline_fit_test(), "spline_fit_test.stl")
     for n in ORDER:
         names = ["proximal", "middle", "distal"] if len(finger_L(n)) == 3 else ["proximal", "distal"]
         for b, part in zip(bones[n], names):

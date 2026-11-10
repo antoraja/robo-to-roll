@@ -115,7 +115,7 @@ def main():
         names = ["proximal", "middle", "distal"] if len(hand.finger_L(n)) == 3 else ["proximal", "distal"]
         return [(f"{n}_{nm}", print_oriented(b, (180, 0, 0))) for b, nm in zip(bones[n], names)]
 
-    spool = print_oriented(gp.spool_v2(), (0, 0, 0))            # horn pocket on the bed
+    spool = print_oriented(gp.spool_v3(), (180, 0, 0))          # horn-free spool, outer flange on the bed
     plates = []
     plates.append(("fit_test", bone_items("index") + [(f"spool_{i + 1}", spool.copy()) for i in range(5)]))
     other = sum((bone_items(n) for n in ("thumb", "middle", "ring", "little")), [])
@@ -139,17 +139,15 @@ def main():
         tips.append((f"spare_tip_cap_{k + 1}", print_oriented(gp.tip_cap(25), (0, -90, 0))))
     plates.append(("tips_and_caps", [it for pl in pack(tips) for it in pl]))
 
-    # glue-free spools (plates 8-10): fit tests first, then the 5 spools for whichever horn fits better
-    plates.append(("horn_fit_tests", [("fit_test_double_arm_2dots", print_oriented(gp.horn_fit_test(2), (0, 0, 0))),
-                                      ("fit_test_single_arm_1dot", print_oriented(gp.horn_fit_test(1), (0, 0, 0)).apply_translation((34, 0, 0)))]))
-    plates.append(("spools_double_arm", [it for pl in pack([(f"spool_double_{i + 1}", print_oriented(gp.spool_v2(2), (0, 0, 0))) for i in range(5)]) for it in pl]))
-    plates.append(("spools_single_arm", [it for pl in pack([(f"spool_single_{i + 1}", print_oriented(gp.spool_v2(1), (0, 0, 0))) for i in range(5)]) for it in pl]))
+    # horn-free spools: fit test first (plate 8), then the 5 spools (plate 9)
+    plates.append(("spline_fit_test", [("spline_fit_test_1to4_dots", print_oriented(gp.spline_fit_test(), (0, 0, 0)))]))
+    plates.append(("spools", [it for pl in pack([(f"spool_{i + 1}", print_oriented(gp.spool_v3(), (180, 0, 0))) for i in range(5)]) for it in pl]))
     print(f"Print plates ({BED:.0f} x {BED:.0f} mm bed) -> plates/")
     manifest = []
     for i, (title, items) in enumerate(plates, 1):
         if title == "fit_test":
             items = [it for pl in pack(items) for it in pl]
-        num = {"horn_fit_tests": 8, "spools_double_arm": 9, "spools_single_arm": 10}.get(title, i)   # 7 = palm camera (palm_camera.py)
+        num = {"spline_fit_test": 8, "spools": 9}.get(title, i)   # 7 = palm camera (palm_camera.py)
         manifest.append(dict(plate=num, title=title, **save_plate(num, title, items, out_p)))
     with open(os.path.join(out_p, "plates.json"), "w") as fh:
         json.dump(manifest, fh, indent=1)
