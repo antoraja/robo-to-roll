@@ -13,9 +13,9 @@ h1{font-size:31px;margin:4px 0}.sub{font-size:17px;color:#4a5a64;margin:0}
 <p class="sub">Same winding surface and string holes as before. Fixed with the servo's own centre screw. No glue anywhere.</p></header>
 <div class="row"><div class="cell" id="A"><h2>Exploded view</h2></div><div class="cell" id="B"><h2>Underneath: horn in the pocket, lashed</h2></div></div>
 <div class="steps">
-<div class="step"><h3><b>1</b> Trim the horn</h3><p>Cut both ends of the <b>long arm</b> so it's <b>26 mm</b> tip to tip (about 4.5 mm off each end, red). Otherwise it hits the next servo when it turns.</p></div>
-<div class="step"><h3><b>2</b> Horn into the pocket</h3><p>Press the trimmed horn into the cross-shaped pocket under the spool, <b>round hub towards you</b> (the side that goes on the shaft).</p></div>
-<div class="step"><h3><b>3</b> Lash it in</h3><p>For each long arm: line down the slot over the arm, through a horn hole, under the arm, up the slot beside it. Pull tight, <b>knot on top</b>. Two lashings.</p></div>
+<div class="step"><h3><b>1</b> Trim the horn</h3><p>Cut both ends of the arm so it's <b>26 mm</b> tip to tip (as bought 31.3 mm: about <b>2.7 mm off each end</b>, red). Otherwise it hits the next servo when it turns.</p></div>
+<div class="step"><h3><b>2</b> Horn into the pocket</h3><p>Press the trimmed horn into the arm-shaped pocket under the spool, <b>round hub towards you</b> (the side that goes on the shaft).</p></div>
+<div class="step"><h3><b>3</b> Lash it in</h3><p>For each half of the arm: line down the slot over the arm, through a horn hole, under the arm, up the slot beside it. Pull tight, <b>knot on top</b>. Two lashings.</p></div>
 <div class="step"><h3><b>4</b> Onto the servo</h3><p>Power on (servo at its open position), push spool + horn onto the shaft, and screw the <b>centre screw</b> in through the spool's centre hole.</p></div>
 </div>
 <script src="../node_modules/three/build/three.min.js"></script><script src="model.js"></script>
@@ -34,7 +34,7 @@ function view(id,cam,look,fov,items,labels,extra){
   labels.forEach(([t,p,cls])=>{const q=T(p).project(c);const d=document.createElement('div');d.className='lab '+(cls||'');d.textContent=t;d.style.left=((q.x+1)/2*W)+'px';d.style.top=((1-q.y)/2*H)+'px';el.appendChild(d)});
 }
 view('A',[150,-150,85],[0,0,27],27,[['servo',0,1],['horn',16,1],['cut',16,1],['spool',38,1],['screw',62,1]],
-  [["centre screw",[0,0,64]],["spool (pocket underneath)",[16,0,47],'o'],["trimmed horn",[-9,-4,17]],["cut off (red)",[0,15.4,17],'r'],["servo",[0,-10,-12]]]);
+  [["centre screw",[0,0,64]],["spool (pocket underneath)",[16,0,47],'o'],["trimmed horn",[-9,-4,17]],["cut off (red)",[0,14.5,17],"r"],["servo",[0,-10,-12]]]);
 view('B',[45,-50,-115],[0,0,0],26,[['spool',0,.92],['horn',0,1]],
   [["lashing line (under the arm)",[P.side/2+2,9.5,-2.6],'r'],["trimmed horn in the pocket",[-11,-6,-2]],["slot over the arm",[0,12,-2.2],'o'],["slot beside the arm",[P.side,-12,-2.2],'o']],
   root=>{const mat=new THREE.MeshStandardMaterial({color:'#d7263d'});

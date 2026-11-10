@@ -275,14 +275,14 @@ def spool():
 
 # ---- glue-free spool (v2): the servo horn sits in a pocket on the spool's back and is LASHED in with
 # the braided line through two pairs of slots. Spool + horn go onto the shaft together, fixed by the
-# horn's own centre screw through the spool's centre hole. Horn sizes measured from the builder's photo
-# (cross horn: long double arm + short double arm); change them here if a test piece doesn't fit.
-HORN_LONG = 26.0          # long arm tip to tip AFTER trimming (as bought ~35 mm: cut ~4.5 mm off each end, flaw B12)
-HORN_LONG_W = (7.0, 5.0)  # long arm width next to the hub / at the cut ends
-HORN_SHORT = 18.5         # short arm, tip to tip
+# horn's own centre screw through the spool's centre hole. Horn measured from the builder's photo with a
+# ruler (37.8 px/mm): straight double arm, 31.3 mm long, 5.6 -> 3.4 mm wide, hub 7.2 mm.
+HORN_LONG = 26.0          # arm tip to tip AFTER trimming (as bought 31.3 mm: cut ~2.7 mm off each end, flaw B12)
+HORN_LONG_W = (5.6, 3.9)  # arm width next to the hub / at the cut ends (measured)
+HORN_SHORT = 0.0          # no short arms on this horn (0 = none)
 HORN_SHORT_W = (5.0, 4.4)
 HORN_T = 1.8              # thickness of the flat arms
-HORN_HUB_D = 7.5          # round hub
+HORN_HUB_D = 7.2          # round hub (measured)
 HORN_FIT = 0.3            # clearance per side in the pocket
 SPOOL_BASE_T = 2.6        # base disc under the spool: pocket (HORN_T + 0.2) + 0.6 mm floor
 SCREW_HOLE_D = 5.5        # centre hole: the horn screw head + screwdriver pass through
@@ -305,7 +305,9 @@ def horn_pocket(fit=HORN_FIT):
             ends.append(CS.circle(w_tip / 2 + fit, SEG).translate(c))
         hub = CS.circle(w_hub / 2 + fit, SEG)
         return CS.batch_hull([ends[0], hub]) + CS.batch_hull([ends[1], hub])
-    prof = arm(HORN_LONG, *HORN_LONG_W, True) + arm(HORN_SHORT, *HORN_SHORT_W, False) + CS.circle(HORN_HUB_D / 2 + fit, SEG)
+    prof = arm(HORN_LONG, *HORN_LONG_W, True) + CS.circle(HORN_HUB_D / 2 + fit, SEG)
+    if HORN_SHORT > 0:
+        prof += arm(HORN_SHORT, *HORN_SHORT_W, False)
     return m.Manifold.extrude(prof, POCKET_D + 0.01).translate((0, 0, -POCKET_D - 0.01))
 
 
