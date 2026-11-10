@@ -283,8 +283,9 @@ HORN_SHORT = 0.0          # no short arms on this horn (0 = none)
 HORN_SHORT_W = (5.0, 4.4)
 HORN_T = 1.8              # thickness of the flat arms
 HORN_HUB_D = 7.2          # round hub (measured)
-HORN_FIT = 0.3            # clearance per side in the pocket
-SPOOL_BASE_T = 2.6        # base disc under the spool: pocket (HORN_T + 0.2) + 0.6 mm floor
+HORN_FIT = 0.45           # clearance per side in the pocket (0.3 was too tight once printed)
+MOUTH_EXTRA, MOUTH_H = 0.4, 0.4   # wider mouth for the first 0.4 mm: the first layer squashes out (elephant's foot)
+SPOOL_BASE_T = 2.9        # base disc under the spool: pocket (HORN_T + 0.5) + 0.6 mm floor
 SCREW_HOLE_D = 5.5        # centre hole: the horn screw head + screwdriver pass through
 BASE_R = 13.5             # base disc radius: the next servo's body is 15.1 mm from the shaft (flaw B12)
 LASH_R = (6.0, 12.0)      # radial range of the lashing slots (over the horn arm's holes)
@@ -292,25 +293,33 @@ LASH_W = 1.6
 LASH_SIDE = 5.0           # second slot of each pair, beside the arm
 
 
-POCKET_D = HORN_T + 0.2   # pocket depth: the whole horn arm sits inside
+POCKET_D = HORN_T + 0.5   # pocket depth: the whole horn arm sits inside, even if it is up to 2.3 mm thick
 SPOOL_FLOOR = SPOOL_BASE_T - POCKET_D   # 0.6 mm of plastic between the horn and the old spool body
 
 
-def horn_pocket(fit=HORN_FIT, arms=2):
-    """Horn-shaped recess from the disc's underside (z = -POCKET_D) up to the horn's outer face (z = 0).
-    arms=2: straight double arm (both directions), arms=1: single arm (towards +y only)."""
-    def arm(length, w_hub, w_tip, along_y):
-        ends = []
-        for s_ in (-1, 1):
-            c = (0.0, s_ * (length / 2 - w_tip / 2)) if along_y else (s_ * (length / 2 - w_tip / 2), 0.0)
-            ends.append(CS.circle(w_tip / 2 + fit, SEG).translate(c))
-        hub = CS.circle(w_hub / 2 + fit, SEG)
-        out = CS.batch_hull([ends[1], hub])
-        return out + CS.batch_hull([ends[0], hub]) if arms == 2 else out
-    prof = arm(HORN_LONG, *HORN_LONG_W, True) + CS.circle(HORN_HUB_D / 2 + fit, SEG)
-    if HORN_SHORT > 0:
-        prof += arm(HORN_SHORT, *HORN_SHORT_W, False)
-    return m.Manifold.extrude(prof, POCKET_D + 0.01).translate((0, 0, -POCKET_D - 0.01))
+def horn_pocket(fit=HORN_FIT, arms=2, open_ends=True, mouth=True):
+    """Horn-shaped recess from the disc's underside (z = -POCKET_D) up to z = 0 (the horn's outer face).
+    arms=2: straight double arm, arms=1: single arm (towards +y). open_ends: the arm slots run out through
+    the rim, so the exact trimmed length doesn't matter. mouth: first 0.4 mm a bit wider (elephant's foot)."""
+    def profile(f):
+        def arm(length, w_hub, w_tip, along_y):
+            ends = []
+            for s_ in (-1, 1):
+                c = (0.0, s_ * (length / 2 - w_tip / 2)) if along_y else (s_ * (length / 2 - w_tip / 2), 0.0)
+                ends.append(CS.circle(w_tip / 2 + f, SEG).translate(c))
+            hub = CS.circle(w_hub / 2 + f, SEG)
+            out = CS.batch_hull([ends[1], hub])
+            return out + CS.batch_hull([ends[0], hub]) if arms == 2 else out
+        L = 2 * (SPOOL_FLANGE_R + 2) if open_ends else HORN_LONG
+        w_tip = HORN_LONG_W[1] - (HORN_LONG_W[0] - HORN_LONG_W[1]) * (L - HORN_LONG) / HORN_LONG if open_ends else HORN_LONG_W[1]
+        prof = arm(L, HORN_LONG_W[0], max(w_tip, HORN_LONG_W[1]), True) + CS.circle(HORN_HUB_D / 2 + f, SEG)
+        if HORN_SHORT > 0:
+            prof += arm(HORN_SHORT, *HORN_SHORT_W, False)
+        return prof
+    pk = m.Manifold.extrude(profile(fit), POCKET_D + 0.01).translate((0, 0, -POCKET_D - 0.01))
+    if mouth and fit > 0:
+        pk += m.Manifold.extrude(profile(fit + MOUTH_EXTRA), MOUTH_H + 0.01).translate((0, 0, -POCKET_D - 0.01))
+    return pk
 
 
 def _through(solid, z0, z1):
@@ -351,7 +360,8 @@ def horn_fit_test(arms=2):
 
 def horn_model(arms=2):
     """The horn itself (for checks and pictures): the pocket shape without clearance, HORN_T thick."""
-    return horn_pocket(fit=0.0, arms=arms).translate((0, 0, 0.21)) ^ m.Manifold.cylinder(HORN_T, 40, 40, SEG).translate((0, 0, -HORN_T))
+    # outer (flat) face against the pocket floor at z = 0, arm thickness below it
+    return horn_pocket(fit=0.0, arms=arms, open_ends=False, mouth=False) ^ m.Manifold.cylinder(HORN_T, 40, 40, SEG).translate((0, 0, -HORN_T))
 
 
 # ----------------------------------------------------------------- the base

@@ -189,6 +189,11 @@ def main():
         sv = gp.spool_v2(arms)
         ok((gp.horn_model(arms) ^ sv).volume() < 0.01 and (gp.horn_model(arms) ^ gp.horn_fit_test(arms)).volume() < 0.01,
            f"{label} horn sits in its spool pocket and in its fit-test disc without forcing")
+        hm = gp.horn_model(arms)
+        ok(hm.volume() > 100, f"{label}: horn model is real ({hm.volume():.0f} mm3), so the fit checks mean something")
+        ok((hm.scale((1, 1, 2.2 / gp.HORN_T)) ^ sv).volume() < 0.01 and (hm.scale((1 + 0.4 / 5.6, 1, 1)) ^ sv).volume() < 0.01,
+           f"{label}: still fits a horn 0.4 mm thicker or 0.4 mm wider than measured")
+        ok((hm.scale((1 + 1.2 / 5.6, 1, 1)) ^ sv).volume() > 0.5, f"{label}: control - a horn 1.2 mm too wide is caught by the check")
         over = (m.Manifold.cylinder(30, 0.4, 0.4, 12).translate((0, 9.0, -10)) ^ gp.horn_model(arms)).volume()
         ok(over > 0.01, f"{label}: lashing slot lies over the horn arm (line can go through a horn hole)")
 
