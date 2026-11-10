@@ -31,3 +31,8 @@ video/finger_pin/_tts/
 video/finger_pin/*.log
 video/finger_pin/still_*.png
 video/finger_pin/model.js
+video/spool_setup/frames/
+video/spool_setup/_tts/
+video/spool_setup/*.log
+video/spool_setup/still_*.png
+video/spool_setup/model.js

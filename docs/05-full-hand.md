@@ -105,6 +105,7 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
    Upload the firmware and switch on: every servo goes to its open angle.
 6. **Spools:** with the power on, press a single-arm horn onto each shaft (centre screw) and
    glue a spool flat onto it. Let it cure 5 minutes. **Unplug the power.**
+   Video: [robohand_spool_setup.mp4](../video/spool_setup/robohand_spool_setup.mp4) (also shows step 10).
 7. **Fingers onto the palm** (pins go in from above, see [the picture](img/finger_pin_slot.png) and
    [the video](../video/finger_pin/robohand_finger_pin_slots.mp4)):
    push a **17 mm filament pin through the finger's own tab** first (equal ends out both sides). Hold the

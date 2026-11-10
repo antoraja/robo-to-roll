@@ -1,0 +1,153 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>RoboHand: spools and strings</title>
+<style>
+  html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; background: #e9edf0; font-family: "DejaVu Sans", Arial, sans-serif; }
+  canvas { position: absolute; inset: 0; } .ov { position: absolute; }
+  #part { left: 36px; top: 24px; font-size: 15px; letter-spacing: .14em; text-transform: uppercase; color: #c25a17; font-weight: bold; }
+  #cap { left: 50%; bottom: 30px; transform: translateX(-50%); width: 1140px; box-sizing: border-box; background: rgba(23,32,38,.9); color: #fff;
+         font-size: 23px; line-height: 1.38; padding: 13px 24px; border-radius: 10px; text-align: center; }
+  #bar { left: 0; bottom: 0; height: 6px; background: #e8742a; }
+  #labels { inset: 0; pointer-events: none; }
+  .lab { position: absolute; transform: translate(-50%, -100%); background: #172026; color: #fff; font-size: 18px; font-weight: bold; padding: 5px 10px; border-radius: 6px; white-space: nowrap; }
+  .lab::after { content: ""; position: absolute; left: 50%; bottom: -16px; width: 2px; height: 16px; background: #172026; transform: translateX(-50%); }
+  .lab.o { background: #c25a17; } .lab.o::after { background: #c25a17; } .lab.g { background: #2a9d8f; } .lab.g::after { background: #2a9d8f; }
+  #title { inset: 0; display: flex; flex-direction: column; justify-content: center; padding-left: 80px;
+           background: linear-gradient(90deg, rgba(233,237,240,.97) 0%, rgba(233,237,240,.9) 45%, rgba(233,237,240,0) 70%); color: #172026; }
+  #title h1 { font-size: 52px; margin: 0 0 10px; max-width: 640px; } #title p { font-size: 24px; margin: 6px 0; max-width: 560px; color: #33424c; }
+  #title .tag { font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: #c25a17; font-weight: bold; margin-bottom: 14px; }
+</style></head><body>
+<canvas id="c" width="1280" height="720"></canvas>
+<div id="labels" class="ov"></div>
+<div id="title" class="ov"><div class="tag">RoboHand · servos</div><h1>Fitting the spools and tying the strings</h1>
+  <p>You need: the horns + small screws from the servo bags, super glue, a small Phillips screwdriver.</p></div>
+<div id="part" class="ov"></div><div id="cap" class="ov"></div><div id="bar" class="ov"></div>
+<script src="../node_modules/three/build/three.min.js"></script>
+<script src="model.js"></script><script src="timeline.js"></script>
+<script>
+(function () {
+const D = window.MODEL, TL = window.TIMELINE, I = D.info, DEMO = 'middle', ME = I[DEMO];
+const FPS = 15; window.FPS = FPS; window.DURATION = TL.total;
+const SC = {}; TL.scenes.forEach((s, i) => { s.i = i; SC[s.id] = s; });
+const V = (id, a) => SC[id].voice[0] + (SC[id].voice[1] - SC[id].voice[0]) * a;
+const ease = x => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 * x); };
+const ramp = (t, a, b) => ease((t - a) / (b - a));
+const lerp = (a, b, k) => a + (b - a) * k;
+const sceneAt = t => { let s = TL.scenes[0]; for (const x of TL.scenes) if (t >= x.t0) s = x; return s; };
+const el = id => document.getElementById(id);
+const ORDER = ['middle', 'index', 'thumb', 'ring', 'little'];
+const at = id => TL.scenes.findIndex(s => s.id === id);
+
+const renderer = new THREE.WebGLRenderer({ canvas: el('c'), antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(1280, 720, false);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#e9edf0');
+const camera = new THREE.PerspectiveCamera(30, 1280 / 720, 1, 4000);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x5a646e, 0.75));
+const key = new THREE.DirectionalLight(0xffffff, 0.75); key.position.set(250, 300, 200); scene.add(key);
+const root = new THREE.Group(); root.rotation.x = -Math.PI / 2; scene.add(root);
+const b2a = s => { const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u.buffer; };
+const G = {};
+D.parts.forEach(p => {
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(b2a(p.v)), 3));
+  g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(p.i)), 1)); g.computeVertexNormals();
+  const mesh = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: p.c, flatShading: true, roughness: .55 }));
+  mesh.matrixAutoUpdate = false; root.add(mesh); G[p.g + ':' + p.n] = mesh;
+});
+const strMat = new THREE.MeshStandardMaterial({ color: '#d7263d', roughness: .5 }), knotMat = new THREE.MeshStandardMaterial({ color: '#b51d2f' });
+const strings = {}, knots = {};
+ORDER.forEach(n => { strings[n] = new THREE.Mesh(new THREE.BufferGeometry(), strMat); root.add(strings[n]);
+  knots[n] = new THREE.Mesh(new THREE.SphereGeometry(1.1, 12, 10), knotMat); root.add(knots[n]); });
+function M(n, slide, psi) {     // slide along the shaft axis (mm, outwards), turn psi (deg) about the shaft
+  const c = I[n].c, s = I[n].side;
+  return new THREE.Matrix4().makeTranslation(s * slide, 0, 0)
+    .multiply(new THREE.Matrix4().makeTranslation(0, c[1], c[2])).multiply(new THREE.Matrix4().makeRotationX(psi * Math.PI / 180))
+    .multiply(new THREE.Matrix4().makeTranslation(0, -c[1], -c[2]));
+}
+function setPart(g, n, vis, slide, psi) { const m = G[g + ':' + n]; if (!m) return; m.visible = vis; if (vis) m.matrix.copy(M(n, slide || 0, psi || 0)); }
+const P = (n, a, r, x) => { const c = I[n].c; return new THREE.Vector3(x === undefined ? I[n].core_x : x, c[1] + r * Math.cos(a * Math.PI / 180) * (I[n].ty >= 0 ? 1 : -1), c[2] + r * Math.sin(a * Math.PI / 180)); };
+function stringPts(n, wrapDeg, tie, psi) {
+  // from under the palm straight down to the spool, then around it (clockwise from the tangent), then into the anchor
+  const R = I[n].R, w = I[n].wrist;
+  const pts = [new THREE.Vector3(w[0], w[1], w[2] + 2), new THREE.Vector3(...I[n].tan)];
+  const end = -wrapDeg;
+  for (let a = -6; a > end; a -= 12) pts.push(P(n, a, R));
+  pts.push(P(n, end, R));
+  if (tie > 0) { const a = end; pts.push(P(n, a, R - 2 * Math.min(1, tie * 2)));
+    if (tie > .5) pts.push(P(n, a, R - 2, I[n].core_x + I[n].side * lerp(0, 4.8, (tie - .5) * 2))); }
+  return pts;
+}
+function setString(n, vis, wrapDeg, tie) {
+  const s = strings[n]; s.visible = vis; knots[n].visible = vis && tie >= 1;
+  if (!vis) return;
+  const pts = stringPts(n, wrapDeg, tie);
+  s.geometry.dispose(); s.geometry = new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.1), Math.max(16, pts.length * 4), 0.45, 6);
+  knots[n].position.copy(pts[pts.length - 1]);
+}
+const CL = { cam: [105, 75, -104], at: [15, 6, -130] };
+const CAMS = { intro: { cam: [330, 230, -40], at: [0, 0, -190] }, power: CL, horn: CL, screw: CL, glue: { cam: [80, 45, -118], at: [14, 0, -128] },
+  spool: CL, all: { cam: [330, 230, -40], at: [0, 0, -190] }, direction: { cam: [120, 25, -118], at: [18, 0, -132] },
+  wrap: { cam: [110, 80, -95], at: [16, 6, -122] }, tie: { cam: [95, 60, -120], at: [20, 0, -135] }, test: { cam: [120, 25, -118], at: [18, 0, -128] },
+  others: { cam: [330, 230, -40], at: [0, 0, -190] } };
+const T3 = v => new THREE.Vector3(v[0], v[2], -v[1]);
+function placeCam(t, s) {
+  const cur = CAMS[s.id], prev = s.i > 0 ? CAMS[TL.scenes[s.i - 1].id] : cur, k = ramp(t, s.t0, s.t0 + 1.4);
+  const c = T3(prev.cam).lerp(T3(cur.cam), k), a = T3(prev.at).lerp(T3(cur.at), k);
+  camera.position.copy(c); camera.lookAt(a); camera.updateMatrixWorld();
+}
+function labels(L) {
+  el('labels').innerHTML = L.map(([txt, p, cls, up]) => { const q = new THREE.Vector3(p.x, p.z, -p.y).project(camera);
+    return `<div class="lab ${cls || ''}" style="left:${(q.x + 1) / 2 * 1280}px;top:${(1 - q.y) / 2 * 720 - (up || 0)}px">${txt}</div>`; }).join('');
+}
+window.renderAt = function (t) {
+  const s = sceneAt(t), id = s.id, si = s.i;
+  const after = x => si > at(x), during = x => id === x;
+  const c = ME.c, sd = ME.side;
+  // servo shaft turn: at power-on it swings to the open angle
+  let psi = 0;
+  if (during('power')) psi = lerp(55, 0, ramp(t, V('power', .15), V('power', .45)));
+  if (during('direction')) { const u = (t - V('direction', .45)) / 2.2; psi = u > 0 ? -45 * Math.sin(Math.min(u, 2) * Math.PI / 2) ** 2 : 0; }
+  if (during('test')) { const u = (t - V('test', .1)) / 2.6; psi = u > 0 ? -70 * Math.sin(Math.min(u, 2) * Math.PI / 2) ** 2 : 0; }
+  ORDER.forEach(n => {
+    const demo = n === DEMO;
+    const fitted = demo ? null : (after('spool') && t >= V('all', .1 + ORDER.indexOf(n) * .12)) || si > at('all');
+    setPart('servo', n, true); setPart('shaft', n, true, 0, demo ? psi : 0);
+    if (demo) {
+      const hv = si >= at('horn'), sv = si >= at('screw'), gv = si >= at('glue'), pv = si >= at('spool');
+      setPart('horn', n, hv, during('horn') ? lerp(28, 0, ramp(t, V('horn', .1), V('horn', .7))) : 0, psi);
+      setPart('screw', n, sv, during('screw') ? lerp(22, 0, ramp(t, V('screw', .1), V('screw', .6))) : 0, psi + (during('screw') ? 720 * ramp(t, V('screw', .3), V('screw', .9)) : 0));
+      setPart('glue', n, gv && !(si > at('spool')) , 0, psi);
+      if (during('glue')) G['glue:' + n].matrix.multiply(new THREE.Matrix4());
+      setPart('spool', n, pv, during('spool') ? lerp(34, 0, ramp(t, V('spool', .1), V('spool', .6))) : 0, psi);
+    } else {
+      ['horn', 'screw', 'spool'].forEach(g => setPart(g, n, !!fitted)); setPart('glue', n, false);
+    }
+    // strings
+    if (demo) {
+      let vis = si >= at('wrap'), wrap = 0, tie = 0;
+      if (during('wrap')) wrap = 360 * ramp(t, V('wrap', .35), V('wrap', .95));
+      if (si >= at('tie')) { wrap = 360 + 90 * ramp(t, V('tie', .15), V('tie', .4)) * (during('tie') ? 1 : 0) + (during('tie') ? 0 : 90); tie = during('tie') ? ramp(t, V('tie', .4), V('tie', .8)) : 1; }
+      if (si >= at('test')) wrap = 450 - psi;
+      setString(n, vis, wrap, tie);
+    } else setString(n, during('others') && t >= V('others', .25 + ORDER.indexOf(n) * .12), 450, 1);
+  });
+  const sm = G['spool:' + DEMO].material, see = si >= at('wrap') && si <= at('test');
+  sm.transparent = see; sm.opacity = see ? 0.45 : 1; sm.depthWrite = !see;
+  placeCam(t, s); renderer.render(scene, camera);
+  const sh = new THREE.Vector3(12, c[1], c[2] + 3), L = [];
+  if (during('power')) L.push(['shaft turns to the OPEN position, then holds', sh, 'o']);
+  if (during('horn')) L.push(['single-arm horn', new THREE.Vector3(14, c[1], c[2] + 14), 'g']);
+  if (during('screw')) L.push(['small centre screw', new THREE.Vector3(15, c[1], c[2] + 1.5), 'g']);
+  if (during('glue')) L.push(['a few drops of glue', new THREE.Vector3(15, c[1], c[2] + 12), 'o']);
+  if (during('spool')) L.push(['spool, flat and centred', new THREE.Vector3(22, c[1], c[2] + 16), 'g']);
+  if (during('direction') && t > V('direction', .45)) L.push(['watch which way it turns', new THREE.Vector3(22, c[1] + 10, c[2] + 13), 'o']);
+  if (during('wrap')) L.push(['wrap ONCE, same direction', new THREE.Vector3(19, c[1] + 13, c[2] - 2), 'o']);
+  if (during('tie')) L.push(['slot → small hole → knot', new THREE.Vector3(22, c[1], c[2] - 12), 'o']);
+  if (during('test')) L.push(['winds the string → finger curls', new THREE.Vector3(19, c[1] + 13, c[2] + 14), 'g']);
+  labels(L);
+  el('title').style.opacity = id === 'intro' ? 1 - ramp(t, SC.intro.dur - 1.5, SC.intro.dur - .3) : 0;
+  el('cap').textContent = s.text;
+  let part = ''; for (const x of TL.scenes) if (x.t0 <= t && x.part) part = x.part;
+  el('part').textContent = part; el('bar').style.width = (1280 * t / TL.total) + 'px';
+};
+window.renderAt(0); window.READY = true;
+})();
+</script></body></html>
