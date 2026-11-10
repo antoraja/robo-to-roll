@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Spool views</title>
+<style>html,body{margin:0;width:1280px;background:#eef1f3;font-family:"DejaVu Sans",Arial,sans-serif;color:#172026}
+header{padding:20px 32px 4px}.tag{font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#c25a17;font-weight:bold}
+h1{font-size:30px;margin:4px 0}.sub{font-size:17px;color:#4a5a64;margin:0}
+.row{display:flex;gap:14px;padding:10px 32px}.cell{position:relative;width:394px;height:400px;background:#fff;border-radius:12px;overflow:hidden}
+.cell h2{position:absolute;left:14px;top:10px;margin:0;font-size:17px;z-index:2}
+.lab{position:absolute;transform:translate(-50%,-100%);background:#172026;color:#fff;font-size:13px;font-weight:bold;padding:3px 7px;border-radius:5px;white-space:nowrap;z-index:2}
+.lab::after{content:"";position:absolute;left:50%;bottom:-10px;width:2px;height:10px;background:#172026}
+.lab.r{background:#d7263d}.lab.r::after{background:#d7263d}.lab.o{background:#c25a17}.lab.o::after{background:#c25a17}
+.steps{margin:6px 32px 24px;background:#fff;border-radius:12px;padding:12px 18px;font-size:15.5px;line-height:1.6;color:#33424c}.steps b{color:#172026}</style></head><body>
+<header><div class="tag">RoboHand · spool without horn</div><h1>Where the string goes: between the two rims</h1>
+<p class="sub">Same idea as the first spool: two rims with the groove between them, a slot in the rim and two small tie holes.</p></header>
+<div class="row"><div class="cell" id="A"><h2>1 · The two rims and the groove</h2></div><div class="cell" id="B"><h2>2 · Top: tie holes and slot</h2></div><div class="cell" id="C"><h2>3 · String wrapped and tied</h2></div></div>
+<div class="steps"><b>Tying:</b> the string comes down from the palm into the <b>groove between the two rims</b> → wrap it <b>once</b> round in the turning direction →
+push it through the <b>slot in the rim</b> into the <b>small hole</b> → out at the top → <b>knot</b> (a few knots, so it can't slip back through). Trim.
+The centre hole is for the screwdriver (centre screw), not for the string.</div>
+<script src="../node_modules/three/build/three.min.js"></script><script src="model.js"></script>
+<script>
+const D=window.M3,P=D.P;const b2a=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+function geo(p){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b2a(p.v)),3));g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(p.i)),1));g.computeVertexNormals();return g}
+function view(id,cam,look,withString,labels){
+  const el=document.getElementById(id),W=394,H=400;const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+  r.setPixelRatio(1);r.setSize(W,H);el.appendChild(r.domElement);const s=new THREE.Scene();s.background=new THREE.Color('#ffffff');
+  s.add(new THREE.HemisphereLight(0xffffff,0x5a646e,.75));const k=new THREE.DirectionalLight(0xffffff,.75);k.position.set(150,220,120);s.add(k);
+  const root=new THREE.Group();root.rotation.x=-Math.PI/2;s.add(root);
+  D.parts.forEach(p=>{if(p.g==='string'&&!withString)return;root.add(new THREE.Mesh(geo(p),new THREE.MeshStandardMaterial({color:p.c,flatShading:true,roughness:.55})))});
+  const T=v=>new THREE.Vector3(v[0],v[2],-v[1]);const c=new THREE.PerspectiveCamera(30,W/H,1,2000);c.position.copy(T(cam));c.lookAt(T(look));c.updateMatrixWorld();r.render(s,c);
+  labels.forEach(([t,p,cls])=>{const q=T(p).project(c);const d=document.createElement('div');d.className='lab '+(cls||'');d.textContent=t;d.style.left=((q.x+1)/2*W)+'px';d.style.top=((1-q.y)/2*H)+'px';el.appendChild(d)});
+}
+view('A',[60,-55,25],[0,0,4],false,[["top rim",[-9,-13,P.top],'o'],["groove (string winds here)",[10,-10,P.mid],'r'],["bottom rim",[12,-6,P.z0+0.5],'o']]);
+view('B',[20,-35,75],[0,0,4],false,[["small tie hole",[11,0,P.top],'r'],["slot in the rim",[15.5,0,P.mid+3],'o'],["centre: screwdriver hole",[0,0,P.top]],["2nd tie hole (spare)",[-11,0,P.top]]]);
+view('C',[50,-50,45],[0,0,4],true,[["knot on top",[11,0,P.top+2],'r'],["wrapped once in the groove",[-2,-14,P.mid],"r"]]);
+window.READY=true;
+</script></body></html>

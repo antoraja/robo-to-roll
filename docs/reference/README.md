@@ -24,6 +24,7 @@ The photos were re-saved without their phone data (no location or camera info).
 | [`design/elastic_tunnel_fix.png`](design/elastic_tunnel_fix.png) | The elastic hole in the palm: smooth 12 mm curve, 3.4 mm wide, with a funnel at the top. The old sharp corner is shown for comparison |
 | [`design/elastic_knot_at_palm.png`](design/elastic_knot_at_palm.png) | Tying the elastic on the back of the palm: mark 5 cm, stretch to 7.5 cm, knot, adjust, then trim |
 | [`design/spool_v3_design.png`](design/spool_v3_design.png) | Spool without horn: presses onto the servo shaft, held by the original centre screw (plates 8 + 9) |
+| [`design/spool_v3_views.png`](design/spool_v3_views.png) | The same spool in 3D: two rims, groove, slot, tie holes, and the string wrapped once and knotted |
 | [`design/palm_camera.png`](design/palm_camera.png) | The ESP32-CAM cover on the rail on the inside of the palm, clear of the fingers even in a full fist |
 
 ## Current videos
