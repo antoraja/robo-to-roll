@@ -105,7 +105,7 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
    Upload the firmware and switch on: every servo goes to its open angle.
 6. **Spools (no horn, no glue):** see [the picture](img/spool_v3_design.png) and [3D views](img/spool_v3_views.png). Print the spline fit test
    (plate 8) and pick the hub (1-4 dots) that needs a firm push onto a servo shaft and doesn't slip; then
-   5 spools (plate 9, socket 4.6 mm = 3 dots; ask for another size if a different hub fitted best).
+   5 spools (plate 9, socket 4.8 mm = the 4-dot hub, which fitted best on the real servos).
    With the power on (servos at their open angle), press each spool straight onto its shaft and screw the
    **original centre screw** in through the top. There must be a small gap above the servo case.
    **Unplug the power.** The servo horns are not used.

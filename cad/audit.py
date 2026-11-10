@@ -194,8 +194,8 @@ def main():
     H.SHAFT_OFFSET = 0.0
     sv3 = gp.spool_v3()
     spl = lambda d: m.Manifold.cylinder(gp.SPLINE_DEPTH - 0.1, d / 2, d / 2, 48).translate((0, 0, -gp.SPLINE_DEPTH))
-    ok((spl(4.8) ^ sv3).volume() > 1.0, "4.8 mm metal spline grips the 4.6 mm socket (teeth bite into the PLA)")
-    ok((spl(4.5) ^ sv3).volume() < 0.01, "control: a spline smaller than the socket is NOT gripped (so the grip check means something)")
+    ok((spl(gp.SPLINE_D - 0.05) ^ sv3).volume() < 0.01 and (spl(gp.SPLINE_D + 0.15) ^ sv3).volume() > 0.5,
+       f"spool socket is {gp.SPLINE_D} mm = the fit-test hub that fitted the real servo (4 dots)")
     mid = gp.V3_BODY_Z + gp.SPOOL_FLANGE_T + gp.SPOOL_CORE_W / 2
     ring = lambda r: m.Manifold.cylinder(0.1, r + 0.05, r + 0.05, 64).translate((0, 0, mid - 0.05)) - m.Manifold.cylinder(0.1, r, r, 64).translate((0, 0, mid - 0.05))
     rg = min(r for r in np.arange(12.0, 16.0, 0.05) if (ring(r) ^ sv3).volume() < 1e-4)

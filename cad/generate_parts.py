@@ -368,7 +368,7 @@ def horn_model(arms=2):
 # measurements; clones vary, 4.6 mm often fits best) and is held by the horn's centre screw (threaded
 # shaft). Untrimmed horns would hit the next servo (B12), so they are not used at all.
 # z = 0 is the top of the servo shaft.
-SPLINE_D = 4.6            # socket for the spline (metal teeth bite into the PLA); pick from the fit test
+SPLINE_D = 4.8            # socket for the spline: the 4-dot test hub (4.8 mm) fitted best on the real servo
 SPLINE_DEPTH = 2.8        # how far the spline goes into the spool
 V3_BODY_Z = 2.0           # spool body starts 2 mm above the shaft top: flanges clear the next servo even
                           # if the real shaft sits 2 mm lower than assumed
