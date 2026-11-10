@@ -24,6 +24,7 @@ The photos were re-saved without their phone data (no location or camera info).
 | [`design/elastic_tunnel_fix.png`](design/elastic_tunnel_fix.png) | The elastic hole in the palm: smooth 12 mm curve, 3.4 mm wide, with a funnel at the top. The old sharp corner is shown for comparison |
 | [`design/elastic_knot_at_palm.png`](design/elastic_knot_at_palm.png) | Tying the elastic on the back of the palm: mark 5 cm, stretch to 7.5 cm, knot, adjust, then trim |
 | [`design/spool_v2_design.png`](design/spool_v2_design.png) | Glue-free spool: trim the horn arm to 26 mm (31.3 as bought), horn in the pocket, lashed in with braided line, onto the shaft with the centre screw |
+| [`design/spool_versions.png`](design/spool_versions.png) | The two spool versions: A for the double-arm horn (plate 9, 2 dots), B for the single-arm horn (plate 10, 1 dot) |
 | [`design/palm_camera.png`](design/palm_camera.png) | The ESP32-CAM cover on the rail on the inside of the palm, clear of the fingers even in a full fist |
 
 ## Current videos

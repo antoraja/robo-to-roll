@@ -296,15 +296,17 @@ POCKET_D = HORN_T + 0.2   # pocket depth: the whole horn arm sits inside
 SPOOL_FLOOR = SPOOL_BASE_T - POCKET_D   # 0.6 mm of plastic between the horn and the old spool body
 
 
-def horn_pocket(fit=HORN_FIT):
-    """Cross-horn shaped recess from the disc's underside (z = -POCKET_D) up to the horn's outer face (z = 0)."""
+def horn_pocket(fit=HORN_FIT, arms=2):
+    """Horn-shaped recess from the disc's underside (z = -POCKET_D) up to the horn's outer face (z = 0).
+    arms=2: straight double arm (both directions), arms=1: single arm (towards +y only)."""
     def arm(length, w_hub, w_tip, along_y):
         ends = []
         for s_ in (-1, 1):
             c = (0.0, s_ * (length / 2 - w_tip / 2)) if along_y else (s_ * (length / 2 - w_tip / 2), 0.0)
             ends.append(CS.circle(w_tip / 2 + fit, SEG).translate(c))
         hub = CS.circle(w_hub / 2 + fit, SEG)
-        return CS.batch_hull([ends[0], hub]) + CS.batch_hull([ends[1], hub])
+        out = CS.batch_hull([ends[1], hub])
+        return out + CS.batch_hull([ends[0], hub]) if arms == 2 else out
     prof = arm(HORN_LONG, *HORN_LONG_W, True) + CS.circle(HORN_HUB_D / 2 + fit, SEG)
     if HORN_SHORT > 0:
         prof += arm(HORN_SHORT, *HORN_SHORT_W, False)
@@ -316,7 +318,7 @@ def _through(solid, z0, z1):
     return solid
 
 
-def spool_v2():
+def spool_v2(arms=2):
     """Glue-free spool. z = 0 is the horn's outer face (where the old spool was glued). Base disc with the
     horn pocket from z = -POCKET_D to SPOOL_FLOOR, then the old spool body unchanged on top."""
     base = m.Manifold.cylinder(SPOOL_BASE_T, BASE_R, BASE_R, SEG).translate((0, 0, -POCKET_D))
@@ -324,9 +326,11 @@ def spool_v2():
     base += m.Manifold.cylinder(rise, BASE_R, SPOOL_FLANGE_R, SEG).translate((0, 0, SPOOL_FLOOR - rise))
     s = base + spool().translate((0, 0, SPOOL_FLOOR))
     top = SPOOL_FLOOR + 2 * SPOOL_FLANGE_T + SPOOL_CORE_W
-    s -= horn_pocket()
+    s -= horn_pocket(arms=arms)
     s = _through(s, -POCKET_D, top)
-    for sy in (-1, 1):                     # lashing slots: one over the arm's holes, one beside the arm
+    for k in range(arms):                  # marking on top: 2 dots = double-arm horn, 1 dot = single-arm horn
+        s -= m.Manifold.cylinder(0.6, 1.0, 1.0, 24).translate((-8.0, (k - (arms - 1) / 2) * 3.2, top - 0.5))
+    for sy in ((-1, 1) if arms == 2 else (1,)):   # lashing slots: one over the arm's holes, one beside the arm
         for x in (0.0, LASH_SIDE):
             y0, y1 = sorted((sy * LASH_R[0], sy * LASH_R[1]))
             slot = CS.batch_hull([CS.circle(LASH_W / 2, 24).translate((x, y0)), CS.circle(LASH_W / 2, 24).translate((x, y1))])
@@ -334,16 +338,20 @@ def spool_v2():
     return s
 
 
-def horn_fit_test():
-    """8-minute test piece: only the base disc with the horn pocket and the centre hole."""
+def horn_fit_test(arms=2):
+    """8-minute test piece: only the base disc with the horn pocket and the centre hole.
+    Marked on top with 2 dots (double-arm horn) or 1 dot (single-arm horn)."""
     t = m.Manifold.cylinder(SPOOL_BASE_T, BASE_R, BASE_R, SEG).translate((0, 0, -POCKET_D))
-    t -= horn_pocket()
-    return _through(t, -POCKET_D, SPOOL_FLOOR)
+    t -= horn_pocket(arms=arms)
+    t = _through(t, -POCKET_D, SPOOL_FLOOR)
+    for k in range(arms):
+        t -= m.Manifold.cylinder(0.5, 1.0, 1.0, 24).translate((-8.5, (k - (arms - 1) / 2) * 3.2, SPOOL_FLOOR - 0.4))
+    return t
 
 
-def horn_model():
+def horn_model(arms=2):
     """The horn itself (for checks and pictures): the pocket shape without clearance, HORN_T thick."""
-    return horn_pocket(fit=0.0).translate((0, 0, 0.21)).scale((1, 1, 1)) ^ m.Manifold.cylinder(HORN_T, 40, 40, SEG).translate((0, 0, -HORN_T))
+    return horn_pocket(fit=0.0, arms=arms).translate((0, 0, 0.21)) ^ m.Manifold.cylinder(HORN_T, 40, 40, SEG).translate((0, 0, -HORN_T))
 
 
 # ----------------------------------------------------------------- the base

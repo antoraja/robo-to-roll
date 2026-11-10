@@ -1,0 +1,39 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Spool versions</title>
+<style>html,body{margin:0;width:1280px;background:#eef1f3;font-family:"DejaVu Sans",Arial,sans-serif;color:#172026}
+header{padding:20px 32px 4px}.tag{font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#c25a17;font-weight:bold}
+h1{font-size:30px;margin:4px 0}.sub{font-size:17px;color:#4a5a64;margin:0}
+.row{display:flex;gap:16px;padding:10px 32px}.cell{position:relative;width:616px;height:470px;background:#fff;border-radius:12px;overflow:hidden}
+.cell h2{position:absolute;left:16px;top:10px;margin:0;font-size:20px;z-index:2}
+.lab{position:absolute;transform:translate(-50%,-100%);background:#172026;color:#fff;font-size:14px;font-weight:bold;padding:3px 8px;border-radius:5px;white-space:nowrap;z-index:2}
+.lab::after{content:"";position:absolute;left:50%;bottom:-12px;width:2px;height:12px;background:#172026}
+.lab.r{background:#d7263d}.lab.r::after{background:#d7263d}.lab.o{background:#c25a17}.lab.o::after{background:#c25a17}
+.notes{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:6px 32px 26px}.note{background:#fff;border-radius:12px;padding:12px 16px;font-size:15px;line-height:1.5;color:#33424c}
+.note b{color:#172026}</style></head><body>
+<header><div class="tag">RoboHand · glue-free spools</div><h1>Two versions: for the double-arm horn and the single-arm horn</h1>
+<p class="sub">Print both fit-test discs (plate 8, ~15 min), press each trimmed horn in, then print 5 spools of the version that fits better.</p></header>
+<div class="row"><div class="cell" id="A"><h2>A · double-arm horn (2 dots)</h2></div><div class="cell" id="B"><h2>B · single-arm horn (1 dot)</h2></div></div>
+<div class="notes">
+<div class="note"><b>A · plate 9.</b> Trim the arm to <b>26 mm</b> tip to tip (as bought 31.3 mm). Two lashings, one each side. <b>Recommended:</b> held on both sides, so the spool can't tilt.</div>
+<div class="note"><b>B · plate 10.</b> Trim the arm to <b>13 mm</b> from the centre of the screw hole. One lashing, on the arm side. Works, but it's held on one side only, so check that it sits flat.</div>
+</div>
+<script src="../node_modules/three/build/three.min.js"></script><script src="both.js"></script>
+<script>
+const D=window.BOTH,P=D.P;const b2a=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+function geo(p){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b2a(p.v)),3));g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(p.i)),1));g.computeVertexNormals();return g}
+const G={};D.parts.forEach(p=>G[p.g]=p);
+function view(id,arms){
+  const el=document.getElementById(id),W=616,H=470;const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+  r.setPixelRatio(1);r.setSize(W,H);el.appendChild(r.domElement);const s=new THREE.Scene();s.background=new THREE.Color('#ffffff');
+  s.add(new THREE.HemisphereLight(0xffffff,0x5a646e,.8));const k=new THREE.DirectionalLight(0xffffff,.6);k.position.set(120,200,160);s.add(k);
+  const k2=new THREE.DirectionalLight(0xffffff,.6);k2.position.set(60,-220,80);s.add(k2);
+  const root=new THREE.Group();root.rotation.x=-Math.PI/2;s.add(root);
+  [['spool'+arms,.93],['horn'+arms,1]].forEach(([g,op])=>{const p=G[g];root.add(new THREE.Mesh(geo(p),new THREE.MeshStandardMaterial({color:p.c,flatShading:true,roughness:.55,transparent:op<1,opacity:op})))});
+  const mat=new THREE.MeshStandardMaterial({color:'#d7263d'});
+  (arms==2?[-1,1]:[1]).forEach(sy=>{const y=sy*9,zt=P.top+0.4,zb=-P.T-0.5;const pts=[[0,y,zt],[0,y,zb+0.2],[0.6,y,zb],[P.side-0.6,y,zb],[P.side,y,zb+0.2],[P.side,y,zt],[2.5,y,zt+0.8],[0,y,zt]].map(v=>new THREE.Vector3(...v));
+    root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts,true,'catmullrom',.05),120,.35,8,true),mat));});
+  const T=v=>new THREE.Vector3(v[0],v[2],-v[1]);const c=new THREE.PerspectiveCamera(26,W/H,1,2000);c.position.copy(T([45,-50,-105]));c.lookAt(T([0,0,0]));c.updateMatrixWorld();r.render(s,c);
+  const L=[["trimmed horn in the pocket",[-10,-5,-2]],["lashing",[P.side/2+2,9.5,-2.6],'r']];
+  L.forEach(([t,p,cls])=>{const q=T(p).project(c);const d=document.createElement('div');d.className='lab '+(cls||'');d.textContent=t;d.style.left=((q.x+1)/2*W)+'px';d.style.top=((1-q.y)/2*H)+'px';el.appendChild(d)});
+}
+view('A',2);view('B',1);window.READY=true;
+</script></body></html>

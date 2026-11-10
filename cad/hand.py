@@ -614,8 +614,10 @@ def write_stls(P, SP, ST, bones):
     save(P, "palm.stl")                              # stands on its flat wrist
     save(SP, "spine.stl", (0, 90, 0))                # lies flat
     save(ST, "stand.stl")
-    save(gp.spool_v2(), "servo_spool_x5.stl")
-    save(gp.horn_fit_test(), "horn_fit_test.stl")
+    save(gp.spool_v2(2), "servo_spool_x5.stl")                 # for the double-arm horn
+    save(gp.spool_v2(1), "servo_spool_single_arm_x5.stl")      # for the single-arm horn
+    save(gp.horn_fit_test(2), "horn_fit_test.stl")
+    save(gp.horn_fit_test(1), "horn_fit_test_single_arm.stl")
     for n in ORDER:
         names = ["proximal", "middle", "distal"] if len(finger_L(n)) == 3 else ["proximal", "distal"]
         for b, part in zip(bones[n], names):

@@ -139,15 +139,17 @@ def main():
         tips.append((f"spare_tip_cap_{k + 1}", print_oriented(gp.tip_cap(25), (0, -90, 0))))
     plates.append(("tips_and_caps", [it for pl in pack(tips) for it in pl]))
 
-    # plate 8: glue-free spools (reprint for builds that started with the glued spools) + horn fit test
-    plates.append(("spools_no_glue", [it for pl in pack([(f"spool_{i + 1}", spool.copy()) for i in range(5)]
-                                                        + [("horn_fit_test", print_oriented(gp.horn_fit_test(), (0, 0, 0)))]) for it in pl]))
+    # glue-free spools (plates 8-10): fit tests first, then the 5 spools for whichever horn fits better
+    plates.append(("horn_fit_tests", [("fit_test_double_arm_2dots", print_oriented(gp.horn_fit_test(2), (0, 0, 0))),
+                                      ("fit_test_single_arm_1dot", print_oriented(gp.horn_fit_test(1), (0, 0, 0)).apply_translation((34, 0, 0)))]))
+    plates.append(("spools_double_arm", [it for pl in pack([(f"spool_double_{i + 1}", print_oriented(gp.spool_v2(2), (0, 0, 0))) for i in range(5)]) for it in pl]))
+    plates.append(("spools_single_arm", [it for pl in pack([(f"spool_single_{i + 1}", print_oriented(gp.spool_v2(1), (0, 0, 0))) for i in range(5)]) for it in pl]))
     print(f"Print plates ({BED:.0f} x {BED:.0f} mm bed) -> plates/")
     manifest = []
     for i, (title, items) in enumerate(plates, 1):
         if title == "fit_test":
             items = [it for pl in pack(items) for it in pl]
-        num = 8 if title == "spools_no_glue" else i          # plate 7 is the palm camera cover (palm_camera.py)
+        num = {"horn_fit_tests": 8, "spools_double_arm": 9, "spools_single_arm": 10}.get(title, i)   # 7 = palm camera (palm_camera.py)
         manifest.append(dict(plate=num, title=title, **save_plate(num, title, items, out_p)))
     with open(os.path.join(out_p, "plates.json"), "w") as fh:
         json.dump(manifest, fh, indent=1)

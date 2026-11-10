@@ -58,7 +58,9 @@ clearances. If the fit test shows tight or loose pins, tell me and I'll change t
 | 4 · spine | servo spine | ~40 g | ~1.5 h |
 | 5 · stand | stand | ~70 g | ~2.5 h |
 | 6 · tips and caps | the 5 fingertips (with the cap socket) + 5 tip caps + 2 spare caps | ~12 g | ~1 h |
-| 8 · glue-free spools | 5 spools (horn pocket down) + horn fit test, **no supports**, 4 walls, 30 % infill | ~25 g | ~1 h |
+| 8 · horn fit tests | 2 small discs (2 dots = double-arm horn, 1 dot = single-arm horn), **no supports** | ~3 g | ~15 min |
+| 9 · spools, double-arm horn | 5 spools (horn pocket down), **no supports**, 4 walls, 30 % infill | ~25 g | ~1 h |
+| 10 · spools, single-arm horn | same, for the single-arm horn. Print **9 or 10**, whichever horn fits better | ~25 g | ~1 h |
 | 7 · palm camera | camera cover (standing upright, **no supports**, 3 walls, 20 % infill) | ~6 g | ~40 min |
 | **Total** | | **~295 g** | **~13.5 h** |
 

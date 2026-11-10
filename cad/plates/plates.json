@@ -77,15 +77,35 @@
  },
  {
   "plate": 8,
-  "title": "spools_no_glue",
-  "file": "plate_8_spools_no_glue.3mf",
+  "title": "horn_fit_tests",
+  "file": "plate_8_horn_fit_tests.3mf",
   "parts": [
-   "spool_1",
-   "spool_2",
-   "spool_3",
-   "spool_4",
-   "spool_5",
-   "horn_fit_test"
+   "fit_test_double_arm_2dots",
+   "fit_test_single_arm_1dot"
+  ]
+ },
+ {
+  "plate": 9,
+  "title": "spools_double_arm",
+  "file": "plate_9_spools_double_arm.3mf",
+  "parts": [
+   "spool_double_1",
+   "spool_double_2",
+   "spool_double_3",
+   "spool_double_4",
+   "spool_double_5"
+  ]
+ },
+ {
+  "plate": 10,
+  "title": "spools_single_arm",
+  "file": "plate_10_spools_single_arm.3mf",
+  "parts": [
+   "spool_single_1",
+   "spool_single_2",
+   "spool_single_3",
+   "spool_single_4",
+   "spool_single_5"
   ]
  }
 ]

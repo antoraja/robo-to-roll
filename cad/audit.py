@@ -180,13 +180,17 @@ def main():
     # spool + horn (horn modelled, flaw B12) turned through a full circle never touch the neighbours
     others_ = {n: m.Manifold.batch_boolean([SP, ST] + [H.servo_geom(q)[0] for q in H.ORDER if q != n]
                                            + [H.servo_geom(q)[1] for q in H.ORDER if q != n], m.OpType.Add) for n in H.ORDER}
-    for n in H.ORDER:
-        s_ = H.SERVOS[n]
-        w_ = max(((gp.spool_v2() + gp.horn_model()).rotate((0, 0, a)).rotate((0.0, 90.0 * s_["side"], 0.0))
-                  .translate((H.spool_x(s_["side"]), s_["y"], s_["z"])) ^ others_[n]).volume() for a in range(0, 360, 15))
-        ok(w_ < 0.05, f"{n:<6} spool + trimmed horn turned a full circle: touches nothing ({w_:.2f} mm3)")
-    sv = gp.spool_v2()
-    ok((gp.horn_model() ^ sv).volume() < 0.01, "horn sits in the spool's pocket without forcing")
+    for arms, label in ((2, "double-arm"), (1, "single-arm")):
+        for n in H.ORDER:
+            s_ = H.SERVOS[n]
+            w_ = max(((gp.spool_v2(arms) + gp.horn_model(arms)).rotate((0, 0, a)).rotate((0.0, 90.0 * s_["side"], 0.0))
+                      .translate((H.spool_x(s_["side"]), s_["y"], s_["z"])) ^ others_[n]).volume() for a in range(0, 360, 15))
+            ok(w_ < 0.05, f"{n:<6} {label} spool + trimmed horn turned a full circle: touches nothing ({w_:.2f} mm3)")
+        sv = gp.spool_v2(arms)
+        ok((gp.horn_model(arms) ^ sv).volume() < 0.01 and (gp.horn_model(arms) ^ gp.horn_fit_test(arms)).volume() < 0.01,
+           f"{label} horn sits in its spool pocket and in its fit-test disc without forcing")
+        over = (m.Manifold.cylinder(30, 0.4, 0.4, 12).translate((0, 9.0, -10)) ^ gp.horn_model(arms)).volume()
+        ok(over > 0.01, f"{label}: lashing slot lies over the horn arm (line can go through a horn hole)")
 
     # ------------------------------------------------------------------ 3 fingers (already printed: report only)
     print("\n3) Finger bones (already printed - checked so you know they are right)")
@@ -219,7 +223,7 @@ def main():
     # ------------------------------------------------------------------ 5 every part: one piece + supports
     print("\n5) Every printed part: one solid piece, supports needed in its print orientation")
     parts = [("palm", P, (0, 0, 0), True), ("spine", SP, (0, 90, 0), False), ("stand", ST, (0, 0, 0), False),
-             ("spool", gp.spool_v2(), (0, 0, 0), False), ("horn_fit_test", gp.horn_fit_test(), (0, 0, 0), False), ("camera_cover", CV, (0, 0, 0), False)]
+             ("spool_double_arm", gp.spool_v2(2), (0, 0, 0), False), ("spool_single_arm", gp.spool_v2(1), (0, 0, 0), False), ("fit_test_double", gp.horn_fit_test(2), (0, 0, 0), False), ("fit_test_single", gp.horn_fit_test(1), (0, 0, 0), False), ("camera_cover", CV, (0, 0, 0), False)]
     for n in H.ORDER:
         for i, b in enumerate(bones[n]):
             parts.append((f"{n}_{i + 1}", b, (180, 0, 0), False))
