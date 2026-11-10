@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Glue-free spool</title>
+<style>html,body{margin:0;width:1280px;background:#eef1f3;font-family:"DejaVu Sans",Arial,sans-serif;color:#172026}
+header{padding:20px 32px 4px}.tag{font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#c25a17;font-weight:bold}
+h1{font-size:31px;margin:4px 0}.sub{font-size:17px;color:#4a5a64;margin:0}
+.row{display:flex;gap:16px;padding:10px 32px}.cell{position:relative;width:616px;height:540px;background:#fff;border-radius:12px;overflow:hidden}
+.cell h2{position:absolute;left:16px;top:10px;margin:0;font-size:19px;z-index:2}
+.lab{position:absolute;transform:translate(-50%,-100%);background:#172026;color:#fff;font-size:14px;font-weight:bold;padding:3px 8px;border-radius:5px;white-space:nowrap;z-index:2}
+.lab::after{content:"";position:absolute;left:50%;bottom:-12px;width:2px;height:12px;background:#172026}
+.lab.r{background:#d7263d}.lab.r::after{background:#d7263d}.lab.o{background:#c25a17}.lab.o::after{background:#c25a17}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:6px 32px 26px}.step{background:#fff;border-radius:12px;padding:12px 14px}
+.step h3{margin:0 0 4px;font-size:17px}.step h3 b{color:#c25a17}.step p{margin:4px 0 0;font-size:14.5px;line-height:1.42;color:#33424c}</style></head><body>
+<header><div class="tag">RoboHand · servo spools, version 2</div><h1>Glue-free spool: the horn sits in a pocket, lashed in with fishing line</h1>
+<p class="sub">Same winding surface and string holes as before. Fixed with the servo's own centre screw. No glue anywhere.</p></header>
+<div class="row"><div class="cell" id="A"><h2>Exploded view</h2></div><div class="cell" id="B"><h2>Underneath: horn in the pocket, lashed</h2></div></div>
+<div class="steps">
+<div class="step"><h3><b>1</b> Trim the horn</h3><p>Cut both ends of the <b>long arm</b> so it's <b>26 mm</b> tip to tip (about 4.5 mm off each end, red). Otherwise it hits the next servo when it turns.</p></div>
+<div class="step"><h3><b>2</b> Horn into the pocket</h3><p>Press the trimmed horn into the cross-shaped pocket under the spool, <b>round hub towards you</b> (the side that goes on the shaft).</p></div>
+<div class="step"><h3><b>3</b> Lash it in</h3><p>For each long arm: line down the slot over the arm, through a horn hole, under the arm, up the slot beside it. Pull tight, <b>knot on top</b>. Two lashings.</p></div>
+<div class="step"><h3><b>4</b> Onto the servo</h3><p>Power on (servo at its open position), push spool + horn onto the shaft, and screw the <b>centre screw</b> in through the spool's centre hole.</p></div>
+</div>
+<script src="../node_modules/three/build/three.min.js"></script><script src="model.js"></script>
+<script>
+const M=window.MODEL,P=M.P;const b2a=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+function geo(p){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b2a(p.v)),3));g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(p.i)),1));g.computeVertexNormals();return g}
+const G={};M.parts.forEach(p=>G[p.g]=p);
+function view(id,cam,look,fov,items,labels,extra){
+  const el=document.getElementById(id),W=616,H=540;const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+  r.setPixelRatio(1);r.setSize(W,H);el.appendChild(r.domElement);const s=new THREE.Scene();s.background=new THREE.Color('#ffffff');
+  s.add(new THREE.HemisphereLight(0xffffff,0x5a646e,.8));const k=new THREE.DirectionalLight(0xffffff,.7);k.position.set(120,200,160);s.add(k);const k2=new THREE.DirectionalLight(0xffffff,.55);k2.position.set(60,-220,80);s.add(k2);
+  const root=new THREE.Group();root.rotation.x=-Math.PI/2;s.add(root);
+  items.forEach(([g,dz,op])=>{const p=G[g];const mesh=new THREE.Mesh(geo(p),new THREE.MeshStandardMaterial({color:p.c,flatShading:true,roughness:.55,transparent:op<1,opacity:op}));mesh.position.z=dz;root.add(mesh)});
+  if(extra)extra(root);
+  const T=v=>new THREE.Vector3(v[0],v[2],-v[1]);const c=new THREE.PerspectiveCamera(fov,W/H,1,2000);c.position.copy(T(cam));c.lookAt(T(look));c.updateMatrixWorld();r.render(s,c);
+  labels.forEach(([t,p,cls])=>{const q=T(p).project(c);const d=document.createElement('div');d.className='lab '+(cls||'');d.textContent=t;d.style.left=((q.x+1)/2*W)+'px';d.style.top=((1-q.y)/2*H)+'px';el.appendChild(d)});
+}
+view('A',[150,-150,85],[0,0,27],27,[['servo',0,1],['horn',16,1],['cut',16,1],['spool',38,1],['screw',62,1]],
+  [["centre screw",[0,0,64]],["spool (pocket underneath)",[16,0,47],'o'],["trimmed horn",[-9,-4,17]],["cut off (red)",[0,15.4,17],'r'],["servo",[0,-10,-12]]]);
+view('B',[45,-50,-115],[0,0,0],26,[['spool',0,.92],['horn',0,1]],
+  [["lashing line (under the arm)",[P.side/2+2,9.5,-2.6],'r'],["trimmed horn in the pocket",[-11,-6,-2]],["slot over the arm",[0,12,-2.2],'o'],["slot beside the arm",[P.side,-12,-2.2],'o']],
+  root=>{const mat=new THREE.MeshStandardMaterial({color:'#d7263d'});
+    [-1,1].forEach(sy=>{const y=sy*9,zt=P.top+0.4,zb=-P.T-0.5;const pts=[[0,y,zt],[0,y,zb+0.2],[0.6,y,zb],[P.side-0.6,y,zb],[P.side,y,zb+0.2],[P.side,y,zt],[2.5,y,zt+0.8],[0,y,zt]].map(v=>new THREE.Vector3(...v));
+      root.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts,true,'catmullrom',.05),120,.35,8,true),mat));
+      const kn=new THREE.Mesh(new THREE.SphereGeometry(1.0,12,10),mat);kn.position.set(2.5,y,zt+0.8);root.add(kn);});});
+window.READY=true;
+</script></body></html>

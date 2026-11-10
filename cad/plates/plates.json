@@ -74,5 +74,18 @@
    "spare_tip_cap_1",
    "spare_tip_cap_2"
   ]
+ },
+ {
+  "plate": 8,
+  "title": "spools_no_glue",
+  "file": "plate_8_spools_no_glue.3mf",
+  "parts": [
+   "spool_1",
+   "spool_2",
+   "spool_3",
+   "spool_4",
+   "spool_5",
+   "horn_fit_test"
+  ]
  }
 ]

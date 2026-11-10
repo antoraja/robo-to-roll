@@ -115,7 +115,7 @@ def main():
         names = ["proximal", "middle", "distal"] if len(hand.finger_L(n)) == 3 else ["proximal", "distal"]
         return [(f"{n}_{nm}", print_oriented(b, (180, 0, 0))) for b, nm in zip(bones[n], names)]
 
-    spool = print_oriented(gp.spool(), (0, 0, 0))
+    spool = print_oriented(gp.spool_v2(), (0, 0, 0))            # horn pocket on the bed
     plates = []
     plates.append(("fit_test", bone_items("index") + [(f"spool_{i + 1}", spool.copy()) for i in range(5)]))
     other = sum((bone_items(n) for n in ("thumb", "middle", "ring", "little")), [])
@@ -139,12 +139,16 @@ def main():
         tips.append((f"spare_tip_cap_{k + 1}", print_oriented(gp.tip_cap(25), (0, -90, 0))))
     plates.append(("tips_and_caps", [it for pl in pack(tips) for it in pl]))
 
+    # plate 8: glue-free spools (reprint for builds that started with the glued spools) + horn fit test
+    plates.append(("spools_no_glue", [it for pl in pack([(f"spool_{i + 1}", spool.copy()) for i in range(5)]
+                                                        + [("horn_fit_test", print_oriented(gp.horn_fit_test(), (0, 0, 0)))]) for it in pl]))
     print(f"Print plates ({BED:.0f} x {BED:.0f} mm bed) -> plates/")
     manifest = []
     for i, (title, items) in enumerate(plates, 1):
         if title == "fit_test":
             items = [it for pl in pack(items) for it in pl]
-        manifest.append(dict(plate=i, title=title, **save_plate(i, title, items, out_p)))
+        num = 8 if title == "spools_no_glue" else i          # plate 7 is the palm camera cover (palm_camera.py)
+        manifest.append(dict(plate=num, title=title, **save_plate(num, title, items, out_p)))
     with open(os.path.join(out_p, "plates.json"), "w") as fh:
         json.dump(manifest, fh, indent=1)
 

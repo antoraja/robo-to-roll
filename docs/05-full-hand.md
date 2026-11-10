@@ -103,9 +103,12 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
 4. **Spine into the stand**, front dot facing away from the breadboard tray, 2 pins.
 5. **Electronics** (guide 04): breadboard in the tray, ESP32 into the breadboard, all 5 servos.
    Upload the firmware and switch on: every servo goes to its open angle.
-6. **Spools:** with the power on, press a single-arm horn onto each shaft (centre screw) and
-   glue a spool flat onto it. Let it cure 5 minutes. **Unplug the power.**
-   Video: [robohand_spool_setup.mp4](../video/spool_setup/robohand_spool_setup.mp4) (also shows step 10).
+6. **Spools (glue-free, plate 8):** see [the picture](img/spool_v2_design.png).
+   Cut both ends of each horn's **long arm** so it's **26 mm** tip to tip. Press the horn into the pocket
+   under the spool (round hub outwards) and **lash it in** with the braided line: down the slot over the
+   arm, through a horn hole, under the arm, up the slot beside it, knot on top (both arms).
+   With the power on (servos at their open angle), push spool + horn onto the shaft and screw the
+   **centre screw** in through the spool's centre hole. **Unplug the power.**
 7. **Fingers onto the palm** (pins go in from above, see [the picture](img/finger_pin_slot.png) and
    [the video](../video/finger_pin/robohand_finger_pin_slots.mp4)):
    push a **17 mm filament pin through the finger's own tab** first (equal ends out both sides). Hold the

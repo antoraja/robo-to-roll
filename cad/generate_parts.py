@@ -273,6 +273,77 @@ def spool():
     return s
 
 
+# ---- glue-free spool (v2): the servo horn sits in a pocket on the spool's back and is LASHED in with
+# the braided line through two pairs of slots. Spool + horn go onto the shaft together, fixed by the
+# horn's own centre screw through the spool's centre hole. Horn sizes measured from the builder's photo
+# (cross horn: long double arm + short double arm); change them here if a test piece doesn't fit.
+HORN_LONG = 26.0          # long arm tip to tip AFTER trimming (as bought ~35 mm: cut ~4.5 mm off each end, flaw B12)
+HORN_LONG_W = (7.0, 5.0)  # long arm width next to the hub / at the cut ends
+HORN_SHORT = 18.5         # short arm, tip to tip
+HORN_SHORT_W = (5.0, 4.4)
+HORN_T = 1.8              # thickness of the flat arms
+HORN_HUB_D = 7.5          # round hub
+HORN_FIT = 0.3            # clearance per side in the pocket
+SPOOL_BASE_T = 2.6        # base disc under the spool: pocket (HORN_T + 0.2) + 0.6 mm floor
+SCREW_HOLE_D = 5.5        # centre hole: the horn screw head + screwdriver pass through
+BASE_R = 13.5             # base disc radius: the next servo's body is 15.1 mm from the shaft (flaw B12)
+LASH_R = (6.0, 12.0)      # radial range of the lashing slots (over the horn arm's holes)
+LASH_W = 1.6
+LASH_SIDE = 5.0           # second slot of each pair, beside the arm
+
+
+POCKET_D = HORN_T + 0.2   # pocket depth: the whole horn arm sits inside
+SPOOL_FLOOR = SPOOL_BASE_T - POCKET_D   # 0.6 mm of plastic between the horn and the old spool body
+
+
+def horn_pocket(fit=HORN_FIT):
+    """Cross-horn shaped recess from the disc's underside (z = -POCKET_D) up to the horn's outer face (z = 0)."""
+    def arm(length, w_hub, w_tip, along_y):
+        ends = []
+        for s_ in (-1, 1):
+            c = (0.0, s_ * (length / 2 - w_tip / 2)) if along_y else (s_ * (length / 2 - w_tip / 2), 0.0)
+            ends.append(CS.circle(w_tip / 2 + fit, SEG).translate(c))
+        hub = CS.circle(w_hub / 2 + fit, SEG)
+        return CS.batch_hull([ends[0], hub]) + CS.batch_hull([ends[1], hub])
+    prof = arm(HORN_LONG, *HORN_LONG_W, True) + arm(HORN_SHORT, *HORN_SHORT_W, False) + CS.circle(HORN_HUB_D / 2 + fit, SEG)
+    return m.Manifold.extrude(prof, POCKET_D + 0.01).translate((0, 0, -POCKET_D - 0.01))
+
+
+def _through(solid, z0, z1):
+    solid -= m.Manifold.cylinder(z1 - z0 + 2, SCREW_HOLE_D / 2, SCREW_HOLE_D / 2, SEG).translate((0, 0, z0 - 1))
+    return solid
+
+
+def spool_v2():
+    """Glue-free spool. z = 0 is the horn's outer face (where the old spool was glued). Base disc with the
+    horn pocket from z = -POCKET_D to SPOOL_FLOOR, then the old spool body unchanged on top."""
+    base = m.Manifold.cylinder(SPOOL_BASE_T, BASE_R, BASE_R, SEG).translate((0, 0, -POCKET_D))
+    rise = SPOOL_FLANGE_R - BASE_R                     # 45 deg slope from the small disc out to the spool's rim
+    base += m.Manifold.cylinder(rise, BASE_R, SPOOL_FLANGE_R, SEG).translate((0, 0, SPOOL_FLOOR - rise))
+    s = base + spool().translate((0, 0, SPOOL_FLOOR))
+    top = SPOOL_FLOOR + 2 * SPOOL_FLANGE_T + SPOOL_CORE_W
+    s -= horn_pocket()
+    s = _through(s, -POCKET_D, top)
+    for sy in (-1, 1):                     # lashing slots: one over the arm's holes, one beside the arm
+        for x in (0.0, LASH_SIDE):
+            y0, y1 = sorted((sy * LASH_R[0], sy * LASH_R[1]))
+            slot = CS.batch_hull([CS.circle(LASH_W / 2, 24).translate((x, y0)), CS.circle(LASH_W / 2, 24).translate((x, y1))])
+            s -= m.Manifold.extrude(slot, top + POCKET_D + 2).translate((0, 0, -POCKET_D - 1))
+    return s
+
+
+def horn_fit_test():
+    """8-minute test piece: only the base disc with the horn pocket and the centre hole."""
+    t = m.Manifold.cylinder(SPOOL_BASE_T, BASE_R, BASE_R, SEG).translate((0, 0, -POCKET_D))
+    t -= horn_pocket()
+    return _through(t, -POCKET_D, SPOOL_FLOOR)
+
+
+def horn_model():
+    """The horn itself (for checks and pictures): the pocket shape without clearance, HORN_T thick."""
+    return horn_pocket(fit=0.0).translate((0, 0, 0.21)).scale((1, 1, 1)) ^ m.Manifold.cylinder(HORN_T, 40, 40, SEG).translate((0, 0, -HORN_T))
+
+
 # ----------------------------------------------------------------- the base
 # The base holds the finger standing UP. World frame for the base:
 #   X forward (direction the finger curls), Y sideways, Z up.

@@ -177,6 +177,17 @@ def main():
         sh = sum(blocked(SP, H.rod((-4, hy, hz), (4, hy, hz), 1.5)) for hy, hz in holes)
         ok(bt < 0.1 and sh < 0.1, f"{n:<6} servo fits its window ({bt:.2f}) and both screw holes are open ({sh:.2f})")
 
+    # spool + horn (horn modelled, flaw B12) turned through a full circle never touch the neighbours
+    others_ = {n: m.Manifold.batch_boolean([SP, ST] + [H.servo_geom(q)[0] for q in H.ORDER if q != n]
+                                           + [H.servo_geom(q)[1] for q in H.ORDER if q != n], m.OpType.Add) for n in H.ORDER}
+    for n in H.ORDER:
+        s_ = H.SERVOS[n]
+        w_ = max(((gp.spool_v2() + gp.horn_model()).rotate((0, 0, a)).rotate((0.0, 90.0 * s_["side"], 0.0))
+                  .translate((H.spool_x(s_["side"]), s_["y"], s_["z"])) ^ others_[n]).volume() for a in range(0, 360, 15))
+        ok(w_ < 0.05, f"{n:<6} spool + trimmed horn turned a full circle: touches nothing ({w_:.2f} mm3)")
+    sv = gp.spool_v2()
+    ok((gp.horn_model() ^ sv).volume() < 0.01, "horn sits in the spool's pocket without forcing")
+
     # ------------------------------------------------------------------ 3 fingers (already printed: report only)
     print("\n3) Finger bones (already printed - checked so you know they are right)")
     for n in H.ORDER:
@@ -208,7 +219,7 @@ def main():
     # ------------------------------------------------------------------ 5 every part: one piece + supports
     print("\n5) Every printed part: one solid piece, supports needed in its print orientation")
     parts = [("palm", P, (0, 0, 0), True), ("spine", SP, (0, 90, 0), False), ("stand", ST, (0, 0, 0), False),
-             ("spool", gp.spool(), (0, 0, 0), False), ("camera_cover", CV, (0, 0, 0), False)]
+             ("spool", gp.spool_v2(), (0, 0, 0), False), ("horn_fit_test", gp.horn_fit_test(), (0, 0, 0), False), ("camera_cover", CV, (0, 0, 0), False)]
     for n in H.ORDER:
         for i, b in enumerate(bones[n]):
             parts.append((f"{n}_{i + 1}", b, (180, 0, 0), False))

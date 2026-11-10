@@ -36,3 +36,4 @@ video/spool_setup/_tts/
 video/spool_setup/*.log
 video/spool_setup/still_*.png
 video/spool_setup/model.js
+video/spool_v2/model.js

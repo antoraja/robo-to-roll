@@ -243,7 +243,7 @@ def servo_geom(name):
     zc = (z_top + z_bot) / 2
     tabs = box(min(face, face + side * S_TAB_T), max(face, face + side * S_TAB_T), y - S_WID / 2, y + S_WID / 2,
                zc - S_TAB_SPAN / 2, zc + S_TAB_SPAN / 2)
-    sp = gp.spool().rotate((0.0, 90.0 * side, 0.0)).translate((spool_x(side), y, z))
+    sp = (gp.spool_v2() + gp.horn_model()).rotate((0.0, 90.0 * side, 0.0)).translate((spool_x(side), y, z))   # glue-free spool with its horn
     holes = [(y, zc - S_HOLE_SPACING / 2), (y, zc + S_HOLE_SPACING / 2)]
     cut = (y, z_bot - 0.2, z_top + 0.2)
     return body + tabs, sp, holes, cut
@@ -614,7 +614,8 @@ def write_stls(P, SP, ST, bones):
     save(P, "palm.stl")                              # stands on its flat wrist
     save(SP, "spine.stl", (0, 90, 0))                # lies flat
     save(ST, "stand.stl")
-    save(gp.spool(), "servo_spool_x5.stl")
+    save(gp.spool_v2(), "servo_spool_x5.stl")
+    save(gp.horn_fit_test(), "horn_fit_test.stl")
     for n in ORDER:
         names = ["proximal", "middle", "distal"] if len(finger_L(n)) == 3 else ["proximal", "distal"]
         for b, part in zip(bones[n], names):
