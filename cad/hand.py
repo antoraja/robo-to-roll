@@ -239,7 +239,7 @@ def groove_x(side):
     return shaft_top_x(side) + side * (gp.V3_BODY_Z + gp.SPOOL_FLANGE_T + gp.SPOOL_CORE_W / 2)
 
 
-GROOVE_R = gp.SPOOL_R + (gp.SPOOL_FLANGE_R - gp.SPOOL_R) - gp.SPOOL_CORE_W / 2   # 13.5: bottom of the V groove
+GROOVE_R = gp.V3_GROOVE_R   # bottom of the string groove on the horn-free spool
 
 
 def spool_core_x(side):

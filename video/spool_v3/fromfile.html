@@ -8,7 +8,7 @@ h1{font-size:28px;margin:4px 0}.sub{font-size:16px;color:#4a5a64;margin:0}
 .lab::after{content:"";position:absolute;left:50%;bottom:-10px;width:2px;height:10px;background:#172026}
 .lab.r{background:#d7263d}.lab.r::after{background:#d7263d}.lab.o{background:#c25a17}.lab.o::after{background:#c25a17}
 img{display:block}</style></head><body>
-<header><div class="tag">RoboHand · checked on the print files themselves</div><h1>The groove is in plate_9_spools.3mf: V-shaped, 2.4 mm deep between the two 16 mm rims</h1>
+<header><div class="tag">RoboHand · checked on the print files themselves</div><h1>Slimmer spool, measured from plate_9_spools.3mf: rims 29 mm, groove 1.15 mm deep, 9 mm hub at the servo</h1>
 <p class="sub">Left: radius measured layer by layer from the 3MF. Middle: the spool from the 3MF, turned the way it sits on the servo. Right: plate 8 fit test (1-4 dots).</p></header>
 <div class="row"><div class="cell" style="width:420px;height:460px"><img src="profile.png" style="width:420px;margin-top:20px"></div>
 <div class="cell" id="A" style="width:420px;height:460px"><h2>Spool (plate 9), side view</h2></div>
@@ -25,7 +25,7 @@ function view(id,W,H,mesh,cam,labels){
   labels.forEach(([t,p,cls])=>{const q=T(p).project(c);const d=document.createElement('div');d.className='lab '+(cls||'');d.textContent=t;d.style.left=((q.x+1)/2*W)+'px';d.style.top=((1-q.y)/2*H)+'px';el.appendChild(d)});
 }
 const h=window.F.h;
-view('A',420,460,window.F.spool,[0,-80,22],[["top rim",[-12,-10,h/2-0.5],'o'],["GROOVE (string)",[0,-14,h/2-2.4],'r'],["bottom rim",[12,-10,h/2-5],'o'],["goes on the shaft",[0,-13.6,-h/2+1.5]]]);
+view('A',420,460,window.F.spool,[0,-80,-14],[["top rim",[-12,-10,h/2-0.5],'o'],["GROOVE (string)",[0,-13,h/2-2.4],"r"],["bottom rim",[12,-10,h/2-5],'o'],["slim hub: goes on the shaft",[0,-4.5,-h/2+1.5]]]);
 view('B',376,460,window.F.test,[0,-120,130],[]);
 window.READY=true;
 </script></body></html>

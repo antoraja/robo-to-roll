@@ -374,6 +374,9 @@ V3_BODY_Z = 2.0           # spool body starts 2 mm above the shaft top: flanges 
                           # if the real shaft sits 2 mm lower than assumed
 V3_FLOOR = 0.9            # plastic under the screw head
 V3_RECESS = (6.0, 1.0)    # recess under the base around the shaft (gear boss on the servo case)
+V3_RIM_R = 14.5          # rims 29 mm across: the next servo's body is 15.1 mm from the shaft (rubbed at 16)
+V3_GROOVE_R = 13.3       # string groove bottom: 41.8 mm of pull in 180 deg (needs 41.3)
+V3_HUB_R = (3.6, 4.5)    # slim hub next to its own servo: bottom edge as small as the stock horn's hub, then 4.5
 V3_SCREW_D, V3_HEAD_D = 2.3, 6.5   # head hole 6.5: the screw head + screwdriver go 9 mm down to the floor
 V3_HEAD_MOUTH = (0.5, 0.6)         # first 0.6 mm of that hole 0.5 wider (printed on the bed: first-layer squash)
 SCREW = dict(head_d=4.5, head_h=1.6, shank_d=2.0, shank_l=4.0)   # MG90S horn screw, generous assumption
@@ -381,29 +384,32 @@ SPLINE_TEST_SIZES = (4.35, 4.5, 4.65, 4.8)
 
 
 def spool_v3(spline_d=SPLINE_D):
-    """Spool that goes straight on the servo shaft. Printed upside down (outer flange on the bed): both
-    flanges have 45 deg inner slopes, so the string groove is a V with its bottom at r = 13.5 mm."""
+    """Spool that goes straight on the servo shaft, held by the original centre screw. Printed upside down
+    (outer rim on the bed). Rims 29 mm, 45 deg slopes down to the string groove (r 13.3), slim hub below.
+    The screw system (socket, floor, 6.5 mm head hole) and the groove position are unchanged."""
     body_h = 2 * SPOOL_FLANGE_T + SPOOL_CORE_W
     z0 = V3_BODY_Z
-    f1 = m.Manifold.cylinder(SPOOL_FLANGE_T, SPOOL_FLANGE_R, SPOOL_FLANGE_R, SEG).translate((0, 0, z0))
+    R, G = V3_RIM_R, V3_GROOVE_R
+    lip = R - G
+    f1 = m.Manifold.cylinder(SPOOL_FLANGE_T, R, R, SEG).translate((0, 0, z0))
     f2 = f1.translate((0, 0, SPOOL_FLANGE_T + SPOOL_CORE_W))
-    core = m.Manifold.cylinder(SPOOL_CORE_W, SPOOL_R, SPOOL_R, SEG).translate((0, 0, z0 + SPOOL_FLANGE_T))
-    lip = SPOOL_FLANGE_R - SPOOL_R
-    c1 = m.Manifold.cylinder(lip, SPOOL_FLANGE_R, SPOOL_R, SEG).translate((0, 0, z0 + SPOOL_FLANGE_T))      # slope above f1
-    c2 = m.Manifold.cylinder(lip, SPOOL_R, SPOOL_FLANGE_R, SEG).translate((0, 0, z0 + body_h - SPOOL_FLANGE_T - lip))
-    base = m.Manifold.cylinder(z0 + SPLINE_DEPTH, BASE_R, BASE_R, SEG).translate((0, 0, -SPLINE_DEPTH))
-    s = f1 + f2 + core + c1 + c2 + base
+    core = m.Manifold.cylinder(SPOOL_CORE_W, G, G, SEG).translate((0, 0, z0 + SPOOL_FLANGE_T))
+    c1 = m.Manifold.cylinder(lip, R, G, SEG).translate((0, 0, z0 + SPOOL_FLANGE_T))                  # slope above the inner rim
+    c2 = m.Manifold.cylinder(lip, G, R, SEG).translate((0, 0, z0 + body_h - SPOOL_FLANGE_T - lip))     # slope under the outer rim
+    r0, r1 = V3_HUB_R
+    hz = -SPLINE_DEPTH + V3_RECESS[1]      # hub starts where the old spool's socket wall started (unchanged grip)
+    hub = m.Manifold.cylinder(r1 - r0, r0, r1, SEG).translate((0, 0, hz)) \
+        + m.Manifold.cylinder(z0 - hz - (r1 - r0) + 0.01, r1, r1, SEG).translate((0, 0, hz + (r1 - r0)))
+    s = f1 + f2 + core + c1 + c2 + hub
     top = z0 + body_h
-    s -= m.Manifold.cylinder(V3_RECESS[1], V3_RECESS[0], V3_RECESS[0], SEG).translate((0, 0, -SPLINE_DEPTH - 0.01))
     s -= m.Manifold.cylinder(SPLINE_DEPTH + 0.01, spline_d / 2, spline_d / 2, 48).translate((0, 0, -SPLINE_DEPTH - 0.02))
     s -= m.Manifold.cylinder(V3_FLOOR + 0.2, V3_SCREW_D / 2, V3_SCREW_D / 2, 24).translate((0, 0, -0.1))
     s -= m.Manifold.cylinder(top - V3_FLOOR + 1, V3_HEAD_D / 2, V3_HEAD_D / 2, 32).translate((0, 0, V3_FLOOR))
     s -= m.Manifold.cylinder(V3_HEAD_MOUTH[1] + 1, (V3_HEAD_D + V3_HEAD_MOUTH[0]) / 2, (V3_HEAD_D + V3_HEAD_MOUTH[0]) / 2, 32).translate((0, 0, top - V3_HEAD_MOUTH[1]))
     for ang in (0, 180):                       # string anchor holes + rim slot, as before
         a = math.radians(ang)
-        s -= m.Manifold.cylinder(top + SPLINE_DEPTH + 2, 0.75, 0.75, 24).translate(
-            (math.cos(a) * (SPOOL_R - 2), math.sin(a) * (SPOOL_R - 2), -SPLINE_DEPTH - 1))
-    s -= box(SPOOL_R - 2.5, SPOOL_FLANGE_R + 1, -0.6, 0.6, z0 + SPOOL_FLANGE_T, z0 + SPOOL_FLANGE_T + SPOOL_CORE_W)
+        s -= m.Manifold.cylinder(top + 2, 0.75, 0.75, 24).translate((math.cos(a) * (SPOOL_R - 2), math.sin(a) * (SPOOL_R - 2), z0 - 1))
+    s -= box(SPOOL_R - 2.5, R + 1, -0.6, 0.6, z0 + SPOOL_FLANGE_T, z0 + SPOOL_FLANGE_T + SPOOL_CORE_W)
     return s
 
 

@@ -108,6 +108,7 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
    5 spools (plate 9, socket 4.8 mm = the 4-dot hub, which fitted best on the real servos).
    With the power on (servos at their open angle), press each spool straight onto its shaft and screw the
    **original centre screw** in through the top. There must be a small gap above the servo case.
+   (Spools are 29 mm across with a slim 9 mm hub: the 32 mm version rubbed on the neighbouring servos.)
    **Unplug the power.** The servo horns are not used.
 7. **Fingers onto the palm** (pins go in from above, see [the picture](img/finger_pin_slot.png) and
    [the video](../video/finger_pin/robohand_finger_pin_slots.mp4)):

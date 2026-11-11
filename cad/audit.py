@@ -179,7 +179,7 @@ def main():
 
     # horn-free spool (v3) on the spline, turned a full circle: never touches the neighbours or its own servo,
     # also if the real shaft top sits 1 mm lower or 0.7 mm higher than assumed (B12: no horn at all)
-    for off in (-1.0, 0.0, 0.7):
+    for off in (-2.0, -1.0, 0.0, 0.7):
         H.SHAFT_OFFSET = off
         everything = {("servo", q): H.servo_geom(q)[0] for q in H.ORDER}
         everything.update({("spool", q): H.servo_geom(q)[1] for q in H.ORDER})
@@ -193,6 +193,17 @@ def main():
         ok(worst_ < 0.05, f"spools (no horn) turned a full circle, shaft top {off:+.1f} mm vs assumed: touch nothing ({worst_:.2f} mm3)")
     H.SHAFT_OFFSET = 0.0
     sv3 = gp.spool_v3()
+    # rubbing found on the real build at 32 mm rims: the rims must stay >= 0.5 mm inside the 15.1 mm to the
+    # next servo's body, whatever the real axial gap is
+    ok(gp.V3_RIM_R <= 15.1 - 0.5, f"rims {2 * gp.V3_RIM_R:.0f} mm across: {15.1 - gp.V3_RIM_R:.1f} mm radial gap to the next servo's body at any height")
+    near = 0.0
+    for n in H.ORDER:
+        s_ = H.SERVOS[n]
+        oth = m.Manifold.batch_boolean([H.servo_geom(q)[0] for q in H.ORDER if q != n], m.OpType.Add)
+        grown = gp.spool_v3().rotate((0.0, 90.0 * s_["side"], 0.0)).translate((H.shaft_top_x(s_["side"]), s_["y"], s_["z"]))
+        fat = m.Manifold.cylinder(30, gp.V3_RIM_R + 0.5, gp.V3_RIM_R + 0.5, 96).translate((0, 0, gp.V3_BODY_Z)).rotate((0.0, 90.0 * s_["side"], 0.0)).translate((H.shaft_top_x(s_["side"]), s_["y"], s_["z"]))
+        near = max(near, (fat ^ oth).volume())
+    ok(near < 0.01, f"0.5 mm clearance all round the rims to every other servo, whatever the axial gap ({near:.2f} mm3)")
     spl = lambda d: m.Manifold.cylinder(gp.SPLINE_DEPTH - 0.1, d / 2, d / 2, 48).translate((0, 0, -gp.SPLINE_DEPTH))
     ok((spl(gp.SPLINE_D - 0.05) ^ sv3).volume() < 0.01 and (spl(gp.SPLINE_D + 0.15) ^ sv3).volume() > 0.5,
        f"spool socket is {gp.SPLINE_D} mm = the fit-test hub that fitted the real servo (4 dots)")
