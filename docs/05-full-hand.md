@@ -99,7 +99,8 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
 3. **Spine:** the small round **dot** below the top marks the **FRONT** (palm side).
    Push each servo through its window from the spool side: tabs on the spine, **shaft at the
    top** of the window, 2 screws each. Front: 1st (middle), 3rd (thumb), 5th (little).
-   Back: 2nd (index), 4th (ring). Label each servo cable.
+   Back: 2nd (index), 4th (ring). Label each servo cable. Check against [this picture](img/spine_servo_sides.png):
+   the FLAT side with the dot has **3 spools**, the ribbed side **2**.
 4. **Spine into the stand**, front dot facing away from the breadboard tray, 2 pins.
 5. **Electronics** (guide 04): breadboard in the tray, ESP32 into the breadboard, all 5 servos.
    Upload the firmware and switch on: every servo goes to its open angle.

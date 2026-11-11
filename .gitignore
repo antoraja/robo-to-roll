@@ -40,3 +40,4 @@ video/spool_v2/model.js
 video/spool_v2/both.js
 video/spool_v3/model.js
 video/spool_v3/fromfile.js
+video/spine_check/model.js
