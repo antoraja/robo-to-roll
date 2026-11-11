@@ -1,0 +1,52 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Tie string to spool</title>
+<style>html,body{margin:0;width:1280px;background:#eef1f3;font-family:"DejaVu Sans",Arial,sans-serif;color:#172026}
+header{padding:18px 32px 4px}.tag{font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#c25a17;font-weight:bold}
+h1{font-size:29px;margin:4px 0}.sub{font-size:16px;color:#4a5a64;margin:0}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:10px 32px 24px}.cell{position:relative;background:#fff;border-radius:12px;overflow:hidden;height:330px}
+.cell h2{position:absolute;left:12px;top:8px;margin:0;font-size:17px;z-index:2}.cell h2 b{color:#c25a17}
+.cell p{position:absolute;left:12px;right:12px;bottom:8px;margin:0;font-size:13.5px;line-height:1.38;color:#33424c;z-index:2;background:rgba(255,255,255,.92);padding:4px 6px;border-radius:6px}
+.lab{position:absolute;transform:translate(-50%,-100%);background:#172026;color:#fff;font-size:12.5px;font-weight:bold;padding:3px 7px;border-radius:5px;white-space:nowrap;z-index:2}
+.lab::after{content:"";position:absolute;left:50%;bottom:-10px;width:2px;height:10px;background:#172026}
+.lab.r{background:#d7263d}.lab.r::after{background:#d7263d}.lab.o{background:#c25a17}.lab.o::after{background:#c25a17}
+svg text{font-family:"DejaVu Sans",Arial,sans-serif}</style></head><body>
+<header><div class="tag">RoboHand · string to the spool (after the first power-on)</div><h1>Tying the finger string to its spool</h1>
+<p class="sub">Servos powered on and at their OPEN position, finger straight. One finger at a time.</p></header>
+<div class="grid">
+<div class="cell" id="c0"><h2><b>1</b> Which way does it turn?</h2>
+<svg width="397" height="250" style="position:absolute;top:40px;left:0"><circle cx="198" cy="125" r="70" fill="#f2c230" stroke="#7a5d00" stroke-width="2"/><circle cx="198" cy="125" r="12" fill="#fff"/>
+<path d="M120 60 A95 95 0 0 1 276 60" stroke="#c25a17" stroke-width="5" fill="none"/><path d="M262 44 L280 62 L256 70" fill="none" stroke="#c25a17" stroke-width="5"/>
+<text x="80" y="200" font-size="14" fill="#33424c">slider 0 → 30 % → 0: watch the spool</text></svg>
+<p>On your phone, move this finger's slider to <b>30 %</b> and back. The way the spool turns is the <b>closing direction</b>. Remember it.</p></div>
+<div class="cell" id="c1"><h2><b>2</b> Into the groove</h2><p>The string comes <b>straight down</b> from under the palm. Lay it in the <b>groove between the two rims</b>, on the side it comes down.</p></div>
+<div class="cell" id="c2"><h2><b>3</b> Wrap once</h2><p>Wrap it <b>once</b> round the groove, going the <b>closing direction</b> from step 1. One turn is enough.</p></div>
+<div class="cell" id="c3"><h2><b>4</b> Slot → tie hole</h2><p>Lead it through the <b>slot in the rim</b> into the <b>small tie hole</b> and out on the top face.</p></div>
+<div class="cell" id="c4"><h2><b>5</b> Toggle, not just a knot</h2><p>Finger <b>straight</b>, string <b>just tight</b> (no slack, finger doesn't curl). Tie the end around a <b>5 mm piece of filament</b> lying across the hole (3 knots). Trim, melt the end.</p></div>
+<div class="cell" id="c5"><h2><b>6</b> Check</h2>
+<svg width="397" height="250" style="position:absolute;top:40px;left:0">
+<text x="20" y="40" font-size="15" fill="#2f7d4f" font-weight="bold">✓ 0 %: finger straight, string just tight</text>
+<text x="20" y="72" font-size="15" fill="#2f7d4f" font-weight="bold">✓ slider up slowly: finger curls</text>
+<text x="20" y="104" font-size="15" fill="#2f7d4f" font-weight="bold">✓ back to 0 %: elastic opens it again</text>
+<text x="20" y="146" font-size="15" fill="#c9182f" font-weight="bold">✗ finger opens when slider goes up?</text>
+<text x="38" y="168" font-size="14" fill="#33424c">wrapped the wrong way: re-wrap the other way</text>
+<text x="20" y="200" font-size="15" fill="#c9182f" font-weight="bold">✗ curls at 0 %: too tight, loosen a little</text></svg>
+<p>Then the next finger. Don't use "Close all" before every finger is calibrated (guide 04, step E).</p></div>
+</div>
+<script src="../node_modules/three/build/three.min.js"></script><script src="model.js"></script>
+<script>
+const D=window.T,P=D.P;const b2a=s=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u.buffer};
+function geo(p){const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(b2a(p.v)),3));g.setIndex(new THREE.BufferAttribute(new Uint32Array(b2a(p.i)),1));g.computeVertexNormals();return g}
+function view(id,str,see,labels,tog){
+  const el=document.getElementById(id),W=397,H=330;const r=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});r.setPixelRatio(1);r.setSize(W,H);el.appendChild(r.domElement);
+  const s=new THREE.Scene();s.background=new THREE.Color('#fff');s.add(new THREE.HemisphereLight(0xffffff,0x5a646e,.75));const k=new THREE.DirectionalLight(0xffffff,.75);k.position.set(120,160,200);s.add(k);
+  const root=new THREE.Group();root.rotation.x=-Math.PI/2;s.add(root);
+  const add=(p,c,op)=>root.add(new THREE.Mesh(geo(p),new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.55,transparent:op<1,opacity:op,depthWrite:op>=1})));
+  add(D.servo,'#3b3f46',1); if(str) add(D[str],'#d7263d',1); if(tog) add(D.tog,'#2a9d8f',1); add(D.spool,'#f2c230',see?0.5:1);
+  const T=v=>new THREE.Vector3(v[0],v[2],-v[1]);const c=new THREE.PerspectiveCamera(30,W/H,1,2000);c.position.copy(T([30,-62,72]));c.lookAt(T([0,4,4]));c.updateMatrixWorld();r.render(s,c);
+  labels.forEach(([t,p,cls])=>{const q=T(p).project(c);const d=document.createElement('div');d.className='lab '+(cls||'');d.textContent=t;d.style.left=((q.x+1)/2*W)+'px';d.style.top=((1-q.y)/2*H)+'px';el.appendChild(d)});
+}
+view('c1','s1',true,[["from the palm",[-P.R,30,P.mid],'r'],["groove",[0,-P.R,P.mid],'o']]);
+view('c2','s2',true,[["1 turn",[0,-P.R,P.mid],'r']]);
+view('c3','s3',true,[["slot",[14,-3,P.mid-1],"o"],["tie hole",[11,0,P.top+1],'r']]);
+view('c4','s4',false,[["5 mm filament toggle",[11,2.5,P.top+2],'o']],true);
+window.READY=true;
+</script></body></html>
