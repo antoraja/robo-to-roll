@@ -36,7 +36,7 @@ The photos were re-saved without their phone data (no location or camera info).
 | [`video/finger_strings/robohand_finger_string_elastic.mp4`](../../video/finger_strings/robohand_finger_string_elastic.mp4) | String (with the 5 mm filament toggle) and elastic into one finger, without glue or lock pins |
 | [`video/assembly/robohand_servo_mounting.mp4`](../../video/assembly/robohand_servo_mounting.mp4) | Mounting the 5 servos on the spine: front dot, which servo goes where, 2 screws each (40 s, cut from the full assembly video; this part is still correct) |
 | [`video/spool_setup/robohand_spool_setup.mp4`](../../video/spool_setup/robohand_spool_setup.mp4) | Tying the strings to the spools (direction, wrap once, slot + hole + knot, test) is still correct. **Its spool-fitting part shows the old glued spool with a horn:** follow [`design/spool_v3_design.png`](design/spool_v3_design.png) instead |
-| [`video/electronics/robohand_wiring_programming.mp4`](../../video/electronics/robohand_wiring_programming.mp4) | Wiring the servos and the ESP32, first upload |
+| [`video/electronics/robohand_wiring_programming.mp4`](../../video/electronics/robohand_wiring_programming.mp4) | Wiring the servos and the ESP32, first upload. **Two corrections** (guide 04 is up to date): plug the **5 V supply first, then USB**, and use **two jumpers** each for + and −. Its spool step (horn + glue) is outdated: spools now go straight on the shaft |
 
 ## Outdated: don't build from these
 

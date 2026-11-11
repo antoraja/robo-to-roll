@@ -37,8 +37,10 @@ shows each step in 3D.
 1. **ESP32:** push it into the breadboard across the middle groove, USB socket at the edge
    (column 1). Its two pin rows sit in rows **b** and **i**, so row **a** has one free hole next
    to each pin.
-2. **Power adapter:** red jumper in the adapter's **+** screw terminal, black jumper in **−**.
-   Tighten the screws. Red jumper into the **+ rail (red line)**, black into the **− rail (blue line)**.
+2. **Power adapter:** **two** red jumpers side by side in the adapter's **+** screw terminal, **two** black
+   jumpers in **−** (the servos can draw ~2.5 A together; one thin jumper alone gets warm and drops voltage).
+   Tighten the screws and tug each jumper. Red jumpers into the **+ rail (red line)**, black into the
+   **− rail (blue line)**. Double-check: red = + on the adapter. Swapped power can damage the servos.
 3. **Capacitor 1000 µF:** long leg into the + rail, striped side (short leg) into the − rail.
 4. **Shared ground:** black jumper from the free hole next to **GND** (row a) into the − rail.
 5. **Servo (index):** push 3 male-male jumpers into its plug (brown, red, orange) and tape the joint.
@@ -46,7 +48,7 @@ shows each step in 3D.
 6. **Leave the hole next to VIN empty.** Servos get power only from the 5 V 3 A supply.
 
 The pin labels are printed on the board (`D13`, `GND`, ...). Always read them: some boards use a
-different order.
+different order. **D12 sits between D14 and D13: never use D12** (it affects booting).
 
 ## C. Upload the code
 
@@ -64,6 +66,11 @@ different order.
    ```
    The servo moves to its start ("open") angle.
 
+**Power-on order (every time):** first plug in the **5 V supply**, then the **USB** cable. That way the
+servos already have power when the ESP32 starts, and it switches them on one after another (gentle
+on the supply). To switch off: USB out, then the supply. A single twitch of the middle-finger servo
+(pin 14) at power-up is normal.
+
 ## D. Control it from your phone
 
 1. On your phone, join the WiFi network **RoboHand**, password **robohand123**.
@@ -74,6 +81,9 @@ different order.
 **This is your first wireless robot control.**
 
 ## E. Calibrate (after the finger and tendon are mounted, see guide 03)
+
+**Calibrate before you use "Close all" or the gesture buttons.** Until then the firmware uses safe
+closing angles (about 88 % closed) so no finger can be pushed against its end stop.
 
 In the Serial Monitor, type raw angles for one finger and watch it. Finger numbers are
 0 thumb, 1 index, 2 middle, 3 ring, 4 little:
@@ -89,8 +99,9 @@ a 1 150
    buzzing, e.g. 150.
 3. Put those numbers in the code and upload again:
    ```cpp
-     {"Index",  13, 25, 150},
+     {"Index",  13, 25, 170},
    ```
+   (A finger needs about **160°** of servo travel on the spool, the thumb about **105°**.)
    (If the finger closes when the angle goes *down*, just swap them, e.g. `150, 25`. The
    code works either way.)
 

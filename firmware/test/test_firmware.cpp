@@ -15,6 +15,13 @@ int main() {
   CHECK(NUM_FINGERS == 5, "5 fingers configured");
   int pins[5]; for (int i = 0; i < NUM_FINGERS; i++) pins[i] = servos[i].pin;
   CHECK(pins[0] == 25 && pins[1] == 13 && pins[2] == 14 && pins[3] == 27 && pins[4] == 26, "pins 25,13,14,27,26");
+  // before calibration no finger may be driven past its end stop (spool groove 13.35 mm:
+  // full curl = ~161 deg for a finger, ~107 deg for the thumb) and no pin may be a boot-strapping pin
+  CHECK(abs(FINGERS[0].closedAngle - FINGERS[0].openAngle) <= 107, "thumb default range stays short of its end stop");
+  bool safe = true; for (int i = 1; i < 5; i++) safe &= abs(FINGERS[i].closedAngle - FINGERS[i].openAngle) <= 155;
+  CHECK(safe, "finger default ranges stay short of their end stops (<= 155 deg of 161)");
+  bool noStrap = true; for (int i = 0; i < 5; i++) noStrap &= !(pins[i] == 0 || pins[i] == 2 || pins[i] == 5 || pins[i] == 12 || pins[i] == 15 || pins[i] >= 34);
+  CHECK(noStrap, "no servo on a boot-strapping or input-only pin (0, 2, 5, 12, 15, 34-39)");
   for (int i = 0; i < NUM_FINGERS; i++) CHECK(servos[i].angle == FINGERS[i].openAngle, "servo starts at its open angle");
   CHECK(server.request("/") == 200 && server.lastBody.find("Fist") != std::string::npos, "web page has gesture buttons");
   CHECK(server.request("/set", {{"f", "1"}, {"v", "100"}}) == 200, "/set accepted");

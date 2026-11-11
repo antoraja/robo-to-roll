@@ -36,18 +36,21 @@ struct FingerConfig {
 };
 
 // Good pins: 13, 14, 27, 26, 25, 33, 32. (Avoid 0, 2, 12, 15 - they affect booting. 34-39 are input-only.)
-// The finger servo needs ~165 deg to close fully (13 mm spool) - see sim/README.md.
+// A finger needs ~37.5 mm of string = ~161 deg of servo on the 13.35 mm spool groove.
+// The closedAngle values below are SAFE STARTING VALUES (~88 % closed): they can't push a finger
+// against its end stop before you have calibrated. Calibrate each finger (guide 04, step E), then
+// set closedAngle a few degrees BEFORE the finger stops - a servo pushing against a stop draws stall
+// current and gets hot. Don't use "Close all" / gestures at 100 % before calibrating.
 //
 // Full hand. Keep this ORDER (thumb, index, middle, ring, little) so the gesture buttons work.
-// CALIBRATE closedAngle to a few degrees BEFORE the finger hits its end stop - a servo that
-// keeps pushing against a stop draws stall current and gets hot.
 // Servos that aren't plugged in yet are simply ignored (handy for the one-servo first test on pin 13).
+// Never use pin 12 (sits between 14 and 13 on the board; it affects booting).
 FingerConfig FINGERS[] = {
-  {"Thumb",  25, 10, 115},   // thumb has 2 joints: ~25 mm of string = ~110 deg of servo (sim/README.md)
-  {"Index",  13, 10, 175},
-  {"Middle", 14, 10, 175},
-  {"Ring",   27, 10, 175},
-  {"Little", 26, 10, 175},
+  {"Thumb",  25, 10, 115},   // thumb has 2 joints: ~25 mm of string = ~107 deg of servo
+  {"Index",  13, 10, 150},   // safe start; after calibration typically ~165-170
+  {"Middle", 14, 10, 150},   // pin 14 sends a short pulse while the ESP32 boots: one twitch at power-up is normal
+  {"Ring",   27, 10, 150},
+  {"Little", 26, 10, 150},
 };
 
 // Gestures: % closed for thumb, index, middle, ring, little (shown when 5 fingers are configured)
