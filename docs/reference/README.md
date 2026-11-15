@@ -57,3 +57,9 @@ The photos were re-saved without their phone data (no location or camera info).
 | Palm (latest: pin slots, smooth elastic tunnels, camera rail) | [`cad/plates/plate_3_palm.3mf`](../../cad/plates/plate_3_palm.3mf) |
 | Camera cover | [`cad/plates/plate_7_palm_camera.3mf`](../../cad/plates/plate_7_palm_camera.3mf) |
 | Fingers, spine, stand, spools | plates 1, 2, 4, 5 in [`cad/plates/`](../../cad/plates/) (unchanged) |
+
+## Open items
+
+| Item | Status |
+|---|---|
+| **Replacement ESP32** | First board's radio is weak (scan next to the router finds it rarely, −70 dBm or not at all). Order the same type so the wiring stays identical: ESP32 30-pin, USB-C, CH340, pin labels VIN · GND · D13 · D12 · D14 · D27 · D26 · D25 along one side. Search: [amazon.de: ESP32 30 Pin USB-C CH340](https://www.amazon.de/s?k=ESP32+30+Pin+USB-C+CH340). Until it arrives, test and calibrate over USB in the Serial Monitor (`a <finger> <angle>`, `f <finger> <0-100>`) |
