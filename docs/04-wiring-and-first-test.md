@@ -38,6 +38,8 @@ Checked in `cad/wiring_fit.py`: it works whether the board's pin rows are 0.9, 1
  ESP32 board hangs out over this edge, its other pin row in the air
 ```
 
+![ESP32 on the breadboard, top and side view](img/esp32_on_breadboard_top_side.png)
+
 1. **ESP32:** USB end over **column 1**. Put the **VIN-side pins into row j**, columns 1–15. The rest of the
    board hangs out over the edge. Check every pin is over its hole, then press evenly until the black strip
    sits flat. The other pin row must hang in the **air** and touch nothing. The rails under the board are not used.

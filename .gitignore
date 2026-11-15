@@ -49,3 +49,4 @@ video/wiring_inboard/frames/
 video/wiring_inboard/_tts/
 video/wiring_inboard/*.log
 video/wiring_inboard/still_*.png
+video/wiring_inboard/view_*.png

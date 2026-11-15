@@ -519,6 +519,29 @@ window.CAPCHECK = function () { window.renderAt(T1('w_cap') - 0.1); capG.updateM
   const st = capG.children[1]; st.geometry.computeBoundingBox(); const c = new THREE.Vector3(); st.geometry.boundingBox.getCenter(c);
   const sc = root.worldToLocal(c.applyMatrix4(st.matrixWorld)); const cc = root.worldToLocal(new THREE.Vector3().setFromMatrixPosition(capG.matrixWorld));
   return { longY: L.y, shortY: S.y, P: ROWY.P, N: ROWY.N, stripeDY: sc.y - cc.y }; };
+window.renderView = function (t, view) {
+  window.renderAt(t);
+  if (view === 'top') { camera.up.set(0, 0, -1); camera.position.set(-8, 210, 12); camera.lookAt(new THREE.Vector3(-8, 0, 12)); }
+  else { camera.up.set(0, 1, 0); camera.position.set(colX(1) - 105, 14, 12); camera.lookAt(new THREE.Vector3(colX(1), 8, 10)); servos.forEach(S => { S.s.visible = S.plug.visible = S.cab.visible = false; }); adapter.visible = psu.visible = capG.visible = usbPlug.visible = usbCable.visible = psuPlug.visible = psuCable.visible = false; scene.background = new THREE.Color('#ffffff'); renderer.render(scene, camera); }
+  camera.fov = 30; camera.updateProjectionMatrix(); camera.updateMatrixWorld(); root.updateMatrixWorld(true); renderer.render(scene, camera);
+  ['cap', 'part', 'bar', 'title'].forEach(i => el(i).style.opacity = 0);
+  const L = view === 'top' ? [
+    ['row j: ESP32 VIN-side pins go IN here (columns 1-15)', () => hole('j', 18).add(new THREE.Vector3(0, 0, 4)), 'grn'],
+    ['rows f, g, h: free for wires', () => hole('g', 22).add(new THREE.Vector3(0, 0, 2)), 'org'],
+    ['middle groove', () => rootPt(colX(26), 0, 9), ''],
+    ['rows a-e: not used', () => hole('c', 26).add(new THREE.Vector3(0, 0, 2)), ''],
+    ['− rail (blue, next to row a)', () => hole('N', 20).add(new THREE.Vector3(0, 0, 2)), 'blue'],
+    ['+ rail (red, outer)', () => hole('P', 26).add(new THREE.Vector3(0, 0, 2)), 'red'],
+    ['USB end at column 1', () => espW(new THREE.Vector3(-26, 0, ESP_PCB_Z + 6)), ''],
+    ['other pin row: hangs in the air, outside the breadboard', () => espW(new THREE.Vector3(colX(13) - colX(8), -ESP_ROW, ESP_PCB_Z + 6)), 'red'],
+  ] : [
+    ['VIN-side pins: pushed into row j', () => espW(new THREE.Vector3(colX(1) - colX(8), ESP_ROW, ESP_PCB_Z - 5)), 'grn'],
+    ['other pin row: in the air, touching nothing', () => espW(new THREE.Vector3(colX(1) - colX(8), -ESP_ROW, ESP_PCB_Z + 6)), 'red'],
+    ['breadboard (seen from the end)', () => rootPt(colX(1) - 3, 8, 3), ''], ['row j', () => hole('j', 1).add(new THREE.Vector3(-2, 0, 0.5)), 'grn'], ['row a side', () => hole('a', 1).add(new THREE.Vector3(-2, 0, 0.5)), ''],
+    ['edge of the breadboard', () => rootPt(colX(1) - 3, -27.25, -1), ''],
+  ];
+  setLabels(L); return true;
+};
 window.renderAt(0);
 window.READY = true;
 })();
