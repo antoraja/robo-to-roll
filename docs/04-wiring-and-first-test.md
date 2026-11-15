@@ -57,7 +57,7 @@ to join two wires in a column:
 | **GND** (next to VIN) | − rail |
 | **D13** | a free column, e.g. column **5**, row a. The servo's **orange** jumper goes into the same column (row b) |
 
-(Later: D25, D14, D27, D26 the same way, each in its own column, see guide 05.) Leave VIN and D12 empty.
+(Later: D25 → column 8, D14 → column 11, D27 → column 14, D26 → column 17, see guide 05.) Video: `video/wiring_fm/robohand_wiring_esp32_beside.mp4`. Leave VIN and D12 empty.
 Lay the ESP32 next to the breadboard, label side up, so the jumpers don't pull on it.
 
 The pin labels are printed on the board (`D13`, `GND`, ...). Always read them: some boards use a
