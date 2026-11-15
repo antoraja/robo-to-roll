@@ -114,7 +114,7 @@ Now 0 % on the slider means fully open and 100 % means fully closed.
 | Servo doesn't move at all | Signal in the wrong hole / no common ground | Orange must be in row a, next to D13. GND jumper to the − rail |
 | Servo jitters / twitches | Weak power or loose jumper | Use the separate 5 V supply + capacitor, re-seat the jumpers |
 | ESP32 reboots when the servo moves (Serial Monitor shows "RoboHand starting" again) | Servo drawing too much from USB | Switch to the separate 5 V supply |
-| Phone can't find "RoboHand" | Code not running / out of range | Check the Serial Monitor output, move closer, press EN (reset) |
+| Phone can't find "RoboHand" | Board unplugged, phone's list not refreshed, or a crowded WiFi channel | Keep USB plugged in (the network only exists while the ESP32 has power). Serial Monitor must say `WiFi started OK`; type `wifi` to see the status. Turn the phone's WiFi off and on, hold it next to the board, check the laptop's WiFi list too. Still nothing: change `WIFI_CHANNEL` (6) to 1 or 11, upload again |
 | Page won't open | Phone using mobile data instead | Turn mobile data off, or answer "stay connected" |
 | Servo buzzes loudly at the end of travel | Pushing past the finger's limit | Move `closedAngle` a few degrees back |
 

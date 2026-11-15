@@ -46,6 +46,11 @@ int main() {
   CHECK(servos[1].angle == 180, "serial: raw angle clamped to 180");
   Serial.in = "close\n"; run(4000);
   for (int i = 0; i < 5; i++) CHECK(servos[i].angle == FINGERS[i].closedAngle, "serial close all");
+  CHECK(WIFI_CHANNEL >= 1 && WIFI_CHANNEL <= 13, "WiFi channel is a valid 2.4 GHz channel (1-13)");
+  CHECK(startWiFi(), "WiFi starts (name + 8+ char password + channel accepted)");
+  Serial.in = "wifi\n"; run(50);
+  Serial.in = "wifi restart\n"; run(50);
+  for (int i = 0; i < 5; i++) CHECK(servos[i].angle == FINGERS[i].closedAngle, "wifi commands don't move the fingers");
   printf("\n%s (%d failures)\n", fails ? "FIRMWARE TEST FAILED" : "FIRMWARE TEST PASSED", fails);
   return fails ? 1 : 0;
 }

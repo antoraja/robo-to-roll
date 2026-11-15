@@ -58,6 +58,8 @@ struct HardwareSerial {
   void println(const char* s = "") { printf("%s\n", s); }
   void println(const __FlashStringHelper* s) { printf("%s\n", reinterpret_cast<const char*>(s)); }
   void println(const String& s) { printf("%s\n", s.c_str()); }
+  void print(int v) { printf("%d", v); }
+  void println(int v) { printf("%d\n", v); }
   void println(const IPAddress& ip) { printf("%s\n", ip.toString()); }
 };
 extern HardwareSerial Serial;

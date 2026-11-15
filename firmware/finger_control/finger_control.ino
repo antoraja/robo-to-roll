@@ -172,12 +172,34 @@ void handleAll() {
   server.send(200, "text/plain", "ok");
 }
 
+// ------------------------------------------------------------------- WiFi
+const int WIFI_CHANNEL = 6;   // 2.4 GHz channel 1..13; change it if the network doesn't show up
+
+bool startWiFi() {
+  WiFi.mode(WIFI_AP);
+  bool ok = WiFi.softAP(WIFI_NAME, WIFI_PASSWORD, WIFI_CHANNEL);
+  Serial.println(ok ? F("WiFi started OK") : F("WiFi FAILED to start (check the name and the 8+ character password)"));
+  return ok;
+}
+
+void printWiFi() {
+  Serial.print(F("WiFi: "));
+  Serial.print(WIFI_NAME);
+  Serial.print(F("  channel "));
+  Serial.print(WIFI_CHANNEL);
+  Serial.print(F("  ESP32 address "));
+  Serial.print(WiFi.softAPmacAddress());
+  Serial.print(F("  phones connected: "));
+  Serial.println(WiFi.softAPgetStationNum());
+}
+
 // ------------------------------------------------------------ serial commands
 void printHelp() {
   Serial.println(F("Commands:"));
   Serial.println(F("  f <finger> <0-100>   set finger % closed   e.g. f 0 50"));
   Serial.println(F("  a <finger> <0-180>   raw servo angle       e.g. a 0 90  (calibration)"));
   Serial.println(F("  open | close         all fingers"));
+  Serial.println(F("  wifi                 WiFi status, wifi restart = restart the network"));
 }
 
 void handleSerial() {
@@ -189,6 +211,8 @@ void handleSerial() {
   int a = -1, b = -1;
   sscanf(line.c_str() + 1, "%d %d", &a, &b);
   if (line == "open")       { for (int i = 0; i < NUM_FINGERS; i++) setFingerPercent(i, 0); }
+  else if (line == "wifi")   { printWiFi(); return; }
+  else if (line == "wifi restart") { WiFi.softAPdisconnect(true); delay(500); startWiFi(); printWiFi(); return; }
   else if (line == "close") { for (int i = 0; i < NUM_FINGERS; i++) setFingerPercent(i, 100); }
   else if (cmd == 'f' && b >= 0) { setFingerPercent(a, b); }
   else if (cmd == 'a' && b >= 0) { setFingerRawAngle(a, b); }
@@ -214,8 +238,7 @@ void setup() {
     delay(250);   // start the servos one by one: 5 at once can pull > 3 A and reset the ESP32
   }
 
-  WiFi.mode(WIFI_AP);
-  WiFi.softAP(WIFI_NAME, WIFI_PASSWORD);
+  startWiFi();
   Serial.print(F("WiFi network: "));
   Serial.print(WIFI_NAME);
   Serial.print(F("   open http://"));
