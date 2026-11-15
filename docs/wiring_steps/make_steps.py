@@ -101,7 +101,7 @@ def svg(finger):
         srv = (col_x(SERVO_RAIL[f]) - 10, Y0 - 105)
         o.append(f'<rect x="{srv[0]-26}" y="{srv[1]-22}" width="52" height="26" rx="4" fill="{"#1d3f73" if cur else "#8090a8"}"/>')
         o.append(f'<text x="{srv[0]}" y="{srv[1]-4}" font-size="12" fill="#fff" text-anchor="middle">{f}</text>')
-        row = "i" if f in ("Index", "Middle", "Ring") else "g"   # as actually plugged (photos 2026-11-15)
+        row = "i" if f in ("Index", "Middle", "Ring", "Little") else "g"   # as actually plugged (photos 2026-11-15)
         wire((srv[0] - 8, srv[1] + 6), hole("N_a", SERVO_RAIL[f]), "#6b4a2b", w, op=op, drop=True)
         wire((srv[0], srv[1] + 6), hole("P_a", SERVO_RAIL[f] - 1), "#d01f2f", w, op=op, drop=True)
         wire((srv[0] + 8, srv[1] + 6), hole(row, pin_col[FINGER_PIN[f]]), "#f07c18" if cur else "#e5b800", w, op=op, drop=True)
