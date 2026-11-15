@@ -175,9 +175,14 @@ void handleAll() {
 // ------------------------------------------------------------------- WiFi
 const int WIFI_CHANNEL = 6;   // 2.4 GHz channel 1..13; change it if the network doesn't show up
 
+// Lower transmit power by default: on many cheap ESP32 boards full power (19.5 dBm) makes the small 3.3 V
+// regulator dip during each WiFi burst and the network silently doesn't show up. 8.5 dBm still reaches ~10 m.
+bool wifiLow = true;
+
 bool startWiFi() {
-  WiFi.mode(WIFI_AP);
+  WiFi.mode(WIFI_AP_STA);              // AP for the phone + station part, only used by the "scan" command
   bool ok = WiFi.softAP(WIFI_NAME, WIFI_PASSWORD, WIFI_CHANNEL);
+  WiFi.setTxPower(wifiLow ? WIFI_POWER_8_5dBm : WIFI_POWER_19_5dBm);
   Serial.println(ok ? F("WiFi started OK") : F("WiFi FAILED to start (check the name and the 8+ character password)"));
   return ok;
 }
@@ -187,11 +192,30 @@ void printWiFi() {
   Serial.print(WIFI_NAME);
   Serial.print(F("  channel "));
   Serial.print(WIFI_CHANNEL);
+  Serial.print(F("  power "));
+  Serial.print(wifiLow ? F("low (8.5 dBm)") : F("full (19.5 dBm)"));
   Serial.print(F("  ESP32 address "));
   Serial.print(WiFi.softAPmacAddress());
   Serial.print(F("  phones connected: "));
   Serial.println(WiFi.softAPgetStationNum());
 }
+
+void scanWiFi() {                      // proves the ESP32's radio + antenna work: lists the networks it can hear
+  Serial.println(F("Scanning (5 s)..."));
+  int n = WiFi.scanNetworks();
+  if (n <= 0) { Serial.println(F("No networks found: the ESP32 hears nothing (radio/antenna or power problem)")); return; }
+  for (int i = 0; i < n; i++) {
+    Serial.print(F("  "));
+    Serial.print(WiFi.SSID(i));
+    Serial.print(F("   signal "));
+    Serial.print((int)WiFi.RSSI(i));
+    Serial.print(F(" dBm   channel "));
+    Serial.println((int)WiFi.channel(i));
+  }
+  WiFi.scanDelete();
+}
+
+void restartWiFi() { WiFi.softAPdisconnect(true); delay(500); startWiFi(); printWiFi(); }
 
 // ------------------------------------------------------------ serial commands
 void printHelp() {
@@ -200,6 +224,7 @@ void printHelp() {
   Serial.println(F("  a <finger> <0-180>   raw servo angle       e.g. a 0 90  (calibration)"));
   Serial.println(F("  open | close         all fingers"));
   Serial.println(F("  wifi                 WiFi status, wifi restart = restart the network"));
+  Serial.println(F("  wifi low | wifi full transmit power (low is the default), scan = networks the ESP32 hears"));
 }
 
 void handleSerial() {
@@ -212,7 +237,10 @@ void handleSerial() {
   sscanf(line.c_str() + 1, "%d %d", &a, &b);
   if (line == "open")       { for (int i = 0; i < NUM_FINGERS; i++) setFingerPercent(i, 0); }
   else if (line == "wifi")   { printWiFi(); return; }
-  else if (line == "wifi restart") { WiFi.softAPdisconnect(true); delay(500); startWiFi(); printWiFi(); return; }
+  else if (line == "wifi restart") { restartWiFi(); return; }
+  else if (line == "wifi low")  { wifiLow = true;  restartWiFi(); return; }
+  else if (line == "wifi full") { wifiLow = false; restartWiFi(); return; }
+  else if (line == "scan")      { scanWiFi(); return; }
   else if (line == "close") { for (int i = 0; i < NUM_FINGERS; i++) setFingerPercent(i, 100); }
   else if (cmd == 'f' && b >= 0) { setFingerPercent(a, b); }
   else if (cmd == 'a' && b >= 0) { setFingerRawAngle(a, b); }

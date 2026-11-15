@@ -48,6 +48,13 @@ int main() {
   for (int i = 0; i < 5; i++) CHECK(servos[i].angle == FINGERS[i].closedAngle, "serial close all");
   CHECK(WIFI_CHANNEL >= 1 && WIFI_CHANNEL <= 13, "WiFi channel is a valid 2.4 GHz channel (1-13)");
   CHECK(startWiFi(), "WiFi starts (name + 8+ char password + channel accepted)");
+  CHECK(WiFi.lastMode == WIFI_AP_STA, "WiFi in AP+station mode (needed for the scan command)");
+  CHECK(WiFi.power == WIFI_POWER_8_5dBm, "WiFi starts at low transmit power (8.5 dBm)");
+  Serial.in = "wifi full\n"; run(50);
+  CHECK(WiFi.power == WIFI_POWER_19_5dBm, "wifi full -> 19.5 dBm");
+  Serial.in = "wifi low\n"; run(50);
+  CHECK(WiFi.power == WIFI_POWER_8_5dBm, "wifi low -> 8.5 dBm");
+  Serial.in = "scan\n"; run(50);
   Serial.in = "wifi\n"; run(50);
   Serial.in = "wifi restart\n"; run(50);
   for (int i = 0; i < 5; i++) CHECK(servos[i].angle == FINGERS[i].closedAngle, "wifi commands don't move the fingers");
