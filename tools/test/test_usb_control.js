@@ -61,6 +61,21 @@ const { chromium } = require('playwright'); const path = require('path'); const 
   await p.waitForTimeout(300);
   sent = await p.evaluate(() => window.SENT.slice());
   ok(sent.length <= 3 && sent[sent.length - 1] === 'f 0 60\n', `dragging the thumb 1->60 quickly sends ${sent.length} commands, ending at 60`);
+  // gestures must equal the firmware's GESTURES[]
+  const fwG = [...ino.matchAll(/\{"([\w ]+)",\s*\{([\d, ]+)\}\}/g)].map(m => m[1] + ':' + m[2].replace(/\s/g, ''));
+  const pgG = [...html.matchAll(/\{ name: '([\w ]+)',\s*pct: \[([\d, ]+)\] \}/g)].map(m => m[1] + ':' + m[2].replace(/\s/g, ''));
+  ok(fwG.length === 7 && JSON.stringify(fwG) === JSON.stringify(pgG), 'page gestures = firmware GESTURES[] ' + pgG.join(' '));
+  await p.evaluate(() => window.SENT.length = 0);
+  await p.click('#gestures button:has-text("Peace")'); await p.waitForTimeout(100);
+  sent = await p.evaluate(() => window.SENT.slice());
+  ok(JSON.stringify(sent) === JSON.stringify(['f 0 70\n', 'f 1 0\n', 'f 2 0\n', 'f 3 100\n', 'f 4 100\n']), 'Peace sends f 0 70, f 1 0, f 2 0, f 3 100, f 4 100');
+  ok(await p.locator('#pct input').nth(3).inputValue() === '100', 'finger sliders follow the gesture');
+  await p.evaluate(() => window.SENT.length = 0);
+  await p.check('#grp-checks input[data-i="1"]'); await p.check('#grp-checks input[data-i="2"]');
+  await p.locator('#grp').fill('40'); await p.locator('#grp').dispatchEvent('change'); await p.waitForTimeout(250);
+  sent = await p.evaluate(() => window.SENT.slice());
+  const last = {}; sent.forEach(c => { const m = c.match(/^f (\d) (\d+)/); if (m) last[m[1]] = +m[2]; });
+  ok(JSON.stringify(last) === JSON.stringify({ 1: 40, 2: 40 }), 'Move together (index + middle ticked) moves only those two to 40 %: ' + JSON.stringify(sent));
   await p.click('#disconnect'); await p.waitForTimeout(100);
   ok(await p.evaluate(() => window.CLOSED) === true && (await p.textContent('#status')) === 'not connected', 'Disconnect closes the port (frees it for Arduino)');
   // no Web Serial (Firefox/Safari): clear message, connect disabled

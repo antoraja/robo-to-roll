@@ -86,6 +86,16 @@
         Calibrate first, otherwise 100 % uses the safe default angles.</p>
       <div id="pct" class="fingers"></div>
       <div class="row" style="margin-top:10px"><button id="openall">Open all</button></div>
+      <h2 style="margin-top:18px">Move together</h2>
+      <p class="sub">Tick the fingers, then move the slider: all ticked fingers go to the same %.</p>
+      <div id="grp-checks" class="row" style="margin:6px 0 8px"></div>
+      <div class="finger"><span class="name">Ticked fingers</span>
+        <input id="grp" type="range" min="0" max="100" step="1" value="0" aria-label="Ticked fingers percent closed">
+        <span class="val"><b id="grpv">0</b> %</span></div>
+      <h2 style="margin-top:18px">Gestures</h2>
+      <p class="sub">All five fingers at once (thumb, index, middle, ring, little). They close fingers up to 100 %:
+        use them after calibrating, with the strings tied.</p>
+      <div id="gestures" class="row" style="margin-top:6px"></div>
     </div>
   </section>
 
@@ -223,7 +233,33 @@ FINGERS.forEach((f, i) => {
   s.addEventListener('change', () => send(`f ${i} ${s.value}`));
   $('pct').appendChild(row);
 });
-$('openall').addEventListener('click', () => { send('open'); document.querySelectorAll('#pct input').forEach(s => { s.value = 0; s.nextElementSibling.querySelector('b').textContent = 0; }); });
+function showPct(i, v) { const s = document.querySelectorAll('#pct input')[i]; s.value = v; s.nextElementSibling.querySelector('b').textContent = v; }
+$('openall').addEventListener('click', () => { send('open'); FINGERS.forEach((f, i) => showPct(i, 0)); });
+
+// ---------------------------------------------------------------- several fingers at once
+// same gestures as the firmware's GESTURES[] (% closed for thumb, index, middle, ring, little)
+const GESTURES = [
+  { name: 'Open',      pct: [0, 0, 0, 0, 0] },
+  { name: 'Fist',      pct: [75, 100, 100, 100, 100] },
+  { name: 'Point',     pct: [70, 0, 100, 100, 100] },
+  { name: 'Peace',     pct: [70, 0, 0, 100, 100] },
+  { name: 'Thumbs up', pct: [0, 100, 100, 100, 100] },
+  { name: 'Pinch',     pct: [55, 55, 0, 0, 0] },
+  { name: 'Rock on',   pct: [60, 0, 100, 100, 0] },
+];
+FINGERS.forEach((f, i) => {
+  const l = document.createElement('label'); l.style.marginRight = '10px';
+  l.innerHTML = `<input type="checkbox" data-i="${i}"> ${f.name}`; $('grp-checks').appendChild(l);
+});
+const ticked = () => [...document.querySelectorAll('#grp-checks input:checked')].map(c => +c.dataset.i);
+$('grp').addEventListener('input', () => { const v = +$('grp').value; $('grpv').textContent = v;
+  ticked().forEach(i => { showPct(i, v); sendThrottled('f' + i, `f ${i} ${v}`); }); });
+$('grp').addEventListener('change', () => { const v = +$('grp').value; ticked().forEach(i => { showPct(i, v); send(`f ${i} ${v}`); }); });
+GESTURES.forEach(g => {
+  const b = document.createElement('button'); b.textContent = g.name;
+  b.addEventListener('click', () => { log('Gesture: ' + g.name); g.pct.forEach((v, i) => { showPct(i, v); send(`f ${i} ${v}`); }); });
+  $('gestures').appendChild(b);
+});
 
 // ---------------------------------------------------------------- tabs + start
 function tab(which) {
