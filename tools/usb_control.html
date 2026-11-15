@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RoboHand USB control</title>
+<style>
+  :root { --bg: #eef1f3; --card: #ffffff; --ink: #172026; --muted: #5b6873; --line: #d6dce0; --accent: #c25a17;
+          --accent-soft: #fff1e6; --ok: #2f7d4f; --bad: #c9182f; --code: #1e2428; --code-ink: #d9e2e8; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14191d; --card: #1e252a; --ink: #e6ecef; --muted: #9aa7b0; --line: #2f3a40; --accent: #f08a45;
+            --accent-soft: #33261c; --ok: #5cc28a; --bad: #ff6b7d; --code: #0f1316; --code-ink: #d9e2e8; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, "Segoe UI", Arial, sans-serif; }
+  header { padding: 18px 16px 6px; max-width: 1100px; margin: 0 auto; }
+  h1 { margin: 0; font-size: 24px; }
+  .sub { color: var(--muted); margin: 4px 0 0; }
+  main { max-width: 1100px; margin: 0 auto; padding: 8px 16px 32px; display: grid; gap: 14px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .card h2 { margin: 0 0 10px; font-size: 16px; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 8px;
+           padding: 7px 14px; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .status { font-weight: 600; } .status.on { color: var(--ok); } .status.off { color: var(--bad); }
+  .warn { background: var(--accent-soft); border-left: 4px solid var(--accent); padding: 8px 12px; border-radius: 6px; }
+  .tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .fingers { display: grid; gap: 10px; }
+  .finger { display: grid; grid-template-columns: 120px 1fr 64px; gap: 10px; align-items: center; }
+  .finger .name { font-weight: 600; }
+  .finger .val { text-align: right; font-variant-numeric: tabular-nums; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .cal { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+  .cal .top { display: grid; grid-template-columns: 120px 1fr 70px; gap: 10px; align-items: center; }
+  .cal .btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cal .btns button { padding: 5px 10px; }
+  .saved { color: var(--muted); font-size: 14px; } .saved b { color: var(--ink); }
+  pre { background: var(--code); color: var(--code-ink); padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 8px 0 0; font-size: 14px; }
+  #log { height: 180px; overflow-y: auto; white-space: pre-wrap; font: 13px/1.4 ui-monospace, Consolas, monospace; background: var(--code);
+         color: var(--code-ink); border-radius: 8px; padding: 8px 10px; }
+  #log .out { color: #f0a35e; }
+  .hidden { display: none; }
+  @media (max-width: 600px) { .finger, .cal .top { grid-template-columns: 1fr; } .finger .val { text-align: left; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>RoboHand USB control</h1>
+  <p class="sub">Moves the fingers through the USB cable: no WiFi needed. Chrome or Edge on the laptop that the ESP32 is plugged into.</p>
+</header>
+<main>
+  <section class="card">
+    <h2>1 · Connect</h2>
+    <div id="nosupport" class="warn hidden">This browser can't talk to USB devices. Open this file in <b>Chrome</b> or <b>Edge</b>.</div>
+    <div class="row">
+      <button id="connect" class="primary">Connect to ESP32</button>
+      <button id="disconnect" disabled>Disconnect</button>
+      <span>Status: <span id="status" class="status off">not connected</span></span>
+    </div>
+    <p class="sub">Close Arduino's <b>Serial Monitor</b> first (only one program can use the USB port). Click Connect and pick the
+      ESP32's port (the same COM port as in Arduino, e.g. COM6). The 5 V adapter must be in the wall for the servos to move.</p>
+  </section>
+
+  <section class="card">
+    <div class="tabs" role="tablist">
+      <button id="tab-cal" role="tab" aria-selected="true">2 · Calibrate (raw angle)</button>
+      <button id="tab-pct" role="tab" aria-selected="false">3 · Control (% closed)</button>
+    </div>
+
+    <div id="pane-cal">
+      <p class="warn">Raw angle, for testing and calibration. Move in <b>small steps</b>. If a servo buzzes or strains, go back 5-10°.
+        Keep the string slack until it is tied (with the servo at its open angle).</p>
+      <div id="cal" class="fingers"></div>
+      <h2 style="margin-top:16px">Code for the firmware</h2>
+      <p class="sub">After calibrating: in Arduino, replace the five lines inside <code>FingerConfig FINGERS[] = { ... };</code> with these,
+        then Upload again (close this page's connection first).</p>
+      <pre id="code"></pre>
+      <div class="row"><button id="copy">Copy code</button><span id="copied" class="sub"></span><button id="reset">Reset saved angles</button></div>
+    </div>
+
+    <div id="pane-pct" class="hidden">
+      <p class="warn">0 % = open, 100 % = closed, using the angles that are <b>uploaded</b> in the firmware.
+        Calibrate first, otherwise 100 % uses the safe default angles.</p>
+      <div id="pct" class="fingers"></div>
+      <div class="row" style="margin-top:10px"><button id="openall">Open all</button></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>ESP32 messages</h2>
+    <div id="log" aria-live="polite"></div>
+  </section>
+</main>
+
+<script>
+// Finger order and pins match firmware/finger_control/finger_control.ino (FINGERS[]): index in this list = finger number.
+const FINGERS = [
+  { name: 'Thumb',  pin: 25, open: 10, closed: 115 },
+  { name: 'Index',  pin: 13, open: 10, closed: 150 },
+  { name: 'Middle', pin: 14, open: 10, closed: 150 },
+  { name: 'Ring',   pin: 27, open: 10, closed: 150 },
+  { name: 'Little', pin: 26, open: 10, closed: 150 },
+];
+const STORE = 'robohand-calibration-v1';
+let saved = (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch (e) { return {}; } })();
+const getCal = (i) => Object.assign({ open: FINGERS[i].open, closed: FINGERS[i].closed }, saved[i] || {});
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(saved)); } catch (e) { /* private window: keep in memory */ } };
+
+const $ = (id) => document.getElementById(id);
+const logEl = $('log');
+function log(text, cls) {
+  const line = document.createElement('div'); if (cls) line.className = cls; line.textContent = text;
+  logEl.appendChild(line); while (logEl.childNodes.length > 300) logEl.removeChild(logEl.firstChild);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// ---------------------------------------------------------------- serial
+let port = null, writer = null, reader = null, reading = false;
+const enc = new TextEncoder();
+function setConnected(on) {
+  $('status').textContent = on ? 'connected' : 'not connected';
+  $('status').className = 'status ' + (on ? 'on' : 'off');
+  $('connect').disabled = on; $('disconnect').disabled = !on;
+}
+async function connect() {
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: 115200 });
+  } catch (e) {
+    const busy = /open|lock|access/i.test(String(e));
+    log(busy ? 'Could not open the port. Is Arduino\'s Serial Monitor still open? Close it and try again.' : 'Not connected: ' + e.message);
+    port = null; return;
+  }
+  writer = port.writable.getWriter();
+  setConnected(true); log('Connected. Commands you send appear in orange.');
+  readLoop();
+}
+async function readLoop() {
+  reading = true; const dec = new TextDecoder(); let buf = '';
+  try {
+    reader = port.readable.getReader();
+    while (reading) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let k; while ((k = buf.indexOf('\n')) >= 0) { const l = buf.slice(0, k).replace(/\r$/, ''); buf = buf.slice(k + 1); if (l.trim()) log(l); }
+    }
+  } catch (e) { if (reading) log('Connection lost: ' + e.message + ' (USB unplugged?)'); }
+  finally { try { reader && reader.releaseLock(); } catch (e) {} }
+  if (reading) { reading = false; await cleanup(); }
+}
+async function cleanup() {
+  try { writer && writer.releaseLock(); } catch (e) {}
+  try { port && await port.close(); } catch (e) {}
+  port = writer = reader = null; setConnected(false);
+}
+async function disconnect() {
+  reading = false;
+  try { reader && await reader.cancel(); } catch (e) {}
+  await cleanup(); log('Disconnected. You can now upload from Arduino again.');
+}
+async function send(cmd) {
+  if (!writer) { log('Not connected: click "Connect to ESP32" first.'); return; }
+  log('> ' + cmd, 'out');
+  try { await writer.write(enc.encode(cmd + '\n')); } catch (e) { log('Send failed: ' + e.message); }
+}
+// one command per finger at most every 120 ms while dragging, and always the final value
+const pending = {};
+function sendThrottled(key, cmd) {
+  const p = pending[key] || (pending[key] = { last: 0, timer: null, cmd: null });
+  p.cmd = cmd; const now = Date.now();
+  if (now - p.last >= 120) { p.last = now; send(cmd); p.cmd = null; }
+  else if (!p.timer) p.timer = setTimeout(() => { p.timer = null; if (p.cmd) { p.last = Date.now(); send(p.cmd); p.cmd = null; } }, 120 - (now - p.last));
+}
+
+// ---------------------------------------------------------------- calibration pane (raw angles)
+function codeLines() {
+  return 'FingerConfig FINGERS[] = {\n' + FINGERS.map((f, i) => {
+    const c = getCal(i); const name = ('"' + f.name + '",').padEnd(9);
+    return `  {${name} ${String(f.pin).padStart(2)}, ${String(c.open).padStart(3)}, ${String(c.closed).padStart(3)}},`;
+  }).join('\n') + '\n};';
+}
+function renderCode() { $('code').textContent = codeLines(); }
+FINGERS.forEach((f, i) => {
+  const c = getCal(i);
+  const box = document.createElement('div'); box.className = 'cal';
+  box.innerHTML = `<div class="top"><span class="name">${i} · ${f.name}</span>
+      <input type="range" min="0" max="180" step="1" value="${c.open}" aria-label="${f.name} servo angle">
+      <span class="val"><b>${c.open}</b>°</span></div>
+    <div class="btns"><button data-d="-5">−5°</button><button data-d="-1">−1°</button><button data-d="1">+1°</button><button data-d="5">+5°</button>
+      <button data-set="open">Save as OPEN (finger straight)</button><button data-set="closed">Save as CLOSED (fully curled)</button></div>
+    <div class="saved">Saved: open <b class="o">${c.open}</b>°, closed <b class="c">${c.closed}</b>° (pin D${f.pin})</div>`;
+  const slider = box.querySelector('input'), val = box.querySelector('.val b');
+  const go = (a, now) => { a = Math.max(0, Math.min(180, a)); slider.value = a; val.textContent = a;
+    now ? send(`a ${i} ${a}`) : sendThrottled('a' + i, `a ${i} ${a}`); };
+  slider.addEventListener('input', () => go(+slider.value, false));
+  slider.addEventListener('change', () => go(+slider.value, true));
+  box.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => go(+slider.value + +b.dataset.d, true)));
+  box.querySelectorAll('[data-set]').forEach(b => b.addEventListener('click', () => {
+    saved[i] = Object.assign(getCal(i), { [b.dataset.set]: +slider.value }); save();
+    box.querySelector(b.dataset.set === 'open' ? '.o' : '.c').textContent = slider.value; renderCode();
+    log(`${f.name}: ${b.dataset.set.toUpperCase()} angle saved = ${slider.value}°`);
+  }));
+  $('cal').appendChild(box);
+});
+renderCode();
+$('copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(codeLines()); $('copied').textContent = 'Copied.'; }
+  catch (e) { $('copied').textContent = 'Select the code above and press Ctrl+C.'; }
+});
+$('reset').addEventListener('click', () => { if (confirm('Forget the saved open/closed angles?')) { saved = {}; save(); location.reload(); } });
+
+// ---------------------------------------------------------------- % pane
+FINGERS.forEach((f, i) => {
+  const row = document.createElement('div'); row.className = 'finger';
+  row.innerHTML = `<span class="name">${f.name}</span><input type="range" min="0" max="100" step="1" value="0" aria-label="${f.name} percent closed">
+    <span class="val"><b>0</b> %</span>`;
+  const s = row.querySelector('input'), v = row.querySelector('b');
+  s.addEventListener('input', () => { v.textContent = s.value; sendThrottled('f' + i, `f ${i} ${s.value}`); });
+  s.addEventListener('change', () => send(`f ${i} ${s.value}`));
+  $('pct').appendChild(row);
+});
+$('openall').addEventListener('click', () => { send('open'); document.querySelectorAll('#pct input').forEach(s => { s.value = 0; s.nextElementSibling.querySelector('b').textContent = 0; }); });
+
+// ---------------------------------------------------------------- tabs + start
+function tab(which) {
+  $('tab-cal').setAttribute('aria-selected', which === 'cal'); $('tab-pct').setAttribute('aria-selected', which === 'pct');
+  $('pane-cal').classList.toggle('hidden', which !== 'cal'); $('pane-pct').classList.toggle('hidden', which !== 'pct');
+}
+$('tab-cal').addEventListener('click', () => tab('cal')); $('tab-pct').addEventListener('click', () => tab('pct'));
+if (!navigator.serial) { $('nosupport').classList.remove('hidden'); $('connect').disabled = true; }
+$('connect').addEventListener('click', connect); $('disconnect').addEventListener('click', disconnect);
+window.ROBOHAND_READY = true;
+</script>
+</body>
+</html>

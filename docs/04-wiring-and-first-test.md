@@ -95,6 +95,13 @@ on the supply). To switch off: USB out, then the supply. A single twitch of the 
 
 **This is your first wireless robot control.**
 
+## D2. Control over USB, without WiFi
+
+`tools/usb_control.html`: download it and open it in **Chrome or Edge** on the laptop the ESP32 is plugged into.
+Close Arduino's Serial Monitor, click **Connect to ESP32**, pick the COM port. It has sliders per finger
+(% closed, like the phone page) and a **calibration** tab (raw angle, ±1/±5° buttons, "Save as OPEN / CLOSED")
+that writes the finished `FINGERS[]` lines to paste into the firmware.
+
 ## E. Calibrate (after the finger and tendon are mounted, see guide 03)
 
 **Calibrate before you use "Close all" or the gesture buttons.** Until then the firmware uses safe

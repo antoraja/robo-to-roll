@@ -12,3 +12,4 @@ echo; echo "=== 3/4 physics (MuJoCo) ==="; (cd sim && python3 finger_sim.py | te
 echo; echo "=== 4/4 firmware: compile + behaviour test on the PC ==="
 g++ -std=c++17 -Wall -Wextra -Werror -Wno-unused-parameter -Ifirmware/test/mock -x c++ firmware/test/test_firmware.cpp -o /tmp/robohand_fwtest
 /tmp/robohand_fwtest | tail -n 1
+echo; echo "=== 5/5 USB control page (fake ESP32) ==="; node tools/test/test_usb_control.js | tail -n 1
