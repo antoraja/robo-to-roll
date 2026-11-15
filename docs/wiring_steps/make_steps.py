@@ -32,7 +32,9 @@ for f, p in FINGER_PIN.items():
     assert FW[f] == int(p[1:]), (f, FW[f], p)
 assert pin_col["VIN"] == 30 and pin_col["GND"] == 29 and pin_col["D13"] == 28 and pin_col["D12"] == 27
 # rail holes used per servo (brown -, red +): own holes, away from the supply (cols 1-4) and the GND jumper
-SERVO_RAIL = {"Index": 12, "Middle": 17, "Ring": 20, "Little": 8, "Thumb": 6}
+SERVO_RAIL = {"Index": 12, "Middle": 17, "Ring": 20, "Little": 8, "Thumb": 14}   # brown (- row)
+RED_COL = {"Thumb": 14}                       # red (+ row); default = brown column - 1
+red_col = lambda f: RED_COL.get(f, SERVO_RAIL[f] - 1)
 ORDER = ["Index", "Middle", "Ring", "Little", "Thumb"]
 used = [SERVO_RAIL[f] for f in ORDER] + [1, 2, 3, 4, 29]
 assert len(set(used)) == len(used), used
@@ -103,7 +105,7 @@ def svg(finger):
         o.append(f'<text x="{srv[0]}" y="{srv[1]-4}" font-size="12" fill="#fff" text-anchor="middle">{f}</text>')
         row = "i" if f in ("Index", "Middle", "Ring", "Little") else "g"   # as actually plugged (photos 2026-11-15)
         wire((srv[0] - 8, srv[1] + 6), hole("N_a", SERVO_RAIL[f]), "#6b4a2b", w, op=op, drop=True)
-        wire((srv[0], srv[1] + 6), hole("P_a", SERVO_RAIL[f] - 1), "#d01f2f", w, op=op, drop=True)
+        wire((srv[0], srv[1] + 6), hole("P_a", red_col(f)), "#d01f2f", w, op=op, drop=True)
         wire((srv[0] + 8, srv[1] + 6), hole(row, pin_col[FINGER_PIN[f]]), "#f07c18" if cur else "#e5b800", w, op=op, drop=True)
     # callouts for the current finger
     c = pin_col[FINGER_PIN[finger]]
@@ -111,7 +113,7 @@ def svg(finger):
         o.append(f'<rect x="{x}" y="{y-18}" width="{9*len(text)+16}" height="26" rx="5" fill="{colr}"/><text x="{x+8}" y="{y}" font-size="15" font-weight="bold" fill="#fff">{text}</text>')
     xg, yg = hole("g", c); tag(xg + 14, yg + 4, f"orange → row g, column {c} ({FINGER_PIN[finger]})", "#d4620f")
     xb, yb = hole("N_a", SERVO_RAIL[finger]); tag(xb + 14, yb + 30, f"brown → − rail (blue), column {SERVO_RAIL[finger]}", "#6b4a2b")
-    xr, yr = hole("P_a", SERVO_RAIL[finger] - 1); tag(xr + 14, yr - 26, f"red → + rail (red), column {SERVO_RAIL[finger]-1}", "#c9182f")
+    xr, yr = hole("P_a", red_col(finger)); tag(xr + 14, yr - 26, f"red → + rail (red), column {red_col(finger)}", "#c9182f")
     o.append("</svg>")
     return "\n".join(o), c
 
@@ -123,7 +125,7 @@ def page(finger):
 <li><b>Power off:</b> USB out, adapter out of the wall. String slack.</li>
 <li>Push 3 male-male jumpers into the <b>{finger}</b> servo's plug (brown, red, orange), tape the joint, label the cable "{finger}".</li>
 <li><b>Brown</b> → the <b>blue (−)</b> rail row next to row a (any free hole, e.g. column {SERVO_RAIL[finger]}).</li>
-<li><b>Red</b> → the <b>red (+)</b> rail row (any free hole, e.g. column {SERVO_RAIL[finger]-1}).</li>
+<li><b>Red</b> → the <b>red (+)</b> rail row (any free hole, e.g. column {red_col(finger)}).</li>
 <li><b>Orange</b> → <b>row g, column {c}</b>. Check: follow the ESP32 label <b>{FINGER_PIN[finger]}</b> straight up its column (green): it must be the same column.</li>
 <li>Columns <b>30 (VIN)</b> and <b>27 (D12)</b> stay empty.</li></ol>"""
     return f"""<!doctype html><html><head><meta charset="utf-8"><title>{finger} wiring</title>
