@@ -65,3 +65,14 @@ Status: ✅ fixed in the current files · 🔧 worked around in the build (no re
 - [ ] Cable lengths from the purchased parts (S9)
 - [ ] Overhang analysis in print orientation; no rounded bed-side edges (S12–S14)
 - [ ] Guides **and videos** updated in the same change (B8)
+
+## E2 · The ESP32 didn't leave any free breadboard holes
+
+**What happened:** guide 04 assumed the ESP32's pin rows land in rows b and i, leaving a free hole next to every pin.
+The real board is 1 inch wide: its pins sit in rows a and j and it covers everything in between, so no jumper fits.
+
+**Fix:** the ESP32 comes off the breadboard and connects with female-male jumpers; the breadboard keeps the rails and
+joins wires in columns.
+
+**Lesson:** a board's pin-row spacing (0.9 in vs 1.0 in) is a real-part size, like the horn and the screw head. Check it
+on the real board (photo) before writing wiring steps.

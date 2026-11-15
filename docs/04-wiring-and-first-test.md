@@ -47,6 +47,19 @@ shows each step in 3D.
    Brown into the − rail, red into the + rail, **orange into the free hole next to D13** (row a).
 6. **Leave the hole next to VIN empty.** Servos get power only from the 5 V 3 A supply.
 
+**If your ESP32 covers every hole** (many ESP32 boards are 1 inch wide, so their pins land in rows **a** and **j** with no free hole beside them):
+take the ESP32 **out** of the breadboard and use **female-male** jumpers (in the same jumper set). The female end
+pushes onto the ESP32 pin, the male end goes into the breadboard. The breadboard is then only used for the rails and
+to join two wires in a column:
+
+| From the ESP32 pin (female end) | Male end goes to |
+|---|---|
+| **GND** (next to VIN) | − rail |
+| **D13** | a free column, e.g. column **5**, row a. The servo's **orange** jumper goes into the same column (row b) |
+
+(Later: D25, D14, D27, D26 the same way, each in its own column, see guide 05.) Leave VIN and D12 empty.
+Lay the ESP32 next to the breadboard, label side up, so the jumpers don't pull on it.
+
 The pin labels are printed on the board (`D13`, `GND`, ...). Always read them: some boards use a
 different order. **D12 sits between D14 and D13: never use D12** (it affects booting).
 
