@@ -132,24 +132,26 @@ Plus a few spares. Melt both ends flat with a lighter after pushing each pin in.
 
 ## Wiring five servos
 
-Same method as guide 04. The ESP32 is wide and covers every breadboard hole, so it lies **on its back next to the
-breadboard** (pins up) and each pin gets a **female-male** jumper. A breadboard column (rows a–e are connected) joins
-the pin to its servo's orange wire. Video: `video/wiring_fm/robohand_wiring_esp32_beside.mp4`.
+Same method as guide 04: the ESP32's **VIN-side pins in row j** (USB end at column 1), the other pin row hanging
+in the air past the edge. Each pin's column (rows f–j) is connected inside, so the servo's orange wire goes into
+**row f** of that pin's column. Video: `video/wiring_inboard/robohand_wiring_esp32_on_board.mp4`.
 
-| Finger | ESP32 pin (count from the USB end, VIN side) | F-M jumper's male end | Servo orange | Servo brown / red |
+| Finger | ESP32 pin | Column (= pin number from the USB end) | Into row f | Servo brown / red |
 |---|---|---|---|---|
-| — | pin 1 **VIN** | **leave empty** | | |
-| — | pin 2 **GND** | − rail | | |
-| Index | pin 3 **D13** | column 5, row a | column 5, row b | − rail / + rail |
-| — | pin 4 **D12** | **never use** | | |
-| Middle | pin 5 **D14** | column 11, row a | column 11, row b | − rail / + rail |
-| Ring | pin 6 **D27** | column 14, row a | column 14, row b | − rail / + rail |
-| Little | pin 7 **D26** | column 17, row a | column 17, row b | − rail / + rail |
-| Thumb | pin 8 **D25** | column 8, row a | column 8, row b | − rail / + rail |
+| — | **VIN** | 1 | **leave empty** | |
+| — | **GND** | 2 | black jumper → − rail | |
+| Index | **D13** | 3 | orange | − rail / + rail |
+| — | **D12** | 4 | **never use** | |
+| Middle | **D14** | 5 | orange | − rail / + rail |
+| Ring | **D27** | 6 | orange | − rail / + rail |
+| Little | **D26** | 7 | orange | − rail / + rail |
+| Thumb | **D25** | 8 | orange | − rail / + rail |
+
+Rails: the two on the long side next to row a (blue − is the inner one on this breadboard, red + the outer).
 
 ```
 5V 3A supply (+) ══ 2 red jumpers ══ + rail (red line)  ── all 5 servo RED wires
-5V 3A supply (−) ══ 2 black jumpers ═ − rail (blue line) ── all 5 servo BROWN wires ── F-M jumper from ESP32 GND
+5V 3A supply (−) ══ 2 black jumpers ═ − rail (blue line) ── all 5 servo BROWN wires ── jumper from row f, column 2 (GND)
 1000 µF capacitor across the + and − rails (stripe on −)
 ESP32 powered from your laptop USB (or a USB charger)
 ```

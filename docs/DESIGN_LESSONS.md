@@ -71,8 +71,10 @@ Status: ✅ fixed in the current files · 🔧 worked around in the build (no re
 **What happened:** guide 04 assumed the ESP32's pin rows land in rows b and i, leaving a free hole next to every pin.
 The real board is 1 inch wide: its pins sit in rows a and j and it covers everything in between, so no jumper fits.
 
-**Fix:** the ESP32 comes off the breadboard and connects with female-male jumpers; the breadboard keeps the rails and
-joins wires in columns.
+**Fix:** only the ESP32's VIN-side pin row goes into the breadboard (row j); the other row hangs in the air past
+the edge, leaving rows f-h free next to every pin we use. `cad/wiring_fit.py` checks it for 0.9, 1.0 and 1.1 inch
+boards, in the stand pocket too (ESP32 side must face away from the spine). First workaround (ESP32 beside the
+breadboard on female-male jumpers) stays as the alternative.
 
 **Lesson:** a board's pin-row spacing (0.9 in vs 1.0 in) is a real-part size, like the horn and the screw head. Check it
 on the real board (photo) before writing wiring steps.

@@ -22,46 +22,46 @@ know it's the electronics and not the mechanics.
 
 ## B. Wire it up (power OFF: USB and power supply unplugged)
 
-Your ESP32 (30 pins) plugs **straight into the 400-hole breadboard**, so every connection is a
-plain **male-male** jumper. The wiring video (`video/electronics/robohand_wiring_programming.mp4`)
-shows each step in 3D.
+Your ESP32 is **wide**: pushed across the middle groove, it covers every hole. So only **one** of its pin rows
+goes into the breadboard and the other row hangs in the air past the edge. Every pin we use is on the VIN side,
+so that is the row that goes in. Video: `video/wiring_inboard/robohand_wiring_esp32_on_board.mp4`.
+Checked in `cad/wiring_fit.py`: it works whether the board's pin rows are 0.9, 1.0 or 1.1 inch apart.
 
 ```
- breadboard, top edge:     ── − rail (blue line) ──────────────────────────────
-                           ── + rail (red line)  ──────────────────────────────
- row a (free holes):        VIN  GND  D13  D12  D14  D27  D26  D25 ...
- row b (ESP32 pins):       [ESP32 pushed in across the middle groove, USB end at column 1]
- row i (ESP32 pins):       [other pin row]
+ far long side:   ── + rail (red line, outer) ───────────────────────
+                  ── − rail (blue line, next to row a) ─────────────     <- use these two rails
+ rows a-e          (not used)
+ ─────────────── middle groove ───────────────
+ row f  (wires):  col 1   col 2   col 3   col 4   col 5   col 6   col 7   col 8
+ rows g, h        free    free    free    free    free    free    free    free
+ row j  (pins):   VIN     GND     D13     D12     D14     D27     D26     D25  ... (USB end at column 1)
+ ESP32 board hangs out over this edge, its other pin row in the air
 ```
 
-1. **ESP32:** push it into the breadboard across the middle groove, USB socket at the edge
-   (column 1). Its two pin rows sit in rows **b** and **i**, so row **a** has one free hole next
-   to each pin.
+1. **ESP32:** USB end over **column 1**. Put the **VIN-side pins into row j**, columns 1–15. The rest of the
+   board hangs out over the edge. Check every pin is over its hole, then press evenly until the black strip
+   sits flat. The other pin row must hang in the **air** and touch nothing. The rails under the board are not used.
 2. **Power adapter:** **two** red jumpers side by side in the adapter's **+** screw terminal, **two** black
    jumpers in **−** (the servos can draw ~2.5 A together; one thin jumper alone gets warm and drops voltage).
-   Tighten the screws and tug each jumper. Red jumpers into the **+ rail (red line)**, black into the
-   **− rail (blue line)**. Double-check: red = + on the adapter. Swapped power can damage the servos.
+   Tighten the screws and tug each jumper. On the **far** long side (next to row a): red jumpers into the rail
+   with the **red line**, black into the rail with the **blue line**. Follow the colours, not the position: on
+   this breadboard the blue (−) rail is the one nearer row a. Double-check: red = + on the adapter.
 3. **Capacitor 1000 µF:** long leg into the + rail, striped side (short leg) into the − rail.
-4. **Shared ground:** black jumper from the free hole next to **GND** (row a) into the − rail.
+4. **Shared ground:** black jumper from **row f, column 2** (GND) into the − rail.
 5. **Servo (index):** push 3 male-male jumpers into its plug (brown, red, orange) and tape the joint.
-   Brown into the − rail, red into the + rail, **orange into the free hole next to D13** (row a).
-6. **Leave the hole next to VIN empty.** Servos get power only from the 5 V 3 A supply.
+   Brown into the − rail, red into the + rail, **orange into row f, column 3** (D13).
+6. **Columns 1 (VIN) and 4 (D12) stay empty.** Servos get power only from the 5 V 3 A supply.
+   **All five at once:** the video continues with middle (D14 → row f, column 5), ring (D27 → column 6),
+   little (D26 → column 7) and thumb (D25 → column 8), each with brown → −, red → +. After power-on, test one
+   slider at a time: only that finger's servo may turn.
+7. **In the stand:** breadboard in its pocket with the **ESP32 side facing out**, away from the spine (facing the
+   spine it would hit the socket). The ESP32 sticks out over the edge of the stand. Work on wood or plastic, never metal.
 
-**If your ESP32 covers every hole** (many ESP32 boards are 1 inch wide, so their pins land in rows **a** and **j** with no free hole beside them):
-take the ESP32 **out** of the breadboard and use **female-male** jumpers (in the same jumper set). The female end
-pushes onto the ESP32 pin, the male end goes into the breadboard. The breadboard is then only used for the rails and
-to join two wires in a column:
+The pin labels are printed on the board (`D13`, `GND`, ...). Before pressing it in, check that **your** board
+reads VIN, GND, D13, D12, D14, D27, D26, D25 from the USB end. **Never use D12** (it affects booting).
 
-| From the ESP32 pin (female end) | Male end goes to |
-|---|---|
-| **GND** (next to VIN) | − rail |
-| **D13** | a free column, e.g. column **5**, row a. The servo's **orange** jumper goes into the same column (row b) |
-
-(Later: D25 → column 8, D14 → column 11, D27 → column 14, D26 → column 17, see guide 05.) Video: `video/wiring_fm/robohand_wiring_esp32_beside.mp4`. Leave VIN and D12 empty.
-Lay the ESP32 next to the breadboard, label side up, so the jumpers don't pull on it.
-
-The pin labels are printed on the board (`D13`, `GND`, ...). Always read them: some boards use a
-different order. **D12 sits between D14 and D13: never use D12** (it affects booting).
+*Alternative* (if it ever doesn't hold): the ESP32 lies beside the breadboard on female-male jumpers, video
+`video/wiring_fm/robohand_wiring_esp32_beside.mp4`.
 
 ## C. Upload the code
 
