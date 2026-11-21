@@ -1,5 +1,7 @@
 # Design lessons: flaws found so far, and the rule for the next design
 
+Summary and way of working: [PROTOTYPE_1_RETROSPECTIVE.md](PROTOTYPE_1_RETROSPECTIVE.md).
+
 Every problem found in simulation, in the checks, or while building the real prototype is
 listed here with its cause, the fix that was applied, and a **rule** so the next design
 (wrist, thumb base, rolling station, hand v2) doesn't repeat it.
@@ -26,55 +28,9 @@ Status: ✅ fixed in the current files · 🔧 worked around in the build (no re
 | B14 | **Spools rubbed on the motors** (32 mm rims, 27 mm base) | The rims reached 16 mm from the shaft while the next servo's body starts 15.1 mm away; the check relied on an assumed axial gap of ~2 mm, which the real build didn't have. The wide base also sat close over its own servo | ✅ Rims 29 mm (0.6 mm radial gap to the neighbour at ANY height), hub next to its own servo 9 mm (bottom edge = stock horn hub size), screw system and groove position unchanged, 41.9 mm string pull. Checks: radial clearance independent of the axial gap, full-circle sweep with the shaft up to 2 mm lower | **Where a clearance depends on an assumed (unmeasured) dimension, design it to be safe even if that assumption is wrong** |
 | E1 | **Firmware default would drive fingers past their end stops** (closed 175° vs ~161° needed with the new spool) and the video's power-on order defeated the staggered start | Defaults were set for the first spool and never re-checked when the spool changed; the power-on order wasn't tied to how the start-up stagger works | ✅ Safe default 150° until calibrated, firmware test checks defaults stay short of the end stops (control: 175 fails); guide: supply first then USB, 2 jumpers per power line, never D12 | **When a mechanical part changes, re-derive every number that depends on it (firmware angles, travel, currents)** |
 | B15 | **All 5 servos mounted from the wrong side of the spine** (found on the build) | The windows are the same from both sides, and only the guide text plus one FRONT dot said which side each spool goes on | 🔧 Picture of both sides added to guide 05; servos remounted. 📝 v2: emboss the finger letter next to each window on the side its spool belongs | **Make the correct assembly the only possible one, or at least mark it on the part itself, not only in the guide** |
-
-## Found in simulation and checks (before printing)
-
-| # | Flaw | Fix | Rule for the next design |
-|---|---|---|---|
-| S1 | Joints **snapped closed one by one** (single elastic loop, leverage shrinking with bend) | ✅ Elastic runs over a **rounded groove at each knuckle** (constant leverage) | Any return spring must have **constant or increasing** leverage with angle. Check dτ/dθ > 0 in simulation |
-| S2 | Finger **fell closed palm-down** (1 mm elastic too weak) | ✅ 2 mm cord stretched 50 % | Simulate **all orientations** (finger up, palm up, palm down) with real part masses |
-| S3 | **Not enough string travel** (10 mm spool: 31 mm < 37.5 mm needed) | ✅ 13 mm spool (41 mm in 180°) | Spool travel ≥ **1.1 ×** the simulated string travel, inside the servo's real range (~170°) |
-| S4 | **String pinched** between bones at full bend | ✅ Relief groove at each joint face | Check the string path **at every joint angle**, not only straight |
-| S5 | **Thumb rubbed the palm** at full bend | ✅ Clearance groove along the thumb's sweep | Collision-check with the **real motion order** (base joint first), not only equal angles |
-| S6 | **Thumb over-pulled** (2 joints need ~110°, default was for 3 joints) | ✅ Firmware default 10 → 115° | Derive servo limits **per finger** from the simulation |
-| S7 | **Power spike** at switch-on (5 servos start together) | ✅ Servos start 250 ms apart | Stagger servo start-up. Size the supply for **all servos moving at once** |
-| S8 | **Servo straining at the end stop** | ✅ Calibrate closedAngle a few degrees before the stop | Calibration procedure must stop **before** mechanical limits |
-| S9 | **Top servo lead too short** for the breadboard (20 cm leads) | ✅ 20 cm jumpers bridge it | Check every cable length with the **actual purchased part's** spec |
-| S10 | **ESP32 wiring with loose female jumpers** | ✅ ESP32 plugged into the breadboard, male-male only | Prefer plug-in boards over flying wires. Fewer connector types |
-| S11 | **Spine could be mounted back to front** | ✅ FRONT dot on the spine | **Asymmetric parts need a visible orientation mark** (or a shape that only fits one way) |
-| S12 | **Spine needed a 56 mm support bridge** (ribs both sides) | ✅ Ribs on the back only, flat face on the bed | Run the **overhang analysis on every part in print orientation**, before export |
-| S13 | **Stand had an overhanging rounded bottom edge** | ✅ Straight walls, corners rounded in plan only | Same: no rounding on bed-side edges |
-| S14 | **Palm needed extra support** at the wrist corners | ✅ Vertical wrist corners | Same |
-
-## Checklist for the next design (wrist, thumb base, rolling station, v2)
-
-- [ ] Every clamp / pinch: remaining gap ≤ 70 % of the clamped item (B1)
-- [ ] Every string anchored around a solid bar, never a knot against a hole (B2)
-- [ ] Every pocket/socket enclosed by material (B3); walls ≥ 1.2 mm around holes (B4)
-- [ ] Holes cut after all solids are joined; every channel probed open end to end (B9)
-- [ ] Cord/string paths: bend radius ≥ 5× diameter, rubber-cord holes ≥ cord + 1 mm, no hidden sharp corners (B10)
-- [ ] Every pin/screw/part checked along its INSERTION path, with real tool/finger room (B11)
-- [ ] Bought moving parts (horns, screws) modelled and swept through their full motion (B12)
-- [ ] Holes for bought parts: part size + 0.5 mm (print shrink); screws inserted along their path in the checks (B13)
-- [ ] Parts labelled and impossible to mix up or mount backwards (B5, S11)
-- [ ] Pin and screw lists generated from the CAD (B6)
-- [ ] Springs: leverage constant or increasing with angle; all orientations simulated (S1, S2)
-- [ ] String travel ≥ 1.1 × needed; string path checked at all angles (S3, S4)
-- [ ] Collision check with the real motion order (S5)
-- [ ] Servo limits per joint from simulation; staggered start-up; supply sized for all moving (S6–S8)
-- [ ] Cable lengths from the purchased parts (S9)
-- [ ] Overhang analysis in print orientation; no rounded bed-side edges (S12–S14)
-- [ ] Guides **and videos** updated in the same change (B8)
-
-## E2 · The ESP32 didn't leave any free breadboard holes
-
-**What happened:** guide 04 assumed the ESP32's pin rows land in rows b and i, leaving a free hole next to every pin.
-The real board is 1 inch wide: its pins sit in rows a and j and it covers everything in between, so no jumper fits.
-
-**Fix:** only the ESP32's VIN-side pin row goes into the breadboard (row j); the other row hangs in the air past
-the edge, leaving rows f-h free next to every pin we use. `cad/wiring_fit.py` checks it for 0.9, 1.0 and 1.1 inch
-boards, in the stand pocket too (ESP32 side must face away from the spine). First workaround (ESP32 beside the
-breadboard on female-male jumpers) stays as the alternative.
-
-**Lesson:** a board's pin-row spacing (0.9 in vs 1.0 in) is a real-part size, like the horn and the screw head. Check it
-on the real board (photo) before writing wiring steps.
+| E2 | **ESP32 covered every breadboard hole** | Guide assumed a 0.9 in board; the real one is 1.0 in, pins in rows a + j | ✅ Only the VIN-side pin row goes in (row j), the other hangs past the edge; `cad/wiring_fit.py` checks 0.9/1.0/1.1 in and the stand pocket | **Board pin-row spacing is a real-part size: check it on the real board** |
+| E3 | **Supply wires reversed at the DC adapter** (red on ⊖) | Polarity guessed from position, marks not read | 🔧 Caught on a photo before power-on, swapped | **Read ⊕/⊖ on the part itself; photo check before every first power-on** |
+| E4 | **WiFi network invisible** although firmware said "WiFi started OK" | This board's radio is weak: Espressif's WiFiScan found the router next to it rarely (−70 dBm) or not at all | 🔧 Control over USB (`tools/usb_control.html`); 📝 replacement ESP32 ordered | **Test a new board's radio with the official WiFiScan example first; keep a spare** |
+| E5 | **Wiring video columns didn't match the real breadboard** | User's ESP32 sits mirrored (USB end at column 30) | ✅ Per-finger top-view pictures of the real layout (`docs/wiring_steps/`) | **Draw wiring for the board as it actually sits; one step per picture** |
+| E6 | **Servo moved once, then not** | Plug lying flat on the breadboard, pins bent, intermittent contact | 🔧 Plugs pushed upright | **Every plug upright and fully in; strain-relieve cables** |
+| E7 | **Thumb bends only its first hinge at 180°** | Open: string pull lost somewhere (slack, spool slipping, wrap direction, or wrong servo type) | 📝 Pen-mark test next | **Tie every string at the servo's open (low) angle, finger straight, just tight; verify string travel with a mark** |
